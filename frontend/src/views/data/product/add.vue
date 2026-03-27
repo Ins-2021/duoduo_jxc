@@ -545,23 +545,25 @@ const handleSave = () => {
     if (!valid) return
     const codeValid = await validateProductCode()
     if (!codeValid) return
-      // 组装提交数据
-      const submitData = { ...temp }
-      if (!enableAttr.value || submitData.skuList.length === 0) {
-        // 如果未启用多属性，或者没有生成任何 SKU，则默认生成一个无属性的基础 SKU
-        submitData.skuList = [{
-          skuCode: submitData.productCode || '',
-          purchasePrice: submitData.purchasePrice || 0,
-          retailPrice: submitData.retailPrice || 0,
-          wholesalePrice: submitData.wholesalePrice || 0,
-          warningQty: submitData.warningQty || 0,
-          weight: 0,
-          status: 1
-        }]
-        submitData.attr1Name = ''
-        submitData.attr2Name = ''
-      }
 
+    // 组装提交数据
+    const submitData = { ...temp }
+    if (!enableAttr.value || submitData.skuList.length === 0) {
+      // 如果未启用多属性，或者没有生成任何 SKU，则默认生成一个无属性的基础 SKU
+      submitData.skuList = [{
+        skuCode: submitData.productCode || '',
+        purchasePrice: submitData.purchasePrice || 0,
+        retailPrice: submitData.retailPrice || 0,
+        wholesalePrice: submitData.wholesalePrice || 0,
+        warningQty: submitData.warningQty || 0,
+        weight: 0,
+        status: 1
+      }]
+      submitData.attr1Name = ''
+      submitData.attr2Name = ''
+    }
+
+    try {
       if (isEdit.value) {
         await updateProduct(submitData)
         ElMessage.success('更新成功')
@@ -570,6 +572,8 @@ const handleSave = () => {
         ElMessage.success('创建成功')
       }
       router.back()
+    } catch (e) {
+      console.error(e)
     }
   })
 }

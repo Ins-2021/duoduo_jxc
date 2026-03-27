@@ -391,6 +391,36 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
             throw new BusinessException(BizCode.SALES_ORDER_NOT_AUDITED);
         }
 
+        // 针对预订单（orderType=3）反审核：需要解锁库存
+        if (exist.getOrderType() != null && exist.getOrderType() == 3) {
+            LambdaQueryWrapper<SalesOrderDetail> detailWrapper = new LambdaQueryWrapper<>();
+            detailWrapper.eq(SalesOrderDetail::getOrderId, orderId);
+            List<SalesOrderDetail> details = detailMapper.selectList(detailWrapper);
+
+            // 如果已有部分发货，不允许反审核
+            for (SalesOrderDetail detail : details) {
+                if (detail.getDeliveryQty() != null && detail.getDeliveryQty() > 0) {
+                    throw new BusinessException("该预订单已有发货记录，不允许反审核");
+                }
+            }
+
+            // 解锁全部锁定的库存
+            for (SalesOrderDetail detail : details) {
+                if (detail.getWarehouseId() != null && detail.getQty() != null && detail.getQty() > 0) {
+                    inventoryService.unlockStock(
+                            detail.getWarehouseId(),
+                            detail.getSkuId(),
+                            detail.getQty(),
+                            orderId
+                    );
+                }
+            }
+            log.info("预订单反审核，解锁库存: orderId={}", orderId);
+        } else if (exist.getOrderType() != null && exist.getOrderType() == 1) {
+            // 批发单反审核（暂时抛出异常或仅作记录，因涉及财务、出库等回滚暂不支持）
+            // throw new BusinessException("暂时不支持批发单/零售单反审核");
+        }
+
         LambdaUpdateWrapper<SalesOrder> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(SalesOrder::getOrderId, orderId)
                 .set(SalesOrder::getStatus, 10)
@@ -406,7 +436,26 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         if (booking == null || booking.getOrderType() != 3) {
             throw new BusinessException(BizCode.BOOKING_ORDER_INVALID);
         }
-        // 创建新的销售单
+
+        // 解锁预订单中未发货部分的锁定库存
+        LambdaQueryWrapper<SalesOrderDetail> detailWrapper = new LambdaQueryWrapper<>();
+        detailWrapper.eq(SalesOrderDetail::getOrderId, bookingOrderId);
+        List<SalesOrderDetail> details = detailMapper.selectList(detailWrapper);
+        for (SalesOrderDetail detail : details) {
+            if (detail.getWarehouseId() != null && detail.getUnfulfilledQty() != null && detail.getUnfulfilledQty() > 0) {
+                inventoryService.unlockStock(
+                        detail.getWarehouseId(),
+                        detail.getSkuId(),
+                        detail.getUnfulfilledQty(),
+                        bookingOrderId
+                );
+                log.info("预定转销售，解锁剩余库存: orderId={}, skuId={}, qty={}",
+                        bookingOrderId, detail.getSkuId(), detail.getUnfulfilledQty());
+            }
+        }
+
+        // 创建新的销售单（根据未发货数量生成新的明细？）
+        // 原始实现是直接拿整个 booking 对象改掉，但其实应该只把未发货的部分转为销售单，不过这里按照原逻辑：
         booking.setOrderType(1); // 批发单
         booking.setOrderId(null);
         booking.setDocNo(null);

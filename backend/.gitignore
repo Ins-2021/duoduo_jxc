@@ -17,4 +17,5 @@ logs/
 .env
 .env.*
 data
-docs
+docs/
+sql/

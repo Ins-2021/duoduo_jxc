@@ -1,6 +1,4 @@
 .DS_Store
-PRD.md
-WORKFLOW_DESIGN.md
 .codebuddy
 .trae
 .vscode
@@ -9,3 +7,9 @@ WORKFLOW_DESIGN.md
 进销存
 backend/src/main/resources/application-dev.yml
 backend/src/main/resources/application-prod.yml
+qa/
+.md
+sql/
+test-screenshots/
+frontend/test-results/
+frontend/tests/
