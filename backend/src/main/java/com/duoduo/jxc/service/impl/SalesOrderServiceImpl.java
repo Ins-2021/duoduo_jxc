@@ -12,6 +12,7 @@ import com.duoduo.jxc.dto.sales.SalesOrderDetailDTO;
 import com.duoduo.jxc.dto.sales.SalesOrderQuery;
 import com.duoduo.jxc.dto.workflow.WfInstanceStartRequest;
 import com.duoduo.jxc.entity.*;
+import com.duoduo.jxc.enums.SalesOrderTypeEnum;
 import com.duoduo.jxc.enums.TransactionTypeEnum;
 import com.duoduo.jxc.exception.BusinessException;
 import com.duoduo.jxc.mapper.*;
@@ -391,8 +392,8 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
             throw new BusinessException(BizCode.SALES_ORDER_NOT_AUDITED);
         }
 
-        // 针对预订单（orderType=3）反审核：需要解锁库存
-        if (exist.getOrderType() != null && exist.getOrderType() == 3) {
+        // 针对预订单反审核：需要解锁库存
+        if (exist.getOrderType() != null && exist.getOrderType() == SalesOrderTypeEnum.BOOKING.getCode()) {
             LambdaQueryWrapper<SalesOrderDetail> detailWrapper = new LambdaQueryWrapper<>();
             detailWrapper.eq(SalesOrderDetail::getOrderId, orderId);
             List<SalesOrderDetail> details = detailMapper.selectList(detailWrapper);
@@ -416,9 +417,9 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
                 }
             }
             log.info("预订单反审核，解锁库存: orderId={}", orderId);
-        } else if (exist.getOrderType() != null && exist.getOrderType() == 1) {
-            // 批发单反审核（暂时抛出异常或仅作记录，因涉及财务、出库等回滚暂不支持）
-            // throw new BusinessException("暂时不支持批发单/零售单反审核");
+        } else if (exist.getOrderType() != null && exist.getOrderType() == SalesOrderTypeEnum.WHOLESALE.getCode()) {
+            // 批发单反审核（抛出异常因涉及财务、出库等回滚暂不支持）
+            throw new BusinessException("暂时不支持批发单/零售单反审核");
         }
 
         LambdaUpdateWrapper<SalesOrder> updateWrapper = new LambdaUpdateWrapper<>();

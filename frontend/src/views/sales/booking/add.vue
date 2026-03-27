@@ -5,9 +5,9 @@
         <div class="left-actions">
           <span class="page-title"><el-icon><Tickets /></el-icon> 销售预定单</span>
           <el-button type="primary" size="small" @click="openSelectProduct">选择商品</el-button>
-          <el-button size="small">导入商品</el-button>
-          <el-button size="small">扫码录入</el-button>
-          <el-button size="small">选择模板</el-button>
+          <el-button size="small" @click="handleNotImplemented">导入商品</el-button>
+          <el-button size="small" @click="handleNotImplemented">扫码录入</el-button>
+          <el-button size="small" @click="handleNotImplemented">选择模板</el-button>
           
           <div class="price-type">
             <span class="label">销售价格：</span>
@@ -20,7 +20,7 @@
         <div class="right-actions">
           <el-button type="primary" @click="saveOrder">保存 (ctrl+Q)</el-button>
           <el-button @click="handleRefresh">刷新</el-button>
-          <el-button>历史单据</el-button>
+          <el-button @click="handleNotImplemented">历史单据</el-button>
         </div>
       </div>
 
@@ -630,6 +630,10 @@ import SizeColorMatrixPicker from '@/components/SizeColorMatrixPicker.vue'
 
 const handleRefresh = () => {
   window.location.reload()
+}
+
+const handleNotImplemented = () => {
+  ElMessage.info('功能开发中，敬请期待')
 }
 
 const router = useRouter()

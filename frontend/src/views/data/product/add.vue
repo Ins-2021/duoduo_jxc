@@ -572,8 +572,9 @@ const handleSave = () => {
         ElMessage.success('创建成功')
       }
       router.back()
-    } catch (e) {
+    } catch (e: any) {
       console.error(e)
+      ElMessage.error(e.message || '添加商品失败')
     }
   })
 }

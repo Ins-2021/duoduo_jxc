@@ -65,7 +65,7 @@
               <!-- 操作按钮区 -->
               <div class="search-actions">
                 <el-button type="primary" @click="handleSearch">搜索</el-button>
-                <el-button>导出</el-button>
+                <el-button @click="handleNotImplemented">导出</el-button>
                 <el-button link type="primary" @click="toggleOrderSearch">
                   {{ isOrderSearchExpanded ? '关闭筛选' : '展开筛选' }} 
                   <el-icon class="el-icon--right">
@@ -108,7 +108,7 @@
                 <template #default="scope" v-else-if="col.prop === 'actions'">
                   <div class="action-buttons">
                     <el-button size="small" type="primary" @click="handleEditOrder(scope.row)" v-perm="'sales:booking:edit'">修改</el-button>
-                    <el-button size="small" type="success" @click="handleConvertToSales(scope.row)" v-perm="'sales:booking:edit'">转销售</el-button>
+                    <el-button size="small" type="success" @click="handleConvertToSales(scope.row)" v-perm="'sales:booking:convert'">转销售</el-button>
                     <el-button size="small" type="danger" @click="handleDeleteOrder(scope.row)" v-perm="'sales:booking:delete'">删除</el-button>
                   </div>
                 </template>
@@ -194,7 +194,7 @@
               <!-- 操作按钮区 -->
               <div class="search-actions">
                 <el-button type="primary" @click="handleDetailSearch">查询</el-button>
-                <el-button>导出</el-button>
+                <el-button @click="handleNotImplemented">导出</el-button>
                 <el-button link type="primary" @click="toggleDetailSearch">
                   {{ isDetailSearchExpanded ? '关闭筛选' : '展开筛选' }} 
                   <el-icon class="el-icon--right">
@@ -437,6 +437,10 @@ const handleDetailSearch = () => {
 
 const selectedOrders = ref<any[]>([])
 
+const handleNotImplemented = () => {
+  ElMessage.info('功能开发中，敬请期待')
+}
+
 const handleSelectionChange = (val: any[]) => {
   selectedOrders.value = val
 }
@@ -446,15 +450,16 @@ const handleApprove = async () => {
     ElMessage.warning('请选择要审核的单据')
     return
   }
-  try {
-    for (const order of selectedOrders.value) {
-      await auditSalesOrder(order.orderId)
-    }
+  const results = await Promise.allSettled(selectedOrders.value.map(order => auditSalesOrder(order.orderId)))
+  const fulfilled = results.filter(r => r.status === 'fulfilled').length
+  const rejected = results.filter(r => r.status === 'rejected').length
+  
+  if (rejected === 0) {
     ElMessage.success('批量审核成功')
-    fetchOrders()
-  } catch (e) {
-    console.error(e)
+  } else {
+    ElMessage.warning(`审核完成：成功 ${fulfilled} 条，失败 ${rejected} 条`)
   }
+  fetchOrders()
 }
 
 const handleUnapprove = async () => {
@@ -462,15 +467,16 @@ const handleUnapprove = async () => {
     ElMessage.warning('请选择要反审核的单据')
     return
   }
-  try {
-    for (const order of selectedOrders.value) {
-      await unauditSalesOrder(order.orderId)
-    }
+  const results = await Promise.allSettled(selectedOrders.value.map(order => unauditSalesOrder(order.orderId)))
+  const fulfilled = results.filter(r => r.status === 'fulfilled').length
+  const rejected = results.filter(r => r.status === 'rejected').length
+  
+  if (rejected === 0) {
     ElMessage.success('批量反审核成功')
-    fetchOrders()
-  } catch (e) {
-    console.error(e)
+  } else {
+    ElMessage.warning(`反审核完成：成功 ${fulfilled} 条，失败 ${rejected} 条`)
   }
+  fetchOrders()
 }
 
 const handleBatchDelete = async () => {
@@ -479,15 +485,16 @@ const handleBatchDelete = async () => {
     return
   }
   ElMessageBox.confirm('确认删除选中的单据吗?', '提示', { type: 'warning' }).then(async () => {
-    try {
-      for (const order of selectedOrders.value) {
-        await deleteSalesOrder(order.orderId)
-      }
+    const results = await Promise.allSettled(selectedOrders.value.map(order => deleteSalesOrder(order.orderId)))
+    const fulfilled = results.filter(r => r.status === 'fulfilled').length
+    const rejected = results.filter(r => r.status === 'rejected').length
+    
+    if (rejected === 0) {
       ElMessage.success('批量删除成功')
-      fetchOrders()
-    } catch (e) {
-      console.error(e)
+    } else {
+      ElMessage.warning(`删除完成：成功 ${fulfilled} 条，失败 ${rejected} 条`)
     }
+    fetchOrders()
   }).catch(() => {})
 }
 
@@ -620,7 +627,8 @@ const getDetailSummaries = (param: any) => {
     if (column.property === 'qty') {
       const values = data.map((item: any) => Number(item[column.property]))
       if (!values.every((value: number) => Number.isNaN(value))) {
-        sums[index] = String(values.reduce((prev: number, curr: number) => prev + curr, 0)) + '.00'
+        const sum = values.reduce((prev: number, curr: number) => prev + curr, 0)
+        sums[index] = Number(sum).toFixed(2)
       } else {
         sums[index] = '0.00'
       }
