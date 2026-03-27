@@ -1,0 +1,90 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api/v1
+  tomcat:
+    uri-encoding: UTF-8
+
+spring:
+  application:
+    name: duoduo-jxc-backend
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  profiles:
+    active: dev
+
+  # MySQL Config (Docker - existing container)
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/duoduo_jxc?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD}
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 15
+      auto-commit: true
+      idle-timeout: 30000
+      pool-name: JxcHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+
+  # Redis Config
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      database: 0
+      password: # 无密码可留空
+      timeout: 3000
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
+  sql:
+    init:
+      mode: never
+      continue-on-error: true
+      schema-locations: classpath:sql/workflow_schema.sql,classpath:sql/rbac_schema.sql,classpath:sql/rbac_migration.sql,classpath:sql/oauth2_schema.sql,classpath:sql/sales_return_schema.sql,classpath:sql/doc_no_rule_schema.sql,classpath:sql/product_spu_alter.sql,classpath:sql/customer_level_migration.sql,classpath:sql/product_select_indexes.sql
+      data-locations: classpath:sql/rbac_seed.sql
+
+# MyBatis-Plus Config
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.duoduo.jxc.entity,com.duoduo.jxc.entity.workflow,com.duoduo.jxc.entity.rbac
+  global-config:
+    db-config:
+      id-type: auto # 主键策略: 自增
+      logic-delete-field: deleted # 全局逻辑删除字段名
+      logic-delete-value: 1 # 逻辑已删除值
+      logic-not-delete-value: 0 # 逻辑未删除值
+      table-prefix: jxc_ # 表前缀
+  configuration:
+    map-underscore-to-camel-case: true # 开启驼峰命名转换
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+# Logging Config
+logging:
+  level:
+    root: INFO
+    com.duoduo.jxc: ${LOG_LEVEL:INFO}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+flowable:
+  database-schema-update: true
+  async-executor-activate: false
+  history-level: full
+
+jxc:
+  file:
+    storage-dir: ./data/uploads
+    max-size-mb: 10

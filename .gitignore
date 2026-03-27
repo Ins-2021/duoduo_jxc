@@ -1,0 +1,11 @@
+.DS_Store
+PRD.md
+WORKFLOW_DESIGN.md
+.codebuddy
+.trae
+.vscode
+.qwen
+.qoder
+进销存
+backend/src/main/resources/application-dev.yml
+backend/src/main/resources/application-prod.yml
