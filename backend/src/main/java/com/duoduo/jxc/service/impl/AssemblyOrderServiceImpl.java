@@ -45,12 +45,14 @@ public class AssemblyOrderServiceImpl extends ServiceImpl<AssemblyOrderMapper, A
             wrapper.like(AssemblyOrder::getAssemblyNo, keyword)
                     .or().like(AssemblyOrder::getWarehouseName, keyword);
         }
-        Integer type = (Integer) query.getParams().get("type");
-        if (type != null) {
+        Object typeObj = query.getParams().get("type");
+        if (typeObj != null && !typeObj.toString().trim().isEmpty()) {
+            Integer type = typeObj instanceof Integer ? (Integer) typeObj : Integer.valueOf(typeObj.toString());
             wrapper.eq(AssemblyOrder::getType, type);
         }
-        Integer status = (Integer) query.getParams().get("status");
-        if (status != null) {
+        Object statusObj = query.getParams().get("status");
+        if (statusObj != null && !statusObj.toString().trim().isEmpty()) {
+            Integer status = statusObj instanceof Integer ? (Integer) statusObj : Integer.valueOf(statusObj.toString());
             wrapper.eq(AssemblyOrder::getStatus, status);
         }
         wrapper.orderByDesc(AssemblyOrder::getCreateTime);

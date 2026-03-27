@@ -7,7 +7,7 @@
           <!-- 工具栏 -->
           <div class="toolbar" :class="{ 'toolbar-expanded': isOrderSearchExpanded }">
             <div class="left-actions">
-              <el-button type="primary" @click="$router.push('/sales/booking/add')">新增预定单</el-button>
+              <el-button type="primary" @click="$router.push('/sales/booking/add')" v-perm="'sales:booking:add'">新增预定单</el-button>
               <el-button @click="handleApprove" v-perm="'sales:booking:audit'">审核</el-button>
               <el-button @click="handleUnapprove" v-perm="'sales:booking:audit'">反审核</el-button>
               <el-button @click="handleBatchDelete" type="danger" v-perm="'sales:booking:delete'">删除</el-button>
@@ -107,8 +107,9 @@
                 </template>
                 <template #default="scope" v-else-if="col.prop === 'actions'">
                   <div class="action-buttons">
-                    <el-button size="small" type="primary" @click="handleConvertToSales(scope.row)">转销售</el-button>
-                    <el-button size="small" type="danger" @click="handleDeleteOrder(scope.row)">删除</el-button>
+                    <el-button size="small" type="primary" @click="handleEditOrder(scope.row)" v-perm="'sales:booking:edit'">修改</el-button>
+                    <el-button size="small" type="success" @click="handleConvertToSales(scope.row)" v-perm="'sales:booking:edit'">转销售</el-button>
+                    <el-button size="small" type="danger" @click="handleDeleteOrder(scope.row)" v-perm="'sales:booking:delete'">删除</el-button>
                   </div>
                 </template>
               </el-table-column>
@@ -298,12 +299,14 @@
 
 <script setup lang="ts">
 import { ref, reactive, nextTick, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import Sortable from 'sortablejs'
 import { getSalesOrderList, deleteSalesOrder, convertToSales, getSalesOrderDetailPage, auditSalesOrder, unauditSalesOrder } from '@/api/sales'
 import { getDict } from '@/api/dict'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const activeTab = ref('by-order')
+const router = useRouter()
 
 type ColumnConfig = {
   prop: string
@@ -494,6 +497,10 @@ const handleDeleteOrder = (row: any) => {
     ElMessage.success('删除成功')
     fetchOrders()
   })
+}
+
+const handleEditOrder = (row: any) => {
+  router.push(`/sales/booking/edit/${row.orderId}`)
 }
 
 const handleConvertToSales = async (row: any) => {

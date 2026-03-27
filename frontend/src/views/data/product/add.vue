@@ -1,16 +1,15 @@
 <template>
   <div class="app-container">
-    <el-card class="box-card">
-      <template #header>
-        <div class="card-header">
-          <span>{{ isEdit ? '编辑商品' : '新增商品' }}</span>
-          <div>
-            <el-button @click="handleCancel">取消</el-button>
-            <el-button type="primary" @click="handleSave">保存</el-button>
-          </div>
-        </div>
-      </template>
+    <!-- 顶部固定操作栏 -->
+    <div class="sticky-header">
+      <span class="page-title">{{ isEdit ? '编辑商品' : '新增商品' }}</span>
+      <div class="sticky-actions">
+        <el-button @click="handleCancel">取消</el-button>
+        <el-button type="primary" @click="handleSave">保存</el-button>
+      </div>
+    </div>
 
+    <el-card class="box-card">
       <el-tabs v-model="activeTab" @tab-click="scrollToSection">
         <el-tab-pane label="基本信息" name="basic"></el-tab-pane>
         <el-tab-pane label="属性" name="attr"></el-tab-pane>
@@ -43,7 +42,7 @@
             </el-col>
             <el-col :span="8">
               <el-form-item label="商品编号">
-                <el-input v-model="temp.productCode" placeholder="请输入商品编号" />
+                <el-input v-model="temp.productCode" placeholder="请输入商品编号" @blur="validateProductCode" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
@@ -230,7 +229,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getProductDetail, addProduct, updateProduct, getProductCategoryTree } from '@/api/product'
+import { getProductDetail, addProduct, updateProduct, getProductCategoryTree, checkProductCode } from '@/api/product'
 import { getWarehouseList } from '@/api/warehouse'
 import { getAttributeList } from '@/api/attribute'
 import type { ProductAttributeDTO } from '@/types'
@@ -520,9 +519,32 @@ const loadData = async () => {
   }
 }
 
+const productCodeValidating = ref(false)
+
+const validateProductCode = async () => {
+  const code = (temp.productCode || '').trim()
+  if (!code) return true
+  productCodeValidating.value = true
+  try {
+    const excludeId = isEdit.value ? temp.spuId : undefined
+    const res = await checkProductCode(code, excludeId)
+    if (res.data) {
+      ElMessage.error('商品编号已存在，请使用其他编号')
+      return false
+    }
+    return true
+  } catch {
+    return true
+  } finally {
+    productCodeValidating.value = false
+  }
+}
+
 const handleSave = () => {
   (dataForm.value as any).validate(async (valid: boolean) => {
-    if (valid) {
+    if (!valid) return
+    const codeValid = await validateProductCode()
+    if (!codeValid) return
       // 组装提交数据
       const submitData = { ...temp }
       if (!enableAttr.value || submitData.skuList.length === 0) {
@@ -565,10 +587,35 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.card-header {
+.app-container {
+  height: 100%;
+  overflow-y: auto;
+  position: relative;
+}
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  height: 50px;
+  padding: 0 20px;
+  background: #fff;
+  border-bottom: 1px solid #ebeef5;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+.page-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #303133;
+}
+.sticky-actions {
+  display: flex;
+  gap: 8px;
+}
+.box-card {
+  margin-top: 0;
 }
 .form-section {
   margin-bottom: 40px;

@@ -32,6 +32,11 @@ export interface SalesOrderDetailDTO {
   lineAmount?: number
   warehouseId?: number
   remark?: string
+  // 商品信息
+  spuName?: string
+  skuCode?: string
+  attr1?: string
+  attr2?: string
 }
 
 /** 销售退货单 */

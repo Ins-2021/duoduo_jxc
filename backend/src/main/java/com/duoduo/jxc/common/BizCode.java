@@ -56,6 +56,7 @@ public enum BizCode {
     SALES_RETURN_QTY_EXCEEDED(40010, "退货数量超过可退数量"),
     SALES_RETURN_NO_SOURCE(40011, "请选择原销售单"),
     SALES_RETURN_NO_ITEMS(40012, "请至少选择一条退货明细"),
+    SALES_ORDER_NOT_AUDITED(40013, "只有已审核的单据才能反审核"),
 
     // ---- 采购 50xxx ----
     PURCHASE_ORDER_NOT_FOUND(50001, "采购单不存在"),
@@ -63,6 +64,14 @@ public enum BizCode {
 
     // ---- 销售补充 45xxx ----
     BOOKING_ORDER_INVALID(45001, "无效的预订单"),
+    BOOKING_DELIVERY_QTY_EXCEED(45002, "发货数量超过未转数量"),
+    BOOKING_ORDER_STATUS_ERROR(45003, "预订单状态不允许此操作"),
+    INVENTORY_LOCK_FAILED(45004, "库存锁定失败，可用库存不足"),
+    INVENTORY_DEDUCT_FAILED(45005, "库存扣减失败，可用库存不足"),
+    INVENTORY_UNLOCK_FAILED(45006, "库存解锁失败，锁定数量不足"),
+    BOOKING_DETAIL_NOT_FOUND(45007, "预订单明细不存在"),
+    BOOKING_DELIVERY_EMPTY(45008, "发货明细不能为空"),
+    BOOKING_DELIVERY_QTY_INVALID(45009, "发货数量必须大于0"),
 
     // ---- 库存 60xxx ----
     TRANSFER_ORDER_NOT_FOUND(60001, "调拨单不存在"),
@@ -79,6 +88,15 @@ public enum BizCode {
     PAYMENT_ORDER_NOT_FOUND(70001, "付款单不存在"),
     RECEIPT_ORDER_NOT_FOUND(70002, "收款单不存在"),
     INCOME_EXPENSE_NOT_FOUND(70003, "收支单不存在"),
+
+    // ---- 财务补充 72xxx ----
+    RECEIVABLE_NOT_FOUND(72001, "应收账款不存在"),
+    RECEIVABLE_AMOUNT_MISMATCH(72003, "核销金额不能大于剩余金额"),
+    RECEIVABLE_SOURCE_SAVE_FAILED(72005, "应收来源明细保存失败"),
+    BOOKING_LOCK_STOCK_FAILED(72006, "预订单库存锁定失败"),
+    SETTLEMENT_DATE_EMPTY(72007, "结算日期不能为空"),
+    SETTLEMENT_ALREADY_EXISTS(72008, "该日期已生成日结单"),
+    SETTLEMENT_NO_ORDERS(72009, "该日期没有可结算的零售单"),
 
     // ---- 系统 80xxx ----
     ROLE_NOT_FOUND(80001, "角色不存在"),

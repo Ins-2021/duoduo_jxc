@@ -47,8 +47,9 @@ public class ReceiptServiceImpl extends ServiceImpl<ReceiptMapper, Receipt> impl
             wrapper.and(w -> w.like(Receipt::getReceiptNo, keyword)
                     .or().like(Receipt::getCustomerName, keyword));
         }
-        Integer status = (Integer) query.getParams().get("status");
-        if (status != null) {
+        Object statusObj = query.getParams().get("status");
+        if (statusObj != null && !statusObj.toString().trim().isEmpty()) {
+            Integer status = statusObj instanceof Integer ? (Integer) statusObj : Integer.valueOf(statusObj.toString());
             wrapper.eq(Receipt::getStatus, status);
         }
         wrapper.orderByDesc(Receipt::getCreateTime);

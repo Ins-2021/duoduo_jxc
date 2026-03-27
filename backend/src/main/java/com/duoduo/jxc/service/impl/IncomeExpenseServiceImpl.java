@@ -47,12 +47,14 @@ public class IncomeExpenseServiceImpl extends ServiceImpl<IncomeExpenseMapper, I
             wrapper.and(w -> w.like(IncomeExpense::getIeNo, keyword)
                     .or().like(IncomeExpense::getCategoryName, keyword));
         }
-        Integer type = (Integer) query.getParams().get("type");
-        if (type != null) {
+        Object typeObj = query.getParams().get("type");
+        if (typeObj != null && !typeObj.toString().trim().isEmpty()) {
+            Integer type = typeObj instanceof Integer ? (Integer) typeObj : Integer.valueOf(typeObj.toString());
             wrapper.eq(IncomeExpense::getType, type);
         }
-        Integer status = (Integer) query.getParams().get("status");
-        if (status != null) {
+        Object statusObj = query.getParams().get("status");
+        if (statusObj != null && !statusObj.toString().trim().isEmpty()) {
+            Integer status = statusObj instanceof Integer ? (Integer) statusObj : Integer.valueOf(statusObj.toString());
             wrapper.eq(IncomeExpense::getStatus, status);
         }
         wrapper.orderByDesc(IncomeExpense::getCreateTime);

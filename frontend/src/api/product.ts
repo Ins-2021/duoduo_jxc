@@ -79,3 +79,11 @@ export function deleteProduct(id: number) {
     method: 'delete'
   })
 }
+
+export function checkProductCode(productCode: string, excludeId?: number) {
+  return request<boolean>({
+    url: '/product/check-code',
+    method: 'get',
+    params: { productCode, excludeId }
+  })
+}

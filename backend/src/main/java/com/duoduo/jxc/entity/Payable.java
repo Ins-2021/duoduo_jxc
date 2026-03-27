@@ -2,6 +2,7 @@ package com.duoduo.jxc.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -22,7 +23,12 @@ public class Payable {
     private LocalDateTime billDate;
     private LocalDateTime dueDate;
     private String remark;
+    private String sourceType;
+    private Long sourceId;
+    private String sourceDocNo;
     private Long createdBy;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
+    @TableLogic
+    private Integer deleted;
 }

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.duoduo.jxc.common.BizCode;
 import com.duoduo.jxc.common.PageQuery;
 import com.duoduo.jxc.common.PageResult;
 import com.duoduo.jxc.converter.InventoryConverter;
@@ -45,12 +46,14 @@ public class InventoryAlertServiceImpl extends ServiceImpl<InventoryAlertMapper,
                     .or().like(InventoryAlert::getSkuName, keyword)
                     .or().like(InventoryAlert::getWarehouseName, keyword));
         }
-        Integer alertType = (Integer) query.getParams().get("alertType");
-        if (alertType != null) {
+        Object alertTypeObj = query.getParams().get("alertType");
+        if (alertTypeObj != null && !alertTypeObj.toString().trim().isEmpty()) {
+            Integer alertType = alertTypeObj instanceof Integer ? (Integer) alertTypeObj : Integer.valueOf(alertTypeObj.toString());
             wrapper.eq(InventoryAlert::getAlertType, alertType);
         }
-        Integer status = (Integer) query.getParams().get("status");
-        if (status != null) {
+        Object statusObj = query.getParams().get("status");
+        if (statusObj != null && !statusObj.toString().trim().isEmpty()) {
+            Integer status = statusObj instanceof Integer ? (Integer) statusObj : Integer.valueOf(statusObj.toString());
             wrapper.eq(InventoryAlert::getStatus, status);
         }
         wrapper.orderByDesc(InventoryAlert::getAlertTime);
@@ -90,7 +93,7 @@ public class InventoryAlertServiceImpl extends ServiceImpl<InventoryAlertMapper,
     public void markAsHandled(Long id) {
         InventoryAlert alert = super.getById(id);
         if (alert == null) {
-            throw new BusinessException("预警记录不存在");
+            throw new BusinessException(BizCode.NOT_FOUND, "预警记录不存在");
         }
         alert.setStatus(1);
         updateById(alert);

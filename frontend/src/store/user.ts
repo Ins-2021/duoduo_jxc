@@ -133,8 +133,8 @@ export const useUserStore = defineStore('user', {
           getProfile()
         ])
         this.userMenus = routersRes.data || []
-        if (profileRes?.data?.perms) {
-          this.setPerms(profileRes.data.perms)
+        if (profileRes?.data) {
+          this.setProfile(profileRes.data)
         }
         this.menusLoaded = true
       } catch {

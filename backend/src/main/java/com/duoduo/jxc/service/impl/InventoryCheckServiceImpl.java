@@ -45,8 +45,9 @@ public class InventoryCheckServiceImpl extends ServiceImpl<InventoryCheckMapper,
             wrapper.and(w -> w.like(InventoryCheck::getCheckNo, keyword)
                     .or().like(InventoryCheck::getWarehouseName, keyword));
         }
-        Integer status = (Integer) query.getParams().get("status");
-        if (status != null) {
+        Object statusObj = query.getParams().get("status");
+        if (statusObj != null && !statusObj.toString().trim().isEmpty()) {
+            Integer status = statusObj instanceof Integer ? (Integer) statusObj : Integer.valueOf(statusObj.toString());
             wrapper.eq(InventoryCheck::getStatus, status);
         }
         wrapper.orderByDesc(InventoryCheck::getCreateTime);

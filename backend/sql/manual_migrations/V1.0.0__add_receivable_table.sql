@@ -1,0 +1,26 @@
+-- 应收账款表
+CREATE TABLE IF NOT EXISTS jxc_receivable (
+    receivable_id BIGINT NOT NULL AUTO_INCREMENT COMMENT '应收单ID',
+    bill_no VARCHAR(50) NOT NULL COMMENT '单据编号',
+    customer_id BIGINT COMMENT '客户ID',
+    customer_name VARCHAR(100) COMMENT '客户名称',
+    amount DECIMAL(12,2) NOT NULL COMMENT '应收金额',
+    received_amount DECIMAL(12,2) NOT NULL DEFAULT 0 COMMENT '已收金额',
+    remaining_amount DECIMAL(12,2) NOT NULL COMMENT '剩余金额',
+    status TINYINT NOT NULL DEFAULT 0 COMMENT '状态 0-未收款 1-部分核销 2-已核销',
+    bill_date DATETIME COMMENT '单据日期',
+    due_date DATETIME COMMENT '到期日期',
+    remark VARCHAR(500) COMMENT '备注',
+    source_type VARCHAR(30) COMMENT '来源单据类型',
+    source_id BIGINT COMMENT '来源单据ID',
+    source_doc_no VARCHAR(50) COMMENT '来源单据编号',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    create_by BIGINT COMMENT '创建人ID',
+    update_by BIGINT COMMENT '更新人ID',
+    deleted TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除标记',
+    PRIMARY KEY (receivable_id),
+    UNIQUE KEY uk_bill_no (bill_no),
+    KEY idx_customer_id (customer_id),
+    KEY idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='应收账款表';

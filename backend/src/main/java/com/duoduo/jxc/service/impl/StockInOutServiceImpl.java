@@ -45,12 +45,14 @@ public class StockInOutServiceImpl extends ServiceImpl<StockInOutMapper, StockIn
             wrapper.like(StockInOut::getBillNo, keyword)
                     .or().like(StockInOut::getWarehouseName, keyword);
         }
-        Integer type = (Integer) query.getParams().get("type");
-        if (type != null) {
+        Object typeObj = query.getParams().get("type");
+        if (typeObj != null && !typeObj.toString().trim().isEmpty()) {
+            Integer type = typeObj instanceof Integer ? (Integer) typeObj : Integer.valueOf(typeObj.toString());
             wrapper.eq(StockInOut::getType, type);
         }
-        Integer status = (Integer) query.getParams().get("status");
-        if (status != null) {
+        Object statusObj = query.getParams().get("status");
+        if (statusObj != null && !statusObj.toString().trim().isEmpty()) {
+            Integer status = statusObj instanceof Integer ? (Integer) statusObj : Integer.valueOf(statusObj.toString());
             wrapper.eq(StockInOut::getStatus, status);
         }
         wrapper.orderByDesc(StockInOut::getCreateTime);

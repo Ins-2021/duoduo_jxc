@@ -9,9 +9,15 @@ import com.duoduo.jxc.common.PageResult;
 import com.duoduo.jxc.converter.FinanceConverter;
 import com.duoduo.jxc.dto.finance.ReceivableDTO;
 import com.duoduo.jxc.entity.Receivable;
+import com.duoduo.jxc.common.BizCode;
+import com.duoduo.jxc.entity.FinanceTransaction;
+import com.duoduo.jxc.enums.TransactionTypeEnum;
+import com.duoduo.jxc.exception.BusinessException;
 import com.duoduo.jxc.mapper.ReceivableMapper;
+import com.duoduo.jxc.service.FinanceTransactionService;
 import com.duoduo.jxc.service.ReceivableService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,9 +38,11 @@ import java.util.stream.Collectors;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ReceivableServiceImpl extends ServiceImpl<ReceivableMapper, Receivable> implements ReceivableService {
 
     private final FinanceConverter converter;
+    private final FinanceTransactionService financeTransactionService;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -46,8 +54,9 @@ public class ReceivableServiceImpl extends ServiceImpl<ReceivableMapper, Receiva
             wrapper.and(w -> w.like(Receivable::getBillNo, keyword)
                     .or().like(Receivable::getCustomerName, keyword));
         }
-        Integer status = (Integer) query.getParams().get("status");
-        if (status != null) {
+        Object statusObj = query.getParams().get("status");
+        if (statusObj != null && !statusObj.toString().trim().isEmpty()) {
+            Integer status = statusObj instanceof Integer ? (Integer) statusObj : Integer.valueOf(statusObj.toString());
             wrapper.eq(Receivable::getStatus, status);
         }
         wrapper.orderByDesc(Receivable::getCreateTime);
@@ -106,10 +115,10 @@ public class ReceivableServiceImpl extends ServiceImpl<ReceivableMapper, Receiva
     public void writeOff(Long id, BigDecimal amount) {
         Receivable entity = super.getById(id);
         if (entity == null) {
-            throw new com.duoduo.jxc.exception.BusinessException("应收账款不存在");
+            throw new BusinessException(BizCode.RECEIVABLE_NOT_FOUND);
         }
         if (entity.getRemainingAmount().compareTo(amount) < 0) {
-            throw new com.duoduo.jxc.exception.BusinessException("核销金额不能大于剩余金额");
+            throw new BusinessException(BizCode.RECEIVABLE_AMOUNT_MISMATCH);
         }
         
         entity.setReceivedAmount(entity.getReceivedAmount().add(amount));
@@ -122,6 +131,33 @@ public class ReceivableServiceImpl extends ServiceImpl<ReceivableMapper, Receiva
         }
         entity.setUpdateTime(LocalDateTime.now());
         updateById(entity);
+
+        // ========== 新增：生成资金流水 ==========
+        createFinanceTransaction(entity, amount);
+    }
+
+    /**
+     * 生成资金流水记录
+     */
+    private void createFinanceTransaction(Receivable receivable, BigDecimal amount) {
+        FinanceTransaction trans = new FinanceTransaction();
+        trans.setTransactionNo("JZ" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+                + UUID.randomUUID().toString().replace("-", "").substring(0, 4).toUpperCase());
+        trans.setAccountId(null);
+        trans.setAccountName("默认账户");
+        trans.setType(TransactionTypeEnum.INCOME.getCode()); // 1-收入
+        trans.setAmount(amount);
+        trans.setBalance(null); // 余额后续计算
+        trans.setCategory("RECEIVABLE_WRITE_OFF");
+        trans.setBillType("RECEIVABLE");
+        trans.setBillNo(receivable.getBillNo());
+        trans.setRemark("应收核销：" + receivable.getBillNo());
+        trans.setTransactionDate(LocalDateTime.now());
+        trans.setCreateTime(LocalDateTime.now());
+
+        financeTransactionService.create(trans);
+        log.info("收款核销生成资金流水: receivableId={}, amount={}, transactionNo={}",
+                receivable.getReceivableId(), amount, trans.getTransactionNo());
     }
 
     private ReceivableDTO toDTO(Receivable entity) {

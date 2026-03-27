@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -14,6 +15,10 @@ public class Supplier {
     @TableId(type = IdType.AUTO)
     private Long supplierId;
     private String supplierName;
+    private String contactName;
+    private String contactPhone;
+    private String address;
+    private BigDecimal initialArrears;
     private Integer status;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;

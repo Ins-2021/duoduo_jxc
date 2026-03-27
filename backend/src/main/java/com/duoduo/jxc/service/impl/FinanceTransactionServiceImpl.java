@@ -12,11 +12,14 @@ import com.duoduo.jxc.entity.FinanceTransaction;
 import com.duoduo.jxc.mapper.FinanceTransactionMapper;
 import com.duoduo.jxc.service.FinanceTransactionService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -27,9 +30,28 @@ import java.util.stream.Collectors;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FinanceTransactionServiceImpl extends ServiceImpl<FinanceTransactionMapper, FinanceTransaction> implements FinanceTransactionService {
 
     private final FinanceConverter converter;
+
+    @Override
+    public Long create(FinanceTransaction entity) {
+        if (entity.getTransactionNo() == null) {
+            entity.setTransactionNo(generateTransactionNo());
+        }
+        if (entity.getCreateTime() == null) {
+            entity.setCreateTime(LocalDateTime.now());
+        }
+        save(entity);
+        log.info("创建资金流水: transactionId={}, transactionNo={}", entity.getTransactionId(), entity.getTransactionNo());
+        return entity.getTransactionId();
+    }
+
+    private String generateTransactionNo() {
+        return "JZ" + LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+                + UUID.randomUUID().toString().replace("-", "").substring(0, 4).toUpperCase();
+    }
 
     @Override
     public PageResult<FinanceTransactionDTO> pageList(PageQuery query) {
@@ -40,8 +62,9 @@ public class FinanceTransactionServiceImpl extends ServiceImpl<FinanceTransactio
                     .or().like(FinanceTransaction::getAccountName, keyword)
                     .or().like(FinanceTransaction::getBillNo, keyword));
         }
-        Integer type = (Integer) query.getParams().get("type");
-        if (type != null) {
+        Object typeObj = query.getParams().get("type");
+        if (typeObj != null && !typeObj.toString().trim().isEmpty()) {
+            Integer type = typeObj instanceof Integer ? (Integer) typeObj : Integer.valueOf(typeObj.toString());
             wrapper.eq(FinanceTransaction::getType, type);
         }
         Long accountId = (Long) query.getParams().get("accountId");

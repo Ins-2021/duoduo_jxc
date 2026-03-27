@@ -2,6 +2,7 @@ package com.duoduo.jxc.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -21,4 +22,6 @@ public class StockInOutDetail {
     private Integer qty;
     private BigDecimal costPrice;
     private BigDecimal amount;
+    @TableLogic
+    private Integer deleted;
 }

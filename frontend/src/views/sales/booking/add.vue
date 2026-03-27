@@ -274,17 +274,47 @@
               <div class="toolbar-left">
                 <el-button type="success" size="small" @click="addProductVisible = true">添加商品</el-button>
                 <el-button icon="Setting" circle size="small" @click="openProductSetting" />
+                <el-radio-group v-model="formData.priceType" size="small" style="margin-left: 12px;">
+                  <el-radio-button label="wholesale">批发价</el-radio-button>
+                  <el-radio-button label="retail">零售价</el-radio-button>
+                </el-radio-group>
               </div>
               <div class="toolbar-right">
-                <el-input v-model="productSearch.keyword" placeholder="搜索编号、名称、规格、条码、属性、备注" clearable style="width: 320px" />
-                <el-button type="primary" size="small">查询</el-button>
-                <el-button size="small">高级搜索</el-button>
+                <el-input v-model="productSearch.keyword" placeholder="搜索编号、名称、规格、条码、属性、备注" clearable style="width: 320px" @keyup.enter="onSearchProducts" />
+                <el-button type="primary" size="small" @click="onSearchProducts">查询</el-button>
+                <el-button size="small" @click="toggleAdvancedSearch">{{ productSearch.advanced.visible ? '收起搜索' : '高级搜索' }}</el-button>
               </div>
+            </div>
+
+            <div v-if="productSearch.advanced.visible" class="advanced-search-panel">
+              <el-form :inline="true" size="small" label-width="70px">
+                <el-form-item label="商品分类">
+                  <el-select v-model="productSearch.advanced.categoryId" placeholder="全部分类" clearable style="width: 150px">
+                    <el-option v-for="cat in flatCategories" :key="cat.id" :label="cat.label" :value="cat.id" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="品牌">
+                  <el-input v-model="productSearch.advanced.brand" placeholder="请输入品牌" clearable style="width: 140px" />
+                </el-form-item>
+                <el-form-item label="价格范围">
+                  <el-input v-model="productSearch.advanced.minPrice" placeholder="最低价" clearable style="width: 90px" />
+                  <span style="margin: 0 4px; color: #999;">~</span>
+                  <el-input v-model="productSearch.advanced.maxPrice" placeholder="最高价" clearable style="width: 90px" />
+                </el-form-item>
+                <el-form-item label="仅看有货">
+                  <el-checkbox v-model="productSearch.advanced.hasStock" />
+                </el-form-item>
+                <el-form-item>
+                  <el-button type="primary" @click="onSearchProducts">搜索</el-button>
+                  <el-button @click="resetAdvancedSearch">重置</el-button>
+                </el-form-item>
+              </el-form>
             </div>
 
             <SizeColorMatrixPicker v-if="enableSizeColor" :products="filteredProducts" v-model="matrixQtyMap" :columns="productColumns" @update:products="onProductsUpdate" />
             <el-table
               v-else
+              ref="productTableRef"
               :data="filteredProducts"
               border
               style="width: 100%"
@@ -321,7 +351,9 @@
                 v-model:page-size="productPager.pageSize"
                 :page-sizes="[10, 20, 30, 50]"
                 layout="prev, pager, next, jumper, total, sizes"
-                :total="filteredProducts.length"
+                :total="productTotal"
+                @current-change="fetchProducts"
+                @size-change="onPageSizeChange"
               />
             </div>
           </el-main>
@@ -528,10 +560,8 @@
             <el-input v-model="addProductForm.name" placeholder="请输入商品名称" />
           </el-form-item>
           <el-form-item label="商品分类">
-            <el-select v-model="addProductForm.category" style="width: 100%">
-              <el-option label="上衣" value="上衣" />
-              <el-option label="裤子" value="裤子" />
-              <el-option label="冰丝塑袖" value="冰丝塑袖" />
+            <el-select v-model="addProductForm.categoryId" placeholder="请选择分类" style="width: 100%">
+              <el-option v-for="cat in flatCategories" :key="cat.id" :label="cat.label" :value="cat.id" />
             </el-select>
           </el-form-item>
         </div>
@@ -588,12 +618,14 @@
 
 <script setup lang="ts">
 import { reactive, computed, ref, nextTick, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import Sortable from 'sortablejs'
-import { createSalesOrder } from '@/api/sales'
+import { createSalesOrder, getSalesOrderDetail, updateSalesOrder } from '@/api/sales'
 import { getSystemSettings } from '@/api/settings'
 import { getCustomerOptions } from '@/api/options'
+import { getProductSkuPage, getProductCategoryTree, addProduct as addProductApi } from '@/api/product'
+import type { ProductSkuSelectDTO } from '@/types'
 import SizeColorMatrixPicker from '@/components/SizeColorMatrixPicker.vue'
 
 const handleRefresh = () => {
@@ -601,6 +633,9 @@ const handleRefresh = () => {
 }
 
 const router = useRouter()
+const route = useRoute()
+const isEdit = computed(() => !!route.params.id)
+const editingOrderId = computed(() => route.params.id ? Number(route.params.id) : null)
 
 const enableSizeColor = ref(false)
 const sizeLabels = ref<string[]>([])
@@ -682,12 +717,106 @@ watch(
   { immediate: true }
 )
 
+watch(
+  () => formData.priceType,
+  (type) => {
+    const wholesaleCol = productColumns.value.find(c => c.prop === 'wholesalePrice')
+    const retailCol = productColumns.value.find(c => c.prop === 'retailPrice')
+    if (wholesaleCol) wholesaleCol.visible = type === 'wholesale'
+    if (retailCol) retailCol.visible = type === 'retail'
+  }
+)
+
 const fetchCustomers = async () => {
   try {
     const res = await getCustomerOptions()
     customers.value = res.data.map((c: any) => ({ id: c.value, name: c.label }))
   } catch (e) {
     console.error(e)
+  }
+}
+
+const loadOrderData = async (orderId: number) => {
+  try {
+    const res = await getSalesOrderDetail(orderId)
+    if (res?.data) {
+      const order = res.data
+      formData.customer = order.customerId || ''
+      formData.date = order.docDate ? new Date(order.docDate) : new Date()
+      formData.orderNo = order.docNo || '自动生成'
+      formData.remark = order.remark || ''
+      formData.discountRate = 100
+      formData.otherFee = order.otherFee || 0
+      formData.deposit = order.paidAmount || 0
+      formData.priceType = 'wholesale'
+
+      if (order.details?.length) {
+        if (enableSizeColor.value) {
+          // 服装批发格式：按 商品名称 + 颜色 分组，尺码分布到列
+          const sizes: string[] = []
+          const groups = new Map<string, { name: string; color: string; unitPrice: string; sizeQty: Record<string, number>; skuMap: Map<number, number> }>()
+
+          order.details.forEach((d: any) => {
+            const spuName = d.spuName || ''
+            const color = (d.attr1 || '').trim()
+            const size = (d.attr2 || '').trim()
+            const key = `${spuName}||${color}`
+
+            if (!groups.has(key)) {
+              groups.set(key, { name: spuName, color, unitPrice: d.unitPrice || '', sizeQty: {}, skuMap: new Map() })
+            }
+            const g = groups.get(key)!
+            g.sizeQty[size] = d.qty || 0
+            if (d.skuId) g.skuMap.set(d.skuId, d.qty || 0)
+            if (size && !sizes.includes(size)) sizes.push(size)
+          })
+
+          sizeLabels.value = sizes.length ? sizes : defaultSizeColumnLabels
+          formData.details = []
+
+          Array.from(groups.values()).forEach(g => {
+            const row = generateEmptyRows(1)[0]
+            row.productInfo = g.name
+            row.color = g.color
+            row.unitPrice = g.unitPrice
+            row.spuId = undefined // SKU 级别，SPU 无法精确映射
+
+            Object.entries(g.sizeQty).forEach(([size, qty]) => {
+              const idx = sizeLabels.value.indexOf(size)
+              if (idx >= 0) {
+                row[`col${idx + 1}`] = qty ? String(qty) : ''
+              }
+            })
+            updateRowQty(row)
+            formData.details.push(row)
+          })
+
+          // 补齐空行
+          while (formData.details.length < 8) {
+            formData.details.push(...generateEmptyRows(1))
+          }
+        } else {
+          // 普通模式：每个 SKU 一行
+          formData.details = order.details.map((d: any) => ({
+            detailId: d.detailId,
+            skuId: d.skuId,
+            spuId: d.spuId,
+            productInfo: `${d.spuName || ''} ${d.attr1 || ''}${d.attr1 && d.attr2 ? '|' : ''}${d.attr2 || ''}`.trim(),
+            color: '',
+            unitPrice: d.unitPrice || '',
+            qty: d.qty || '',
+            lineAmount: d.lineAmount || '',
+            discountAmount: d.discountAmount || '',
+          }))
+          while (formData.details.length < 8) {
+            formData.details.push(...generateEmptyRows(1))
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error('加载订单数据失败', e)
+    ElMessage.error('加载订单数据失败')
   }
 }
 
@@ -699,6 +828,11 @@ onMounted(async () => {
     enableSizeColor.value = false
   }
   await fetchCustomers()
+  await fetchCategories()
+  await fetchProducts()
+  if (isEdit.value && editingOrderId.value) {
+    await loadOrderData(editingOrderId.value)
+  }
 })
 
 const calculateAmount = (row: any) => {
@@ -750,7 +884,7 @@ const saveOrder = async () => {
     return
   }
   
-  const submitData = {
+  const submitData: any = {
     orderType: 3,
     docDate: formData.date,
     customerId: formData.customer ? Number(formData.customer) : undefined,
@@ -761,8 +895,9 @@ const saveOrder = async () => {
     otherFee: formData.otherFee,
     paidAmount: formData.deposit,
     details: validDetails.map((item: any) => ({
-      spuId: item.spuId || 1, // mockup
-      skuId: item.skuId || 1, // mockup
+      detailId: item.detailId || undefined,
+      spuId: item.spuId || undefined,
+      skuId: item.skuId || undefined,
       qty: Number(item.qty),
       unitPrice: Number(item.unitPrice),
       lineAmount: calculateAmount(item)
@@ -770,8 +905,14 @@ const saveOrder = async () => {
   }
   
   try {
-    await createSalesOrder(submitData)
-    ElMessage.success('单据保存成功！')
+    if (isEdit.value) {
+      submitData.orderId = editingOrderId.value
+      await updateSalesOrder(submitData)
+      ElMessage.success('单据修改成功！')
+    } else {
+      await createSalesOrder(submitData)
+      ElMessage.success('单据保存成功！')
+    }
     router.back()
   } catch (e) {
     console.error(e)
@@ -950,24 +1091,33 @@ type ProductItem = {
 const selectProductVisible = ref(false)
 const selectedProducts = ref<ProductItem[]>([])
 const selectedCategoryId = ref<number | null>(null)
+const selectedCategoryNode = ref<any>(null)
 const matrixQtyMap = ref<Record<number, number>>({})
+const productTotal = ref(0)
+const productLoading = ref(false)
+const productTableRef = ref<any>(null)
+const selectedProductMap = ref<Map<number, ProductItem>>(new Map())
 
-const categoryTree = ref([
-  {
-    id: 0,
-    label: '全部分类',
-    children: [
-      { id: 1, label: '上衣' },
-      { id: 2, label: '裤子' },
-      { id: 3, label: '快选添加' }
-    ]
+const categoryTree = ref<any[]>([])
+
+const flatCategories = computed(() => {
+  const result: { id: number; label: string }[] = []
+  const walk = (nodes: any[]) => {
+    for (const node of nodes) {
+      result.push({ id: node.id, label: node.label })
+      if (node.children?.length) walk(node.children)
+    }
   }
-])
+  if (categoryTree.value.length && categoryTree.value[0].children) {
+    walk(categoryTree.value[0].children)
+  }
+  return result
+})
 
 const addProductVisible = ref(false)
 const addProductForm = reactive({
   name: '',
-  category: '上衣',
+  categoryId: undefined as number | undefined,
   attributes: '',
   barcode: '',
   productCode: '',
@@ -980,54 +1130,55 @@ const addProductForm = reactive({
   remark: ''
 })
 
-const confirmAddProduct = () => {
+const confirmAddProduct = async () => {
   if (!addProductForm.name) {
     ElMessage.warning('请输入商品名称')
     return
   }
-  const newProduct: ProductItem = {
-    id: Date.now(),
-    name: addProductForm.name,
-    attributes: addProductForm.attributes,
-    spec: addProductForm.spec || '—',
-    brand: addProductForm.brand || '无',
-    unit: addProductForm.unit || '件',
-    wholesalePrice: String(addProductForm.wholesalePrice),
-    purchasePrice: String(addProductForm.purchasePrice),
-    retailPrice: String(addProductForm.retailPrice),
-    stock: 0,
-    category: addProductForm.category,
-    barcode: addProductForm.barcode || `SP${Date.now()}`,
-    productCode: addProductForm.productCode || `SP${Date.now()}`,
-    defaultWarehouse: '主仓库',
-    location: '',
-    exchangePoints: 0,
-    stockUnit: addProductForm.unit || '件',
-    stockValue: '0.00',
-    remark: addProductForm.remark,
-    selectedQty: 1
+  try {
+    await addProductApi({
+      spuName: addProductForm.name,
+      categoryId: addProductForm.categoryId,
+      spec: addProductForm.spec || undefined,
+      unit: addProductForm.unit || undefined,
+      brand: addProductForm.brand || undefined,
+      wholesalePrice: addProductForm.wholesalePrice || undefined,
+      purchasePrice: addProductForm.purchasePrice || undefined,
+      retailPrice: addProductForm.retailPrice || undefined,
+      remark: addProductForm.remark || undefined,
+    } as any)
+    ElMessage.success('添加商品成功')
+    addProductVisible.value = false
+    Object.assign(addProductForm, {
+      name: '',
+      categoryId: undefined,
+      attributes: '',
+      barcode: '',
+      productCode: '',
+      spec: '',
+      brand: '',
+      unit: '件',
+      wholesalePrice: 0,
+      purchasePrice: 0,
+      retailPrice: 0,
+      remark: ''
+    })
+    await fetchProducts()
+  } catch (e) {
+    console.error(e)
   }
-  allProducts.value.unshift(newProduct)
-  ElMessage.success('添加商品成功')
-  addProductVisible.value = false
-  Object.assign(addProductForm, {
-    name: '',
-    category: '上衣',
-    attributes: '',
-    barcode: '',
-    productCode: '',
-    spec: '',
-    brand: '',
-    unit: '件',
-    wholesalePrice: 0,
-    purchasePrice: 0,
-    retailPrice: 0,
-    remark: ''
-  })
 }
 
 const productSearch = reactive({
-  keyword: ''
+  keyword: '',
+  advanced: {
+    visible: false,
+    categoryId: undefined as number | undefined,
+    brand: '',
+    minPrice: '',
+    maxPrice: '',
+    hasStock: false
+  }
 })
 
 const productPager = reactive({
@@ -1035,11 +1186,7 @@ const productPager = reactive({
   pageSize: 30
 })
 
-const allProducts = ref<ProductItem[]>([
-  { id: 1, name: '小冰棉', attributes: '黑色|2XL', spec: '—', brand: '无', unit: '件', wholesalePrice: '9', purchasePrice: '8', retailPrice: '12', stock: 0, category: '冰丝塑袖', barcode: '000000018', productCode: 'SP0000018', defaultWarehouse: '主仓库', location: 'A-01', exchangePoints: 0, stockUnit: '件', stockValue: '0.00', remark: '', selectedQty: 1 },
-  { id: 2, name: '小冰棉', attributes: '黑色|3XL', spec: '—', brand: '无', unit: '件', wholesalePrice: '9', purchasePrice: '8', retailPrice: '12', stock: 0, category: '冰丝塑袖', barcode: '000000018', productCode: 'SP0000018', defaultWarehouse: '主仓库', location: 'A-01', exchangePoints: 0, stockUnit: '件', stockValue: '0.00', remark: '', selectedQty: 1 },
-  { id: 3, name: '小冰棉', attributes: '白色|2XL', spec: '—', brand: '无', unit: '件', wholesalePrice: '9', purchasePrice: '8', retailPrice: '12', stock: -10, category: '冰丝塑袖', barcode: '000000018', productCode: 'SP0000018', defaultWarehouse: '主仓库', location: 'A-01', exchangePoints: 0, stockUnit: '件', stockValue: '0.00', remark: '', selectedQty: 1 }
-])
+const allProducts = ref<ProductItem[]>([])
 
 type ColumnConfig = {
   prop: string
@@ -1120,26 +1267,118 @@ const saveProductSetting = () => {
   productSettingVisible.value = false
 }
 
-const filteredProducts = computed(() => {
-  const keyword = productSearch.keyword.trim()
-  let list = allProducts.value
+const filteredProducts = computed(() => allProducts.value)
 
-  if (selectedCategoryId.value !== null && selectedCategoryId.value !== 0) {
-    const node = categoryTree.value[0].children.find(c => c.id === selectedCategoryId.value)
-    if (node) {
-      list = list.filter(p => p.category === node.label)
+const fetchCategories = async () => {
+  try {
+    const res = await getProductCategoryTree()
+    if (res?.data) {
+      categoryTree.value = [
+        { id: 0, label: '全部分类', children: res.data }
+      ]
     }
+  } catch (e) {
+    console.error('获取商品分类失败', e)
   }
+}
 
-  if (keyword) {
-    list = list.filter(p => {
-      const haystack = `${p.name} ${p.attributes} ${p.spec} ${p.barcode} ${p.category}`.toLowerCase()
-      return haystack.includes(keyword.toLowerCase())
-    })
+const fetchProducts = async () => {
+  productLoading.value = true
+  try {
+    const params: any = {
+      pageNum: productPager.page,
+      pageSize: productPager.pageSize,
+    }
+    if (selectedCategoryId.value && selectedCategoryId.value !== 0) {
+      // 收集当前分类及所有子分类 ID，实现级联分类查询
+      if (selectedCategoryNode.value && selectedCategoryNode.value.children?.length) {
+        params.categoryIds = collectCategoryIds(selectedCategoryNode.value)
+      } else {
+        params.categoryId = selectedCategoryId.value
+      }
+    }
+    const keyword = productSearch.keyword.trim()
+    if (keyword) {
+      params.keyword = keyword
+    }
+    // 高级搜索参数
+    const adv = productSearch.advanced
+    if (adv.categoryId) {
+      params.categoryId = adv.categoryId
+    }
+    if (adv.brand?.trim()) {
+      params.brand = adv.brand.trim()
+    }
+    if (adv.minPrice !== '') {
+      params.minPrice = Number(adv.minPrice)
+    }
+    if (adv.maxPrice !== '') {
+      params.maxPrice = Number(adv.maxPrice)
+    }
+    if (adv.hasStock) {
+      params.hasStock = true
+    }
+    const res = await getProductSkuPage(params)
+    if (res?.data) {
+      allProducts.value = (res.data.list || []).map((p: ProductSkuSelectDTO) => ({
+        id: p.id,
+        spuId: p.spuId,
+        name: p.name || '',
+        attributes: p.attributes || '',
+        spec: p.spec || '',
+        brand: p.brand || '',
+        unit: p.unit || '',
+        wholesalePrice: p.wholesalePrice != null ? String(p.wholesalePrice) : '0',
+        purchasePrice: p.purchasePrice != null ? String(p.purchasePrice) : '0',
+        retailPrice: p.retailPrice != null ? String(p.retailPrice) : '0',
+        stock: p.stock ?? 0,
+        category: p.category || '',
+        barcode: p.barcode || '',
+        productCode: p.productCode || '',
+        defaultWarehouse: p.defaultWarehouse || '',
+        location: p.location || '',
+        exchangePoints: p.exchangePoints || 0,
+        stockUnit: p.stockUnit || '',
+        stockValue: p.stockValue != null ? String(p.stockValue) : '0',
+        remark: p.remark || '',
+        selectedQty: 1,
+      }))
+      productTotal.value = res.data.total || 0
+      // 翻页后恢复之前已勾选的商品
+      nextTick(() => {
+        restoreProductSelection()
+      })
+    }
+  } catch (e) {
+    console.error('获取商品列表失败', e)
+  } finally {
+    productLoading.value = false
   }
+}
 
-  return list
-})
+const onSearchProducts = () => {
+  productPager.page = 1
+  fetchProducts()
+}
+
+const onPageSizeChange = () => {
+  productPager.page = 1
+  fetchProducts()
+}
+
+const toggleAdvancedSearch = () => {
+  productSearch.advanced.visible = !productSearch.advanced.visible
+}
+
+const resetAdvancedSearch = () => {
+  productSearch.advanced.categoryId = undefined
+  productSearch.advanced.brand = ''
+  productSearch.advanced.minPrice = ''
+  productSearch.advanced.maxPrice = ''
+  productSearch.advanced.hasStock = false
+  productPager.page = 1
+  fetchProducts()
+}
 
 const onProductsUpdate = (updated: ProductItem[]) => {
   allProducts.value = updated
@@ -1147,14 +1386,54 @@ const onProductsUpdate = (updated: ProductItem[]) => {
 
 const openSelectProduct = () => {
   selectProductVisible.value = true
+  selectedProductMap.value.clear()
+  selectedProducts.value = []
 }
 
 const onProductSelectionChange = (rows: ProductItem[]) => {
   selectedProducts.value = rows
+  // 将当前页已勾选的商品同步到 map（保留其他页的勾选）
+  const currentPageIds = new Set(allProducts.value.map(p => p.id))
+  for (const [id] of selectedProductMap.value) {
+    if (!currentPageIds.has(id)) {
+      // 当前页不包含此商品，保留在 map 中
+    }
+  }
+  // 先移除当前页所有项，再加入当前选中项
+  for (const id of currentPageIds) {
+    selectedProductMap.value.delete(id)
+  }
+  for (const row of rows) {
+    selectedProductMap.value.set(row.id, row)
+  }
+}
+
+const restoreProductSelection = () => {
+  if (!productTableRef.value) return
+  nextTick(() => {
+    allProducts.value.forEach(p => {
+      if (selectedProductMap.value.has(p.id)) {
+        productTableRef.value.toggleRowSelection(p, true)
+      }
+    })
+  })
+}
+
+const collectCategoryIds = (node: any): number[] => {
+  const ids: number[] = [node.id]
+  if (node.children?.length) {
+    for (const child of node.children) {
+      ids.push(...collectCategoryIds(child))
+    }
+  }
+  return ids
 }
 
 const onCategoryClick = (node: any) => {
   selectedCategoryId.value = node?.id ?? null
+  selectedCategoryNode.value = node?.id === 0 ? null : node
+  productPager.page = 1
+  fetchProducts()
 }
 
 const confirmSelectProducts = () => {
@@ -1222,16 +1501,17 @@ const confirmSelectProducts = () => {
     })
 
     matrixQtyMap.value = {}
+    selectedProductMap.value.clear()
     selectProductVisible.value = false
     return
   }
 
-  if (!selectedProducts.value.length) {
+  if (!selectedProductMap.value.size) {
     selectProductVisible.value = false
     return
   }
 
-  selectedProducts.value.forEach(p => {
+  Array.from(selectedProductMap.value.values()).forEach(p => {
     const emptyIndex = formData.details.findIndex((r: any) => !String(r.productInfo || '').trim())
     const row: any = emptyIndex >= 0 ? formData.details[emptyIndex] : generateEmptyRows(1)[0]
 
@@ -1248,6 +1528,7 @@ const confirmSelectProducts = () => {
     }
   })
 
+  selectedProductMap.value.clear()
   selectProductVisible.value = false
 }
 </script>
@@ -1604,6 +1885,16 @@ const confirmSelectProducts = () => {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
+}
+.advanced-search-panel {
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  background: #fafafa;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+}
+.advanced-search-panel .el-form-item {
+  margin-bottom: 4px;
 }
 .product-main :deep(.el-table__header-wrapper th) {
   background: #f5f7fa;

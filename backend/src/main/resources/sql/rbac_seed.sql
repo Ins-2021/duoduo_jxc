@@ -189,7 +189,39 @@ VALUES
   (911, 907, '规则新增', 1, NULL, NULL, NULL, 'F', 1, 1, 'settings:doc-no-rule:add', 0),
   (912, 907, '规则编辑', 2, NULL, NULL, NULL, 'F', 1, 1, 'settings:doc-no-rule:edit', 0),
   (913, 907, '规则删除', 3, NULL, NULL, NULL, 'F', 1, 1, 'settings:doc-no-rule:delete', 0),
-  (914, 908, '日志清空', 1, NULL, NULL, NULL, 'F', 1, 1, 'settings:op-log:clear', 0);
+  (914, 908, '日志清空', 1, NULL, NULL, NULL, 'F', 1, 1, 'settings:op-log:clear', 0),
+  -- ===== 销售预定补充按钮 =====
+  (319, 301, '销售预定转销售', 5, NULL, NULL, NULL, 'F', 1, 1, 'sales:booking:convert', 0),
+  -- ===== 销售补充按钮 =====
+  (318, 302, '销售转销售预定', 5, NULL, NULL, NULL, 'F', 1, 1, 'sales:order:convert', 0),
+  -- ===== 零售收银按钮 =====
+  (341, 304, '零售收银新增', 1, NULL, NULL, NULL, 'F', 1, 1, 'sales:retail:add', 0),
+  (342, 304, '零售收银编辑', 2, NULL, NULL, NULL, 'F', 1, 1, 'sales:retail:edit', 0),
+  (343, 304, '零售收银删除', 3, NULL, NULL, NULL, 'F', 1, 1, 'sales:retail:delete', 0),
+  -- ===== 零售退货按钮 =====
+  (351, 305, '零售退货新增', 1, NULL, NULL, NULL, 'F', 1, 1, 'sales:retail-return:add', 0),
+  (352, 305, '零售退货编辑', 2, NULL, NULL, NULL, 'F', 1, 1, 'sales:retail-return:edit', 0),
+  (353, 305, '零售退货删除', 3, NULL, NULL, NULL, 'F', 1, 1, 'sales:retail-return:delete', 0),
+  -- ===== 积分兑换按钮 =====
+  (361, 306, '积分兑换新增', 1, NULL, NULL, NULL, 'F', 1, 1, 'sales:points-exchange:add', 0),
+  (362, 306, '积分兑换编辑', 2, NULL, NULL, NULL, 'F', 1, 1, 'sales:points-exchange:edit', 0),
+  (363, 306, '积分兑换删除', 3, NULL, NULL, NULL, 'F', 1, 1, 'sales:points-exchange:delete', 0),
+  -- ===== 客户储值按钮 =====
+  (371, 307, '客户储值新增', 1, NULL, NULL, NULL, 'F', 1, 1, 'sales:customer-recharge:add', 0),
+  (372, 307, '客户储值编辑', 2, NULL, NULL, NULL, 'F', 1, 1, 'sales:customer-recharge:edit', 0),
+  (373, 307, '客户储值删除', 3, NULL, NULL, NULL, 'F', 1, 1, 'sales:customer-recharge:delete', 0),
+  -- ===== 进货预定按钮 =====
+  (431, 401, '进货预定新增', 1, NULL, NULL, NULL, 'F', 1, 1, 'purchase:booking:add', 0),
+  (432, 401, '进货预定编辑', 2, NULL, NULL, NULL, 'F', 1, 1, 'purchase:booking:edit', 0),
+  (433, 401, '进货预定审核', 3, NULL, NULL, NULL, 'F', 1, 1, 'purchase:booking:audit', 0),
+  (434, 401, '进货预定删除', 4, NULL, NULL, NULL, 'F', 1, 1, 'purchase:booking:delete', 0),
+  -- ===== 设置模块补充菜单 =====
+  (910, 900, '职员管理', 6, '/settings/staff', 'SettingsStaff', 'Avatar', 'C', 1, 1, 'settings:staff:view', 0),
+  (10101, 910, '职员新增', 1, NULL, NULL, NULL, 'F', 1, 1, 'settings:staff:add', 0),
+  (10102, 910, '职员编辑', 2, NULL, NULL, NULL, 'F', 1, 1, 'settings:staff:edit', 0),
+  (10103, 910, '职员删除', 3, NULL, NULL, NULL, 'F', 1, 1, 'settings:staff:delete', 0),
+  (9110, 900, '权限设置', 7, '/settings/permissions', 'SettingsPermissions', 'Lock', 'C', 1, 1, 'settings:permissions:view', 0),
+  (9120, 900, '数据授权', 8, '/settings/data-auth', 'SettingsDataAuth', 'Connection', 'C', 1, 1, 'settings:data-auth:view', 0);
 
 INSERT IGNORE INTO jxc_sys_role_menu (role_id, menu_id)
 SELECT 1, menu_id FROM jxc_sys_menu WHERE deleted = 0;

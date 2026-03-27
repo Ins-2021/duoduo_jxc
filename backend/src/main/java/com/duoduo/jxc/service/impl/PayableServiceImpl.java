@@ -46,8 +46,9 @@ public class PayableServiceImpl extends ServiceImpl<PayableMapper, Payable> impl
             wrapper.and(w -> w.like(Payable::getBillNo, keyword)
                     .or().like(Payable::getSupplierName, keyword));
         }
-        Integer status = (Integer) query.getParams().get("status");
-        if (status != null) {
+        Object statusObj = query.getParams().get("status");
+        if (statusObj != null && !statusObj.toString().trim().isEmpty()) {
+            Integer status = statusObj instanceof Integer ? (Integer) statusObj : Integer.valueOf(statusObj.toString());
             wrapper.eq(Payable::getStatus, status);
         }
         wrapper.orderByDesc(Payable::getCreateTime);

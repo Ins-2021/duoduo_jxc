@@ -4,6 +4,7 @@ import com.duoduo.jxc.dto.product.ProductSkuSelectDTO;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface ProductSelectMapper {
@@ -53,6 +54,24 @@ public interface ProductSelectMapper {
             <if test="categoryId != null">
               AND spu.category_id = #{categoryId}
             </if>
+            <if test="categoryIds != null and categoryIds.size() > 0">
+              AND spu.category_id IN
+              <foreach collection="categoryIds" item="cid" open="(" separator="," close=")">
+                #{cid}
+              </foreach>
+            </if>
+            <if test="brand != null and brand != ''">
+              AND brand.brand_name LIKE CONCAT('%', #{brand}, '%')
+            </if>
+            <if test="minPrice != null">
+              AND sku.wholesale_price &gt;= #{minPrice}
+            </if>
+            <if test="maxPrice != null">
+              AND sku.wholesale_price &lt;= #{maxPrice}
+            </if>
+            <if test="hasStock != null and hasStock == true">
+              HAVING COALESCE(SUM(inv.qty), 0) &gt; 0
+            </if>
             GROUP BY sku.sku_id, spu.spu_id, spu.spu_name, sku.attr1, sku.attr2, brand.brand_name, spu.unit,
                      sku.wholesale_price, sku.purchase_price, sku.retail_price, cat.category_name, sku.sku_code
             ORDER BY spu.spu_id DESC, sku.sku_id DESC
@@ -61,6 +80,11 @@ public interface ProductSelectMapper {
             """)
     List<ProductSkuSelectDTO> selectSkuPage(@Param("keyword") String keyword,
                                            @Param("categoryId") Long categoryId,
+                                           @Param("categoryIds") List<Long> categoryIds,
+                                           @Param("brand") String brand,
+                                           @Param("minPrice") BigDecimal minPrice,
+                                           @Param("maxPrice") BigDecimal maxPrice,
+                                           @Param("hasStock") Boolean hasStock,
                                            @Param("offset") long offset,
                                            @Param("limit") long limit);
 
@@ -70,22 +94,48 @@ public interface ProductSelectMapper {
               SELECT sku.sku_id
               FROM jxc_product_sku sku
               JOIN jxc_product_spu spu ON spu.spu_id = sku.spu_id AND spu.deleted = 0
+              LEFT JOIN jxc_product_brand brand ON brand.brand_id = spu.brand_id AND brand.deleted = 0
+              LEFT JOIN jxc_inventory inv ON inv.sku_id = sku.sku_id
               WHERE sku.deleted = 0
-              <if test="keyword != null and keyword != ''">
-                AND (
-                  spu.spu_name LIKE CONCAT('%', #{keyword}, '%')
-                  OR sku.sku_code LIKE CONCAT('%', #{keyword}, '%')
-                  OR sku.attr1 LIKE CONCAT('%', #{keyword}, '%')
-                  OR sku.attr2 LIKE CONCAT('%', #{keyword}, '%')
-                )
-              </if>
-              <if test="categoryId != null">
-                AND spu.category_id = #{categoryId}
-              </if>
-              GROUP BY sku.sku_id
+            <if test="keyword != null and keyword != ''">
+              AND (
+                spu.spu_name LIKE CONCAT('%', #{keyword}, '%')
+                OR sku.sku_code LIKE CONCAT('%', #{keyword}, '%')
+                OR sku.attr1 LIKE CONCAT('%', #{keyword}, '%')
+                OR sku.attr2 LIKE CONCAT('%', #{keyword}, '%')
+              )
+            </if>
+            <if test="categoryId != null">
+              AND spu.category_id = #{categoryId}
+            </if>
+            <if test="categoryIds != null and categoryIds.size() > 0">
+              AND spu.category_id IN
+              <foreach collection="categoryIds" item="cid" open="(" separator="," close=")">
+                #{cid}
+              </foreach>
+            </if>
+            <if test="brand != null and brand != ''">
+              AND brand.brand_name LIKE CONCAT('%', #{brand}, '%')
+            </if>
+            <if test="minPrice != null">
+              AND sku.wholesale_price &gt;= #{minPrice}
+            </if>
+            <if test="maxPrice != null">
+              AND sku.wholesale_price &lt;= #{maxPrice}
+            </if>
+            <if test="hasStock != null and hasStock == true">
+              HAVING COALESCE(SUM(inv.qty), 0) &gt; 0
+            </if>
+            GROUP BY sku.sku_id
             ) t
             </script>
             """)
-    long countSku(@Param("keyword") String keyword, @Param("categoryId") Long categoryId);
+    long countSku(@Param("keyword") String keyword,
+                  @Param("categoryId") Long categoryId,
+                  @Param("categoryIds") List<Long> categoryIds,
+                  @Param("brand") String brand,
+                  @Param("minPrice") BigDecimal minPrice,
+                  @Param("maxPrice") BigDecimal maxPrice,
+                  @Param("hasStock") Boolean hasStock);
 }
 

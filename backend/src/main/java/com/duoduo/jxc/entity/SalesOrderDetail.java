@@ -55,6 +55,11 @@ public class SalesOrderDetail extends BaseEntity {
     private Integer unfulfilledQty;
 
     /**
+     * 已转发货数量（仅预订单有效）
+     */
+    private Integer deliveryQty;
+
+    /**
      * 单价
      */
     private BigDecimal unitPrice;

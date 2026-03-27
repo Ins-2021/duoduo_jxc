@@ -19,7 +19,7 @@ export type {
 
 // 商品/打印
 export type {
-  ProductSpuDTO, ProductSkuDTO, ProductSkuSelectDTO,
+  ProductSpuDTO, ProductSkuDTO, ProductSkuSelectDTO, ProductSkuSelectQuery,
   ProductCategoryDTO, ProductCategoryTreeNode,
   ProductAttributeDTO, ProductAttributeValueDTO,
   HomeOverviewDTO, PrintTemplateDTO, PrintDataDTO, PrintDataItemDTO,

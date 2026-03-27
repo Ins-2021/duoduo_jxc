@@ -44,6 +44,12 @@ export const routes: Array<RouteRecordRaw> = [
             meta: { title: '新增销售预定', hidden: true, perm: 'sales:booking:add' }
           },
           {
+            path: 'booking/edit/:id',
+            name: 'SalesBookingEdit',
+            component: () => import('../views/sales/booking/add.vue'),
+            meta: { title: '修改销售预定', hidden: true, perm: 'sales:booking:edit' }
+          },
+          {
             path: 'order',
             name: 'SalesOrder',
             component: () => import('../views/sales/order/index.vue'),

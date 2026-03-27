@@ -28,4 +28,12 @@ public interface FinanceTransactionService extends IService<FinanceTransaction> 
      * @return 详情DTO
      */
     FinanceTransactionDTO getById(Long id);
+
+    /**
+     * 创建财务流水记录
+     *
+     * @param entity 实体对象
+     * @return 主键ID
+     */
+    Long create(FinanceTransaction entity);
 }

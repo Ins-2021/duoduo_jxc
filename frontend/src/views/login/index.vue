@@ -43,8 +43,6 @@ const doLogin = async () => {
     const res: any = await login(form)
     const data = res.data
     userStore.setTokens(data.accessToken, data.refreshToken)
-    const profile: any = await getProfile()
-    userStore.setProfile(profile.data || {})
     ElMessage.success('登录成功')
     router.replace('/home')
   } finally {

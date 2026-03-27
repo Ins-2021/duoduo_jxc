@@ -1,3 +1,5 @@
+import type { PageQuery } from './common'
+
 /** 商品 SPU */
 export interface ProductSpuDTO {
   spuId?: number
@@ -162,4 +164,10 @@ export interface PrintDataItemDTO {
 /** 打印模板设置 */
 export interface PrintTemplateSettingsDTO {
   printNoDialog: boolean
+}
+
+/** 商品SKU选择查询 */
+export interface ProductSkuSelectQuery extends PageQuery {
+  keyword?: string
+  categoryId?: number
 }

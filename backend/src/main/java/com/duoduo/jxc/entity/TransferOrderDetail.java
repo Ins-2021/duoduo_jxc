@@ -2,6 +2,7 @@ package com.duoduo.jxc.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -20,4 +21,6 @@ public class TransferOrderDetail {
     private String attr2;
     private Integer qty;
     private BigDecimal costPrice;
+    @TableLogic
+    private Integer deleted;
 }

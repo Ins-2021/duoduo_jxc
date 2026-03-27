@@ -48,8 +48,9 @@ public class TransferOrderServiceImpl extends ServiceImpl<TransferOrderMapper, T
                     .or().like(TransferOrder::getFromWarehouseName, keyword)
                     .or().like(TransferOrder::getToWarehouseName, keyword));
         }
-        Integer status = (Integer) query.getParams().get("status");
-        if (status != null) {
+        Object statusObj = query.getParams().get("status");
+        if (statusObj != null && !statusObj.toString().trim().isEmpty()) {
+            Integer status = statusObj instanceof Integer ? (Integer) statusObj : Integer.valueOf(statusObj.toString());
             wrapper.eq(TransferOrder::getStatus, status);
         }
         wrapper.orderByDesc(TransferOrder::getCreateTime);

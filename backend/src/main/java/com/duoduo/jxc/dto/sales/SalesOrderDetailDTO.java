@@ -17,4 +17,10 @@ public class SalesOrderDetailDTO {
     private BigDecimal lineAmount;
     private Long warehouseId;
     private String remark;
+
+    // 商品信息（查询时填充，不入库）
+    private String spuName;
+    private String skuCode;
+    private String attr1;
+    private String attr2;
 }

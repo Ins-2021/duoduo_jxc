@@ -28,13 +28,18 @@ public class ProductSelectServiceImpl implements ProductSelectService {
             keyword = keyword.trim();
         }
         Long categoryId = query == null ? null : query.getCategoryId();
+        List<Long> categoryIds = query == null ? null : query.getCategoryIds();
+        String brand = query == null ? null : query.getBrand();
+        java.math.BigDecimal minPrice = query == null ? null : query.getMinPrice();
+        java.math.BigDecimal maxPrice = query == null ? null : query.getMaxPrice();
+        Boolean hasStock = query == null ? null : query.getHasStock();
 
-        long total = productSelectMapper.countSku(keyword, categoryId);
+        long total = productSelectMapper.countSku(keyword, categoryId, categoryIds, brand, minPrice, maxPrice, hasStock);
         if (total <= 0) {
             return new PageResult<>(0L, List.of());
         }
 
-        List<ProductSkuSelectDTO> list = productSelectMapper.selectSkuPage(keyword, categoryId, offset, pageSize);
+        List<ProductSkuSelectDTO> list = productSelectMapper.selectSkuPage(keyword, categoryId, categoryIds, brand, minPrice, maxPrice, hasStock, offset, pageSize);
         list.forEach(i -> {
             if (i.getSpuId() != null) {
                 i.setProductCode("SP" + String.format("%07d", i.getSpuId()));

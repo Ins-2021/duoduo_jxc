@@ -4,6 +4,8 @@
       <div class="logo">多多进销存</div>
       <el-menu
         :default-active="activeMenu"
+        :default-openeds="defaultOpeneds"
+        :unique-opened="true"
         class="el-menu-vertical"
         background-color="#304156"
         text-color="#bfcbd9"
@@ -235,6 +237,23 @@ const activeMenu = computed(() => {
   return route.path
 })
 
+/**
+ * 当前路由所属的父菜单路径，用于手风琴模式下自动展开
+ * 根据当前路由路径找到匹配的顶级菜单，返回其 index
+ */
+const defaultOpeneds = computed<string[]>(() => {
+  const path = route.path
+  for (const menu of sidebarMenus.value) {
+    if (menu.children?.length && menu.children.some(child => {
+      const childPath = resolveMenuPath(child)
+      return path === childPath || path.startsWith(childPath + '/')
+    })) {
+      return [menu.path || '/' + menu.path]
+    }
+  }
+  return []
+})
+
 // ==================== 退出登录 ====================
 const doLogout = async () => {
   try {
@@ -249,8 +268,6 @@ const doLogout = async () => {
 // ==================== 初始化 ====================
 onMounted(() => {
   userStore.loadUserMenus()
-  // 每次进入 layout 刷新权限，确保新增按钮权限实时生效
-  userStore.refreshPerms()
 })
 </script>
 

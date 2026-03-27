@@ -2,6 +2,7 @@ package com.duoduo.jxc.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -24,4 +25,6 @@ public class InventoryAlert {
     private Integer alertType;
     private Integer status;
     private LocalDateTime alertTime;
+    @TableLogic
+    private Integer deleted;
 }

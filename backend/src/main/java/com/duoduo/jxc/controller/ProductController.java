@@ -12,6 +12,9 @@ import com.duoduo.jxc.dto.product.ProductSkuSelectQuery;
 import com.duoduo.jxc.service.ProductCategoryService;
 import com.duoduo.jxc.service.ProductSelectService;
 import com.duoduo.jxc.service.ProductSpuService;
+import com.duoduo.jxc.entity.ProductSpu;
+import com.duoduo.jxc.mapper.ProductSpuMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -27,6 +30,7 @@ public class ProductController {
     private final ProductSpuService productSpuService;
     private final ProductCategoryService productCategoryService;
     private final ProductSelectService productSelectService;
+    private final ProductSpuMapper productSpuMapper;
 
     @Log(title = "商品管理", action = "分页查询商品")
     @GetMapping("/page")
@@ -70,6 +74,17 @@ public class ProductController {
     @PreAuthorize("@perm.has('data:menu:view') or @perm.has('data:product:view')")
     public Result<PageResult<ProductSkuSelectDTO>> skuPage(ProductSkuSelectQuery query) {
         return Result.success(productSelectService.pageSku(query));
+    }
+
+    @GetMapping("/check-code")
+    @PreAuthorize("@perm.has('data:menu:view') or @perm.has('data:product:view')")
+    public Result<Boolean> checkProductCode(@RequestParam String productCode, @RequestParam(required = false) Long excludeId) {
+        LambdaQueryWrapper<ProductSpu> wrapper = new LambdaQueryWrapper<ProductSpu>()
+                .eq(ProductSpu::getProductCode, productCode);
+        if (excludeId != null) {
+            wrapper.ne(ProductSpu::getSpuId, excludeId);
+        }
+        return Result.success(productSpuMapper.selectCount(wrapper) > 0);
     }
 
     @Log(title = "商品管理", action = "查询商品详情")

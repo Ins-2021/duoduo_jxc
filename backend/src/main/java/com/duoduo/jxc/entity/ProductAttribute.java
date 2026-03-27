@@ -17,4 +17,6 @@ public class ProductAttribute extends BaseEntity {
     private String name;
     
     private Integer sort;
+
+    private Integer status;
 }
