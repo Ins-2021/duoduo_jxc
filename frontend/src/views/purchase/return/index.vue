@@ -7,10 +7,10 @@
           <!-- 工具栏 -->
           <div class="toolbar" :class="{ 'toolbar-expanded': isOrderSearchExpanded }">
             <div class="left-actions">
-              <el-button type="primary" v-perm="'purchase:order:add'" @click="$router.push('/purchase/return/add')">新增进货退货单</el-button>
-              <el-button v-perm="'purchase:order:audit'">审核</el-button>
-              <el-button v-perm="'purchase:order:audit'">反审核</el-button>
-              <el-button v-perm="'purchase:order:delete'">删除</el-button>
+              <el-button type="primary" v-perm="'purchase:return:add'" @click="$router.push('/purchase/return/add')">新增进货退货单</el-button>
+              <el-button v-perm="'purchase:return:audit'">审核</el-button>
+              <el-button v-perm="'purchase:return:audit'">反审核</el-button>
+              <el-button v-perm="'purchase:return:delete'">删除</el-button>
             </div>
             <div class="right-search">
               <!-- 基础搜索区 (始终显示) -->
@@ -107,7 +107,7 @@
                 <template #default="scope" v-else-if="col.prop === 'actions'">
                   <div class="action-buttons">
                     <el-button size="small" type="primary">打印</el-button>
-                    <el-button size="small" type="danger" v-perm="'purchase:order:delete'" @click="handleDeleteOrder(scope.row)">删除</el-button>
+                    <el-button size="small" type="danger" v-perm="'purchase:return:delete'" @click="handleDeleteOrder(scope.row)">删除</el-button>
                   </div>
                 </template>
               </el-table-column>

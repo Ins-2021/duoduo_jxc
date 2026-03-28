@@ -89,6 +89,54 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
 
         detailMapper.selectPage(page, wrapper);
         List<SalesOrderDetailDTO> dtoList = converter.toDetailDTOList(page.getRecords());
+        
+        if (!dtoList.isEmpty()) {
+            // 填充单据信息
+            Set<Long> orderIds = dtoList.stream().map(SalesOrderDetailDTO::getOrderId).collect(Collectors.toSet());
+            if (!orderIds.isEmpty()) {
+                Map<Long, SalesOrder> orderMap = listByIds(orderIds).stream()
+                        .collect(Collectors.toMap(SalesOrder::getOrderId, e -> e));
+                dtoList.forEach(dto -> {
+                    SalesOrder order = orderMap.get(dto.getOrderId());
+                    if (order != null) {
+                        dto.setDocNo(order.getDocNo());
+                        dto.setDocDate(order.getDocDate());
+                        dto.setCustomerId(order.getCustomerId());
+                    }
+                });
+            }
+            
+            // 填充商品信息
+            Set<Long> spuIds = dtoList.stream().map(SalesOrderDetailDTO::getSpuId).filter(id -> id != null).collect(Collectors.toSet());
+            Set<Long> skuIds = dtoList.stream().map(SalesOrderDetailDTO::getSkuId).filter(id -> id != null).collect(Collectors.toSet());
+            
+            Map<Long, String> spuNameMap = Map.of();
+            if (!spuIds.isEmpty()) {
+                spuNameMap = productSpuMapper.selectBatchIds(spuIds).stream()
+                        .collect(Collectors.toMap(ProductSpu::getSpuId, e -> e.getSpuName() != null ? e.getSpuName() : ""));
+            }
+            
+            Map<Long, ProductSku> skuMap = Map.of();
+            if (!skuIds.isEmpty()) {
+                skuMap = productSkuMapper.selectBatchIds(skuIds).stream()
+                        .collect(Collectors.toMap(ProductSku::getSkuId, e -> e));
+            }
+            
+            for (SalesOrderDetailDTO dto : dtoList) {
+                if (dto.getSpuId() != null) {
+                    dto.setSpuName(spuNameMap.getOrDefault(dto.getSpuId(), "未知商品"));
+                }
+                if (dto.getSkuId() != null) {
+                    ProductSku sku = skuMap.get(dto.getSkuId());
+                    if (sku != null) {
+                        dto.setSkuCode(sku.getSkuCode());
+                        dto.setAttr1(sku.getAttr1());
+                        dto.setAttr2(sku.getAttr2());
+                    }
+                }
+            }
+        }
+
         return new PageResult<>(page.getTotal(), dtoList);
     }
 
@@ -196,6 +244,14 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteOrder(Long orderId) {
+        SalesOrder exist = getById(orderId);
+        if (exist == null) {
+            throw new BusinessException(BizCode.SALES_ORDER_NOT_FOUND);
+        }
+        if (exist.getStatus() != 10) {
+            throw new BusinessException(BizCode.ORDER_NOT_DRAFT);
+        }
+        
         removeById(orderId);
         LambdaQueryWrapper<SalesOrderDetail> deleteWrapper = new LambdaQueryWrapper<>();
         deleteWrapper.eq(SalesOrderDetail::getOrderId, orderId);

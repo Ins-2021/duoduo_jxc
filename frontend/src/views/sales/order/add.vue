@@ -612,6 +612,7 @@ import { getSystemSettings } from '@/api/settings'
 import { addProduct, getProductDetail, getProductList } from '@/api/product'
 import { getViewConfig, saveViewConfig } from '@/api/ui'
 import SizeColorMatrixPicker from '@/components/SizeColorMatrixPicker.vue'
+import Decimal from 'decimal.js'
 
 const handleRefresh = () => {
   window.location.reload()
@@ -740,9 +741,9 @@ const onSelectProductSuggestion = async (item: any, row: any) => {
 }
 
 const calculateAmount = (row: any) => {
-  const qty = Number(row.qty) || 0
-  const price = Number(row.unitPrice) || 0
-  return (qty * price).toFixed(2)
+  const qty = new Decimal(row.qty || 0)
+  const price = new Decimal(row.unitPrice || 0)
+  return qty.times(price).toFixed(2)
 }
 
 const getSummaries = (param: any) => {
@@ -755,13 +756,15 @@ const getSummaries = (param: any) => {
     }
     // 仅针对数量和金额列进行求和展示，实际业务中可扩展
     if (column.label === '*数量') {
-      const totalQty = data.reduce((sum: number, row: any) => sum + (Number(row.qty) || 0), 0)
-      sums[index] = totalQty ? String(totalQty) : ''
+      const totalQty = data.reduce((sum: Decimal, row: any) => sum.plus(row.qty || 0), new Decimal(0))
+      sums[index] = totalQty.isZero() ? '' : totalQty.toString()
     } else if (column.label === '金额(元)') {
-      const totalAmt = data.reduce((sum: number, row: any) => {
-        return sum + (Number(row.qty) || 0) * (Number(row.unitPrice) || 0)
-      }, 0)
-      sums[index] = totalAmt ? totalAmt.toFixed(2) : ''
+      const totalAmt = data.reduce((sum: Decimal, row: any) => {
+        const qty = new Decimal(row.qty || 0)
+        const price = new Decimal(row.unitPrice || 0)
+        return sum.plus(qty.times(price))
+      }, new Decimal(0))
+      sums[index] = totalAmt.isZero() ? '' : totalAmt.toFixed(2)
     } else {
       sums[index] = ''
     }
@@ -770,14 +773,18 @@ const getSummaries = (param: any) => {
 }
 
 const finalTotalAmount = computed(() => {
-  const totalAmt = formData.details.reduce((sum: number, row: any) => {
-    return sum + (Number(row.qty) || 0) * (Number(row.unitPrice) || 0)
-  }, 0)
+  const totalAmt = formData.details.reduce((sum: Decimal, row: any) => {
+    const qty = new Decimal(row.qty || 0)
+    const price = new Decimal(row.unitPrice || 0)
+    return sum.plus(qty.times(price))
+  }, new Decimal(0))
   
-  const discounted = totalAmt * (formData.discountRate / 100)
+  const discountRate = new Decimal(formData.discountRate || 0).dividedBy(100)
+  const discounted = totalAmt.times(discountRate)
   formData.discountedAmount = discounted.toFixed(2)
   
-  const final = discounted + Number(formData.otherFee)
+  const otherFee = new Decimal(formData.otherFee || 0)
+  const final = discounted.plus(otherFee)
   return final.toFixed(2)
 })
 
@@ -794,13 +801,14 @@ const saveOrder = async () => {
     const skuId = Number(item.skuId)
     if (spuId && skuId) return { spuId, skuId }
     const name = String(item.productInfo || '').trim()
+    const cacheKey = `${name}|${item.color || ''}|${item.unitPrice || ''}`
     if (!name) {
       throw new Error('商品信息不能为空')
     }
     if (!allowNewProductOnBilling.value) {
       throw new Error('请先选择已存在商品，或在系统参数开启“新商品开单”')
     }
-    if (newProductCache.has(name)) return newProductCache.get(name)!
+    if (newProductCache.has(cacheKey)) return newProductCache.get(cacheKey)!
     const code = `AUTO${Date.now()}${Math.floor(Math.random() * 1000)}`
     const createRes = await addProduct({
       spuName: name,
@@ -823,7 +831,7 @@ const saveOrder = async () => {
     const detailRes = await getProductDetail(createdSpuId)
     const createdSkuId = Number(detailRes?.data?.skuList?.[0]?.skuId)
     const ids = { spuId: createdSpuId, skuId: createdSkuId }
-    newProductCache.set(name, ids)
+    newProductCache.set(cacheKey, ids)
     item.spuId = createdSpuId
     item.skuId = createdSkuId
     return ids
@@ -852,7 +860,7 @@ const saveOrder = async () => {
     customerId: formData.customer ? Number(formData.customer) : undefined,
     remark: formData.remark,
     totalAmount: finalTotalAmount.value,
-    discountAmount: (parseFloat(finalTotalAmount.value) - parseFloat(formData.discountedAmount)).toFixed(2),
+    discountAmount: new Decimal(finalTotalAmount.value).minus(new Decimal(formData.discountedAmount)).toFixed(2),
     actualAmount: formData.discountedAmount,
     otherFee: formData.otherFee,
     paidAmount: formData.deposit,

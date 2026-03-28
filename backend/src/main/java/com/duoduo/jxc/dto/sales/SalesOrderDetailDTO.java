@@ -2,6 +2,8 @@ package com.duoduo.jxc.dto.sales;
 
 import lombok.Data;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 public class SalesOrderDetailDTO {
@@ -23,4 +25,9 @@ public class SalesOrderDetailDTO {
     private String skuCode;
     private String attr1;
     private String attr2;
+    
+    // 单据信息
+    private String docNo;
+    private LocalDate docDate;
+    private Long customerId;
 }

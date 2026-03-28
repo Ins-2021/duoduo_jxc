@@ -67,3 +67,18 @@ export function convertToSales(id: number) {
     method: 'post'
   })
 }
+
+export function getBookingUnfulfilled(bookingOrderId: number) {
+  return request({
+    url: `/sales/booking/${bookingOrderId}/unfulfilled`,
+    method: 'get'
+  })
+}
+
+export function partialDelivery(bookingOrderId: number, data: any) {
+  return request({
+    url: `/sales/booking/${bookingOrderId}/delivery`,
+    method: 'post',
+    data
+  })
+}

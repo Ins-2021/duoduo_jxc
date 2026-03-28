@@ -27,7 +27,7 @@
 
       <!-- 操作按钮 -->
       <div class="table-operations">
-        <el-button type="primary" @click="handleAdd">新增出库</el-button>
+        <el-button type="primary" v-perm="'inventory:stock-out:add'" @click="handleAdd">新增出库</el-button>
       </div>
 
       <!-- 数据表格 -->

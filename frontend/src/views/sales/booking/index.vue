@@ -18,7 +18,7 @@
                 <el-input v-model="searchOrder.productName" placeholder="商品名称" clearable class="search-item" />
                 <el-input v-model="searchOrder.orderNo" placeholder="单据编号" clearable class="search-item" />
                 <el-select v-model="searchOrder.customer" placeholder="客户" clearable class="search-item">
-                  <el-option label="赵尚青" value="zsq" />
+                  <el-option v-for="c in customerOptions" :key="c.value" :label="c.label" :value="c.value" />
                 </el-select>
               </div>
 
@@ -50,7 +50,7 @@
                     <el-option label="平集仓库" value="1" />
                   </el-select>
                   <el-select v-model="searchOrder.creator" placeholder="制单人" clearable class="search-item">
-                    <el-option label="景海静" value="jhj" />
+                    <el-option v-for="s in staffOptions" :key="s.value" :label="s.label" :value="s.value" />
                   </el-select>
                   <el-select v-model="searchOrder.account" placeholder="结算账户" clearable class="search-item">
                     <el-option label="现金" value="cash" />
@@ -109,6 +109,7 @@
                   <div class="action-buttons">
                     <el-button size="small" type="primary" @click="handleEditOrder(scope.row)" v-perm="'sales:booking:edit'">修改</el-button>
                     <el-button size="small" type="success" @click="handleConvertToSales(scope.row)" v-perm="'sales:booking:convert'">转销售</el-button>
+                    <el-button size="small" type="warning" @click="handlePartialDelivery(scope.row)" v-perm="'sales:booking:delivery'" v-if="scope.row.status === 30">发货</el-button>
                     <el-button size="small" type="danger" @click="handleDeleteOrder(scope.row)" v-perm="'sales:booking:delete'">删除</el-button>
                   </div>
                 </template>
@@ -294,6 +295,35 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- 分批发货弹窗 -->
+    <el-dialog v-model="deliveryDialogVisible" title="预订单分批发货" width="800px" custom-class="delivery-dialog">
+      <div class="delivery-tips" style="margin-bottom: 15px;">
+        <el-alert title="仅可针对未发货数量进行发货，发货后将自动生成对应的销售单。" type="info" show-icon :closable="false" />
+      </div>
+      <el-table :data="deliveryItems" border size="small">
+        <el-table-column prop="skuCode" label="商品编号" width="120" />
+        <el-table-column prop="skuName" label="商品名称" min-width="150" />
+        <el-table-column prop="bookedQty" label="预定数" width="80" align="center" />
+        <el-table-column prop="deliveryQty" label="已发货" width="80" align="center" />
+        <el-table-column prop="unfulfilledQty" label="未发货" width="80" align="center">
+          <template #default="scope">
+            <span style="color: #f56c6c; font-weight: bold;">{{ scope.row.unfulfilledQty }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="本次发货数" width="140" align="center">
+          <template #default="scope">
+            <el-input-number v-model="scope.row.convertQty" :min="0" :max="scope.row.unfulfilledQty" size="small" controls-position="right" style="width: 100px;" />
+          </template>
+        </el-table-column>
+      </el-table>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="deliveryDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitDelivery" :loading="deliveryLoading">确定发货</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -301,8 +331,9 @@
 import { ref, reactive, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Sortable from 'sortablejs'
-import { getSalesOrderList, deleteSalesOrder, convertToSales, getSalesOrderDetailPage, auditSalesOrder, unauditSalesOrder } from '@/api/sales'
+import { getSalesOrderList, deleteSalesOrder, convertToSales, getSalesOrderDetailPage, auditSalesOrder, unauditSalesOrder, getBookingUnfulfilled, partialDelivery } from '@/api/sales'
 import { getDict } from '@/api/dict'
+import { getCustomerOptions, getStaffOptions } from '@/api/options'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const activeTab = ref('by-order')
@@ -338,8 +369,18 @@ const orderColumns = ref<ColumnConfig[]>([
 
 const detailColumns = ref<ColumnConfig[]>([
   { prop: 'selection', originalLabel: '', label: '', type: 'selection', visible: true, width: 55 },
+  { prop: 'docDate', originalLabel: '单据日期', label: '单据日期', visible: true, width: 120 },
   { prop: 'docNo', originalLabel: '单据编号', label: '单据编号', visible: true, width: 180 },
-  { prop: 'qty', originalLabel: '数量', label: '数量', visible: true, width: 80 }
+  { prop: 'customerId', originalLabel: '客户ID', label: '客户ID', visible: true, width: 100 },
+  { prop: 'skuCode', originalLabel: '商品编号', label: '商品编号', visible: true, width: 120 },
+  { prop: 'spuName', originalLabel: '商品名称', label: '商品名称', visible: true, minWidth: 150 },
+  { prop: 'attr1', originalLabel: '规格1', label: '规格1', visible: true, width: 100 },
+  { prop: 'attr2', originalLabel: '规格2', label: '规格2', visible: true, width: 100 },
+  { prop: 'qty', originalLabel: '数量', label: '数量', visible: true, width: 80 },
+  { prop: 'unitPrice', originalLabel: '单价', label: '单价', visible: true, width: 100 },
+  { prop: 'discountAmount', originalLabel: '折扣金额', label: '折扣金额', visible: true, width: 100 },
+  { prop: 'lineAmount', originalLabel: '金额', label: '金额', visible: true, width: 120 },
+  { prop: 'remark', originalLabel: '备注', label: '备注', visible: true, minWidth: 150 }
 ])
 
 const settingDialogVisible = ref(false)
@@ -394,6 +435,8 @@ const orderData = ref([])
 const totalOrders = ref(0)
 const salesOrderStatusMap = ref<Record<string, string>>({})
 const outStockOptions = ref<any[]>([])
+const customerOptions = ref<any[]>([])
+const staffOptions = ref<any[]>([])
 
 const salesOrderStatusLabel = (value: any) => {
   const v = value == null ? '' : String(value)
@@ -412,16 +455,25 @@ const fetchOrders = async () => {
 
 onMounted(async () => {
   try {
-    const [statusRes, outRes] = await Promise.all([getDict('sales_order_status'), getDict('out_stock_status')])
+    const [statusRes, outRes, customerRes, staffRes] = await Promise.all([
+      getDict('sales_order_status'), 
+      getDict('out_stock_status'),
+      getCustomerOptions(),
+      getStaffOptions()
+    ])
     const map: Record<string, string> = {}
     ;(statusRes.data || []).forEach((i: any) => {
       map[String(i.value)] = i.label
     })
     salesOrderStatusMap.value = map
     outStockOptions.value = outRes.data || []
+    customerOptions.value = customerRes.data || []
+    staffOptions.value = staffRes.data || []
   } catch {
     salesOrderStatusMap.value = {}
     outStockOptions.value = []
+    customerOptions.value = []
+    staffOptions.value = []
   }
 })
 
@@ -520,6 +572,66 @@ const handleConvertToSales = async (row: any) => {
   }
 }
 
+// --- 分批发货逻辑 ---
+const deliveryDialogVisible = ref(false)
+const deliveryLoading = ref(false)
+const currentDeliveryOrderId = ref<number | null>(null)
+const deliveryItems = ref<any[]>([])
+
+const handlePartialDelivery = async (row: any) => {
+  try {
+    const res = await getBookingUnfulfilled(row.orderId)
+    const items = res.data || []
+    if (items.length === 0) {
+      ElMessage.warning('该订单已全部发货，没有可发货的商品')
+      return
+    }
+    // 默认发货数量设置为未发货数量
+    deliveryItems.value = items.map((item: any) => ({
+      ...item,
+      convertQty: item.unfulfilledQty
+    }))
+    currentDeliveryOrderId.value = row.orderId
+    deliveryDialogVisible.value = true
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+const submitDelivery = async () => {
+  if (!currentDeliveryOrderId.value) return
+  
+  // 过滤出有发货数量的明细
+  const validItems = deliveryItems.value.filter(item => item.convertQty > 0)
+  
+  if (validItems.length === 0) {
+    ElMessage.warning('请至少输入一个发货数量')
+    return
+  }
+
+  try {
+    deliveryLoading.value = true
+    const payload = {
+      bookingOrderId: currentDeliveryOrderId.value,
+      items: validItems.map(item => ({
+        bookingDetailId: item.detailId,
+        convertQty: item.convertQty,
+        unitPrice: item.unitPrice
+        // 如果需要仓库信息，也可以在这里传递 warehouseId: ...
+      }))
+    }
+    await partialDelivery(currentDeliveryOrderId.value, payload)
+    ElMessage.success('分批发货成功，已生成销售单')
+    deliveryDialogVisible.value = false
+    fetchOrders()
+  } catch (e: any) {
+    console.error(e)
+    ElMessage.error(e.message || '发货失败')
+  } finally {
+    deliveryLoading.value = false
+  }
+}
+
 const handleTabChange = (tab: any) => {
   if (tab.props.name === 'by-order') {
     fetchOrders()
@@ -555,7 +667,7 @@ const getOrderSummaries = (param: any) => {
       sums[index] = '本页合计'
       return
     }
-    if (['totalAmount', 'actualAmount', 'paidAmount'].includes(column.property)) {
+    if (['totalAmount', 'discountAmount', 'actualAmount', 'paidAmount'].includes(column.property)) {
       const values = data.map((item: any) => Number(item[column.property]))
       if (!values.every((value: number) => Number.isNaN(value))) {
         const sum = values.reduce((prev: number, curr: number) => {

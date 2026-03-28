@@ -3,7 +3,7 @@
     <el-card class="oplog-card" shadow="never">
       <div class="toolbar">
         <div class="left">
-          <el-button size="small" v-perm="'settings:op-log:edit'" @click="clearLogs">清空</el-button>
+          <el-button size="small" v-perm="'settings:op-log:clear'" @click="clearLogs">清空</el-button>
         </div>
         <div class="right">
           <el-input v-model="queryParams.content" size="small" placeholder="操作内容" style="width: 220px" clearable />

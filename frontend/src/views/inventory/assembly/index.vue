@@ -50,8 +50,8 @@
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="handleView(row)">查看</el-button>
-            <el-button link type="success" @click="handleApprove(row)" v-if="row.status === 0">审核</el-button>
-            <el-button link type="danger" @click="handleDelete(row)" v-if="row.status === 0">删除</el-button>
+            <el-button v-perm="'inventory:assembly:audit'" link type="success" @click="handleApprove(row)" v-if="row.status === 0">审核</el-button>
+            <el-button v-perm="'inventory:assembly:delete'" link type="danger" @click="handleDelete(row)" v-if="row.status === 0">删除</el-button>
           </template>
         </el-table-column>
       </el-table>

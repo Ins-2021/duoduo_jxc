@@ -1,0 +1,15 @@
+USE duoduo_jxc;
+UPDATE jxc_sys_menu SET menu_name = '新增进货预订单' WHERE perms = 'purchase:booking:add';
+UPDATE jxc_sys_menu SET menu_name = '修改' WHERE perms = 'purchase:booking:edit';
+UPDATE jxc_sys_menu SET menu_name = '审核' WHERE perms = 'purchase:booking:audit';
+UPDATE jxc_sys_menu SET menu_name = '删除' WHERE perms = 'purchase:booking:delete';
+UPDATE jxc_sys_menu SET menu_name = '新增进货单' WHERE perms = 'purchase:order:add';
+UPDATE jxc_sys_menu SET menu_name = '修改' WHERE perms = 'purchase:order:edit';
+UPDATE jxc_sys_menu SET menu_name = '审核' WHERE perms = 'purchase:order:audit';
+UPDATE jxc_sys_menu SET menu_name = '删除' WHERE perms = 'purchase:order:delete';
+UPDATE jxc_sys_menu SET menu_name = '新增进货退货单' WHERE perms = 'purchase:return:add';
+UPDATE jxc_sys_menu SET menu_name = '修改' WHERE perms = 'purchase:return:edit';
+UPDATE jxc_sys_menu SET menu_name = '审核' WHERE perms = 'purchase:return:audit';
+UPDATE jxc_sys_menu SET menu_name = '删除' WHERE perms = 'purchase:return:delete';
+DELETE FROM jxc_sys_menu WHERE menu_id IN (431, 432, 433, 434);
+DELETE FROM jxc_sys_role_menu WHERE menu_id IN (431, 432, 433, 434);
