@@ -72,7 +72,6 @@ public class SystemMenuController {
     @PutMapping("/{menuId}")
     @PreAuthorize("@perm.has('system:menu:edit')")
     public Result<Void> update(@PathVariable Long menuId, @RequestBody @Valid MenuSaveRequest request) {
-        System.out.println("Received menu name: " + request.getMenuName());
         SysMenu menu = sysMenuMapper.selectById(menuId);
         if (menu == null || menu.getDeleted() != null && menu.getDeleted() == 1) {
             throw new BusinessException(BizCode.MENU_NOT_FOUND);
