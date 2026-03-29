@@ -1,7 +1,7 @@
 # 项目状态跟踪
 
 > **维护者**：Manager-AI (opencode)
-> **更新时间**：2026-03-29 21:35
+> **更新时间**：2026-03-29 22:05
 > **职责规则**：AI-MANAGER-RULES.md
 
 ---
@@ -91,9 +91,19 @@ REPO_STATUS: "已有基础代码框架"
 | T027 | codebuddy | 生产管理模块 | 21:10 | ✅ 完成 | 5个新实体+完整CRUD |
 | T028 | codebuddy | 成本核算模块 | 21:15 | ✅ 完成 | CostCenter/CostPool/CostAllocation/ProductCost |
 | T029 | codebuddy | 工资管理模块 | 21:15 | ✅ 完成 | PayrollSheet/PayrollPeriod/PiecePrice/PieceRecord |
-| T030 | trae | Git代码提交 | 21:40 | ⏳ 进行中 | 296个文件待提交 |
+| T030 | trae | Git代码提交 | 21:40 | ✅ 完成 | dd5b94a 主代码已提交 |
 | T031 | trae | API功能测试 | 21:40 | ⏳ 进行中 | 后端接口测试 |
-| T032 | codebuddy | 小程序开发 | 21:40 | ⏳ 进行中 | uni-app跨平台 |
+| T032 | codebuddy | 小程序开发 | 21:40 | ✅ 完成 | 791依赖40页面零报错 |
+| T033 | trae | 前端-生产管理页面 | 21:50 | ✅ 完成 | 8个页面（order/plan/schedule/cut-order/cut-bundle/dashboard/quality/rework） |
+| T034 | codebuddy | 前端-成本核算页面 | 21:50 | ✅ 完成 | 4个页面（center/pool/allocation/product） |
+| T035 | codebuddy | 前端-工资管理页面 | 21:50 | 🔄 部分完成 | 3个页面（sheet/price/piece），缺period |
+| T036 | trae | API单元测试执行 | 21:50 | ❌ 失败 | 81个错误，ApplicationContext加载失败 |
+| T037 | opencode | Git提交小程序代码 | 21:50 | ⏳ 进行中 | 9个文件待提交 |
+| B001 | codebuddy | [Bug] PurchaseOrder状态码错误 | 22:00 | 🔴 严重 | 行238硬编码status=1，应使用枚举 |
+| B002 | codebuddy | [Bug] 库存Service状态保护缺失 | 22:00 | 🔴 严重 | 4个库存Service缺少状态校验 |
+| B003 | trae | [Bug] 权限控制缺失 | 22:00 | 🔴 严重 | Process/Quality/Quotation控制器 |
+| B004 | codebuddy | [Bug] 硬编码问题 | 22:00 | 🟡 中等 | 单号前缀、状态码硬编码 |
+| B005 | trae | [Bug] Service实现不完整 | 22:00 | 🟡 中等 | 多个Service只有空壳 |
 
 ### 监控检查项
 
@@ -116,8 +126,9 @@ REPO_STATUS: "已有基础代码框架"
 | codebuddy | AI-IDENTITY-codebuddy.md | 🟢 在线 | 2026-03-29 17:35 |
 
 **当前任务**：
-- trae: ✅ 所有任务已完成（含代码问题修复）
-- codebuddy: ✅ 所有任务已完成（T027/T028/T029）
+- trae: T036 API单元测试修复(失败), B003 Bug修复, B005 Bug修复
+- codebuddy: T035 前端工资-period页面(补全), B001 Bug修复, B002 Bug修复, B004 Bug修复
+- opencode: T037 Git提交小程序代码
 
 ---
 
@@ -134,9 +145,17 @@ REPO_STATUS: "已有基础代码框架"
 
 ## 下一步行动
 
-1. ⬜ Git提交代码变更 (296个文件)
-2. ⬜ API功能测试
-3. ⬜ 小程序开发（低优先级）
+### 高优先级（严重Bug）
+1. ⬜ B001: codebuddy - PurchaseOrder状态码错误（硬编码status=1）
+2. ⬜ B002: codebuddy - 库存Service状态保护缺失（4个Service）
+3. ⬜ B003: trae - 权限控制缺失（8个控制器）
+4. ⬜ T036: trae - API单元测试修复（81个错误，ApplicationContext问题）
+
+### 中优先级
+5. ⬜ T035: codebuddy - 补全工资管理-period页面
+6. ⬜ B004: codebuddy - 硬编码问题修复
+7. ⬜ B005: trae - Service实现不完整修复
+8. ⬜ T037: opencode - Git提交小程序代码（31个文件）
 
 ---
 

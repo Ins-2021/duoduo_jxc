@@ -1,0 +1,23 @@
+{
+  "name": "衣多多生产管理",
+  "appid": "",
+  "description": "衣多多进销存生产管理小程序",
+  "versionName": "1.0.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "mp-weixin": {
+    "appid": "",
+    "setting": {
+      "urlCheck": false,
+      "es6": true,
+      "minified": true
+    },
+    "usingComponents": true,
+    "permission": {
+      "scope.userLocation": {
+        "desc": "用于获取位置信息"
+      }
+    },
+    "requiredPrivateInfos": ["getLocation", "chooseLocation"]
+  }
+}

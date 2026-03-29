@@ -1,0 +1,63 @@
+{
+  "pages": [
+    { "path": "pages/common/login/index", "style": { "navigationBarTitleText": "登录", "navigationStyle": "custom" } },
+    { "path": "pages/common/role/select", "style": { "navigationBarTitleText": "选择角色" } },
+    { "path": "pages/common/profile/index", "style": { "navigationBarTitleText": "个人中心" } },
+    { "path": "pages/common/message/index", "style": { "navigationBarTitleText": "消息中心" } },
+    { "path": "pages/common/settings/index", "style": { "navigationBarTitleText": "设置" } },
+    { "path": "pages/common/scan/index", "style": { "navigationBarTitleText": "扫码" } },
+    { "path": "pages/worker/index", "style": { "navigationBarTitleText": "首页" } },
+    { "path": "pages/worker/piecework", "style": { "navigationBarTitleText": "扫码计件" } },
+    { "path": "pages/worker/task", "style": { "navigationBarTitleText": "我的任务" } },
+    { "path": "pages/worker/wage", "style": { "navigationBarTitleText": "工资查询" } },
+    { "path": "pages/worker/wage-detail", "style": { "navigationBarTitleText": "工资明细" } },
+    { "path": "pages/cutter/index", "style": { "navigationBarTitleText": "首页" } },
+    { "path": "pages/cutter/task", "style": { "navigationBarTitleText": "裁床任务" } },
+    { "path": "pages/cutter/input", "style": { "navigationBarTitleText": "裁床录入" } },
+    { "path": "pages/cutter/bundle", "style": { "navigationBarTitleText": "分包管理" } },
+    { "path": "pages/cutter/bundle-detail", "style": { "navigationBarTitleText": "扎包详情" } },
+    { "path": "pages/inspector/index", "style": { "navigationBarTitleText": "首页" } },
+    { "path": "pages/inspector/check", "style": { "navigationBarTitleText": "扫码质检" } },
+    { "path": "pages/inspector/first-article", "style": { "navigationBarTitleText": "首件确认" } },
+    { "path": "pages/inspector/rework", "style": { "navigationBarTitleText": "返工处理" } },
+    { "path": "pages/inspector/history", "style": { "navigationBarTitleText": "质检记录" } },
+    { "path": "pages/warehouse/index", "style": { "navigationBarTitleText": "首页" } },
+    { "path": "pages/warehouse/in", "style": { "navigationBarTitleText": "成品入库" } },
+    { "path": "pages/warehouse/out", "style": { "navigationBarTitleText": "物料出库" } },
+    { "path": "pages/warehouse/stock", "style": { "navigationBarTitleText": "库存查询" } },
+    { "path": "pages/warehouse/inventory", "style": { "navigationBarTitleText": "盘点任务" } },
+    { "path": "pages/leader/index", "style": { "navigationBarTitleText": "首页" } },
+    { "path": "pages/leader/assign", "style": { "navigationBarTitleText": "任务分配" } },
+    { "path": "pages/leader/progress", "style": { "navigationBarTitleText": "生产进度" } },
+    { "path": "pages/leader/exception", "style": { "navigationBarTitleText": "异常处理" } },
+    { "path": "pages/leader/approval", "style": { "navigationBarTitleText": "审批待办" } },
+    { "path": "pages/manager/index", "style": { "navigationBarTitleText": "首页" } },
+    { "path": "pages/manager/dashboard", "style": { "navigationBarTitleText": "生产看板" } },
+    { "path": "pages/manager/order", "style": { "navigationBarTitleText": "订单管理" } },
+    { "path": "pages/manager/staff", "style": { "navigationBarTitleText": "人员管理" } },
+    { "path": "pages/manager/report", "style": { "navigationBarTitleText": "报表中心" } },
+    { "path": "pages/boss/index", "style": { "navigationBarTitleText": "首页" } },
+    { "path": "pages/boss/dashboard", "style": { "navigationBarTitleText": "经营大屏" } },
+    { "path": "pages/boss/report", "style": { "navigationBarTitleText": "报表中心" } },
+    { "path": "pages/boss/alert", "style": { "navigationBarTitleText": "预警中心" } }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "衣多多生产管理",
+    "navigationBarBackgroundColor": "#ffffff",
+    "backgroundColor": "#f5f5f5"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#1890ff",
+    "borderStyle": "black",
+    "backgroundColor": "#ffffff",
+    "list": [
+      { "pagePath": "pages/worker/index", "text": "首页", "iconPath": "static/tab/home.png", "selectedIconPath": "static/tab/home-active.png" },
+      { "pagePath": "pages/worker/piecework", "text": "计件", "iconPath": "static/tab/scan.png", "selectedIconPath": "static/tab/scan-active.png" },
+      { "pagePath": "pages/worker/task", "text": "任务", "iconPath": "static/tab/task.png", "selectedIconPath": "static/tab/task-active.png" },
+      { "pagePath": "pages/worker/wage", "text": "工资", "iconPath": "static/tab/wage.png", "selectedIconPath": "static/tab/wage-active.png" },
+      { "pagePath": "pages/common/profile/index", "text": "我的", "iconPath": "static/tab/profile.png", "selectedIconPath": "static/tab/profile-active.png" }
+    ]
+  }
+}

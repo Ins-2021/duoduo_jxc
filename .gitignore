@@ -14,3 +14,5 @@ test-screenshots/
 frontend/test-results/
 frontend/tests/
 test-screenshots/
+*/**/dist
+**/node_modules

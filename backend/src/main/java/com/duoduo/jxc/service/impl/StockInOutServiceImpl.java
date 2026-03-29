@@ -12,6 +12,7 @@ import com.duoduo.jxc.dto.inventory.StockInOutDTO;
 import com.duoduo.jxc.dto.inventory.StockInOutDetailDTO;
 import com.duoduo.jxc.entity.StockInOut;
 import com.duoduo.jxc.entity.StockInOutDetail;
+import com.duoduo.jxc.enums.StockInOutStatusEnum;
 import com.duoduo.jxc.exception.BusinessException;
 import com.duoduo.jxc.mapper.StockInOutDetailMapper;
 import com.duoduo.jxc.mapper.StockInOutMapper;
@@ -34,9 +35,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class StockInOutServiceImpl extends ServiceImpl<StockInOutMapper, StockInOut> implements StockInOutService {
-
-    private static final Integer DRAFT_STATUS = 0;
-    private static final Integer APPROVED_STATUS = 1;
 
     private final StockInOutDetailMapper detailMapper;
     private final InventoryConverter converter;
@@ -98,7 +96,7 @@ public class StockInOutServiceImpl extends ServiceImpl<StockInOutMapper, StockIn
         BeanUtils.copyProperties(dto, entity);
         
         entity.setBillNo(generateOrderNo());
-        entity.setStatus(DRAFT_STATUS);
+        entity.setStatus(StockInOutStatusEnum.DRAFT.getValue());
         entity.setCreateTime(LocalDateTime.now());
         entity.setUpdateTime(LocalDateTime.now());
         save(entity);
@@ -153,7 +151,7 @@ public class StockInOutServiceImpl extends ServiceImpl<StockInOutMapper, StockIn
         if (entity == null) {
             throw new BusinessException(BizCode.STOCK_IN_OUT_NOT_FOUND);
         }
-        if (!DRAFT_STATUS.equals(entity.getStatus())) {
+        if (!StockInOutStatusEnum.DRAFT.getValue().equals(entity.getStatus())) {
             throw new BusinessException(BizCode.STOCK_IN_OUT_CANNOT_APPROVE);
         }
         if (entity.getWarehouseId() == null || entity.getType() == null) {
@@ -181,7 +179,7 @@ public class StockInOutServiceImpl extends ServiceImpl<StockInOutMapper, StockIn
             }
         }
 
-        entity.setStatus(APPROVED_STATUS);
+        entity.setStatus(StockInOutStatusEnum.APPROVED.getValue());
         entity.setUpdateTime(LocalDateTime.now());
         updateById(entity);
         log.info("出入库审核完成，库存已变动: inOutId={}, billNo={}, type={}", id, entity.getBillNo(), entity.getType());
@@ -192,7 +190,7 @@ public class StockInOutServiceImpl extends ServiceImpl<StockInOutMapper, StockIn
         if (exist == null) {
             throw new BusinessException(BizCode.STOCK_IN_OUT_NOT_FOUND);
         }
-        if (!DRAFT_STATUS.equals(exist.getStatus())) {
+        if (!StockInOutStatusEnum.DRAFT.getValue().equals(exist.getStatus())) {
             throw new BusinessException(bizCode);
         }
     }

@@ -59,6 +59,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                .requestMatchers("/test-login-public").permitAll()
                 .anyRequest().authenticated());
 
         http.oauth2ResourceServer(oauth2 -> oauth2

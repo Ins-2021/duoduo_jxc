@@ -14,6 +14,7 @@ import com.duoduo.jxc.entity.PurchaseOrderDetail;
 import com.duoduo.jxc.common.BizCode;
 import com.duoduo.jxc.entity.StockInOut;
 import com.duoduo.jxc.entity.StockInOutDetail;
+import com.duoduo.jxc.enums.StockInOutStatusEnum;
 import com.duoduo.jxc.exception.BusinessException;
 import com.duoduo.jxc.mapper.PurchaseOrderDetailMapper;
 import com.duoduo.jxc.mapper.PurchaseOrderMapper;
@@ -235,7 +236,7 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
                 + UUID.randomUUID().toString().replace("-", "").substring(0, 6).toUpperCase());
         stockInOut.setType(stockType);
         stockInOut.setWarehouseId(warehouseId);
-        stockInOut.setStatus(1); // 直接已审核
+        stockInOut.setStatus(StockInOutStatusEnum.APPROVED.getValue()); // 直接已审核
         stockInOut.setBillDate(LocalDateTime.now());
         stockInOut.setRemark("采购单[" + purchaseOrder.getDocNo() + "]自动生成");
         stockInOut.setCreateTime(LocalDateTime.now());

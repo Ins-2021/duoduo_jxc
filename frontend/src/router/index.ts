@@ -348,6 +348,68 @@ export const routes: Array<RouteRecordRaw> = [
         ]
       },
       {
+        path: 'production',
+        name: 'Production',
+        redirect: '/production/order',
+        meta: { title: '生产管理', icon: 'Platform', perm: 'production:menu:view' },
+        children: [
+          {
+            path: 'order',
+            name: 'ProductionOrder',
+            component: () => import('../views/production/order/index.vue'),
+            meta: { title: '生产订单', perm: 'production:order:view' }
+          },
+          {
+            path: 'order/add',
+            name: 'ProductionOrderAdd',
+            component: () => import('../views/production/order/add.vue'),
+            meta: { title: '新建生产单', hidden: true, perm: 'production:order:add' }
+          },
+          {
+            path: 'plan',
+            name: 'ProductionPlan',
+            component: () => import('../views/production/plan/index.vue'),
+            meta: { title: '生产计划', perm: 'production:plan:view' }
+          },
+          {
+            path: 'schedule',
+            name: 'ProductionSchedule',
+            component: () => import('../views/production/schedule/index.vue'),
+            meta: { title: '生产排程', perm: 'production:schedule:view' }
+          },
+          {
+            path: 'cut-order',
+            name: 'CutOrder',
+            component: () => import('../views/production/cut-order/index.vue'),
+            meta: { title: '裁床单', perm: 'production:cut-order:view' }
+          },
+          {
+            path: 'cut-bundle',
+            name: 'CutBundle',
+            component: () => import('../views/production/cut-bundle/index.vue'),
+            meta: { title: '裁床扎包', perm: 'production:cut-bundle:view' }
+          },
+          {
+            path: 'dashboard',
+            name: 'ProductionDashboard',
+            component: () => import('../views/production/dashboard/index.vue'),
+            meta: { title: '进度看板', perm: 'production:dashboard:view' }
+          },
+          {
+            path: 'quality',
+            name: 'ProductionQuality',
+            component: () => import('../views/production/quality/index.vue'),
+            meta: { title: '质检记录', perm: 'production:quality:view' }
+          },
+          {
+            path: 'rework',
+            name: 'ProductionRework',
+            component: () => import('../views/production/rework/index.vue'),
+            meta: { title: '返工记录', perm: 'production:rework:view' }
+          }
+        ]
+      },
+      {
         path: 'mes',
         name: 'MES',
         redirect: '/mes/process',
@@ -460,6 +522,70 @@ export const routes: Array<RouteRecordRaw> = [
             name: 'WorkflowInstanceDetail',
             component: () => import('../views/workflow/instance-detail.vue'),
             meta: { title: '流程详情', hidden: true, perm: 'workflow:instance:mine' }
+          }
+        ]
+      },
+      {
+        path: 'cost',
+        name: 'Cost',
+        redirect: '/cost/center',
+        meta: { title: '成本核算', icon: 'Coin', perm: 'cost:menu:view' },
+        children: [
+          {
+            path: 'center',
+            name: 'CostCenter',
+            component: () => import('../views/cost/center/index.vue'),
+            meta: { title: '成本中心', perm: 'cost:center:view' }
+          },
+          {
+            path: 'pool',
+            name: 'CostPool',
+            component: () => import('../views/cost/pool/index.vue'),
+            meta: { title: '成本池', perm: 'cost:pool:view' }
+          },
+          {
+            path: 'allocation',
+            name: 'CostAllocation',
+            component: () => import('../views/cost/allocation/index.vue'),
+            meta: { title: '成本分摊', perm: 'cost:allocation:view' }
+          },
+          {
+            path: 'product',
+            name: 'CostProduct',
+            component: () => import('../views/cost/product/index.vue'),
+            meta: { title: '产品成本', perm: 'cost:product:view' }
+          }
+        ]
+      },
+      {
+        path: 'wage',
+        name: 'Wage',
+        redirect: '/wage/sheet',
+        meta: { title: '工资管理', icon: 'Wallet', perm: 'wage:menu:view' },
+        children: [
+          {
+            path: 'sheet',
+            name: 'WageSheet',
+            component: () => import('../views/wage/sheet/index.vue'),
+            meta: { title: '工资单', perm: 'wage:sheet:view' }
+          },
+          {
+            path: 'sheet/detail/:id',
+            name: 'WageSheetDetail',
+            component: () => import('../views/wage/sheet/detail.vue'),
+            meta: { title: '工资单详情', hidden: true, perm: 'wage:sheet:view' }
+          },
+          {
+            path: 'piece',
+            name: 'WagePiece',
+            component: () => import('../views/wage/piece/index.vue'),
+            meta: { title: '计件记录', perm: 'wage:piece:view' }
+          },
+          {
+            path: 'price',
+            name: 'WagePrice',
+            component: () => import('../views/wage/price/index.vue'),
+            meta: { title: '计件工价', perm: 'wage:price:view' }
           }
         ]
       },

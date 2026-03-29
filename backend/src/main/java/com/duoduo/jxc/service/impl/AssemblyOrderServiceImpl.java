@@ -10,6 +10,7 @@ import com.duoduo.jxc.common.PageResult;
 import com.duoduo.jxc.converter.InventoryConverter;
 import com.duoduo.jxc.dto.inventory.AssemblyOrderDTO;
 import com.duoduo.jxc.dto.inventory.AssemblyOrderDetailDTO;
+import com.duoduo.jxc.enums.AssemblyOrderStatusEnum;
 import com.duoduo.jxc.enums.AssemblyTypeEnum;
 import com.duoduo.jxc.entity.AssemblyOrder;
 import com.duoduo.jxc.entity.AssemblyOrderDetail;
@@ -35,9 +36,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AssemblyOrderServiceImpl extends ServiceImpl<AssemblyOrderMapper, AssemblyOrder> implements AssemblyOrderService {
-
-    private static final Integer DRAFT_STATUS = 0;
-    private static final Integer APPROVED_STATUS = 1;
 
     private final AssemblyOrderDetailMapper detailMapper;
     private final InventoryConverter converter;
@@ -99,7 +97,7 @@ public class AssemblyOrderServiceImpl extends ServiceImpl<AssemblyOrderMapper, A
         BeanUtils.copyProperties(dto, entity);
         
         entity.setAssemblyNo(generateOrderNo());
-        entity.setStatus(DRAFT_STATUS);
+        entity.setStatus(AssemblyOrderStatusEnum.DRAFT.getValue());
         entity.setCreateTime(LocalDateTime.now());
         entity.setUpdateTime(LocalDateTime.now());
         save(entity);
@@ -154,7 +152,7 @@ public class AssemblyOrderServiceImpl extends ServiceImpl<AssemblyOrderMapper, A
         if (entity == null) {
             throw new BusinessException(BizCode.ASSEMBLY_ORDER_NOT_FOUND);
         }
-        if (!DRAFT_STATUS.equals(entity.getStatus())) {
+        if (!AssemblyOrderStatusEnum.DRAFT.getValue().equals(entity.getStatus())) {
             throw new BusinessException(BizCode.ASSEMBLY_ORDER_CANNOT_APPROVE);
         }
 
@@ -190,7 +188,7 @@ public class AssemblyOrderServiceImpl extends ServiceImpl<AssemblyOrderMapper, A
             }
         }
 
-        entity.setStatus(APPROVED_STATUS);
+        entity.setStatus(AssemblyOrderStatusEnum.APPROVED.getValue());
         entity.setUpdateTime(LocalDateTime.now());
         updateById(entity);
         log.info("组装拆卸审核完成，库存已变动: assemblyId={}, assemblyNo={}, type={}", id, entity.getAssemblyNo(), entity.getType());
@@ -201,7 +199,7 @@ public class AssemblyOrderServiceImpl extends ServiceImpl<AssemblyOrderMapper, A
         if (exist == null) {
             throw new BusinessException(BizCode.ASSEMBLY_ORDER_NOT_FOUND);
         }
-        if (!DRAFT_STATUS.equals(exist.getStatus())) {
+        if (!AssemblyOrderStatusEnum.DRAFT.getValue().equals(exist.getStatus())) {
             throw new BusinessException(bizCode);
         }
     }
