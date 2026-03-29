@@ -105,6 +105,7 @@ REPO_STATUS: "已有基础代码框架"
 | B004 | codebuddy | [Bug] 硬编码问题 | 22:00 | ✅ 完成 | 已创建QuotationStatusEnum |
 | B005 | opencode | [Bug] Service实现不完整 | 22:00 | ✅ 完成 | 所有Service已补齐（9be71bc） |
 | T038 | trae | BOM管理模块 | 00:30 | ✅ 完成 | Bom/BomItem/BomProcess（53012d2） |
+| T039 | trae | 完整报表系统 | 00:45 | ✅ 完成 | 10个报表接口（销售/采购/生产/财务） |
 | T040 | codebuddy | 数据导入导出 | 00:30 | ✅ 完成 | 商品/客户/供应商导入导出（53012d2） |
 
 ### 监控检查项
