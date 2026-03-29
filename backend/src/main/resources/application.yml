@@ -4,6 +4,7 @@ server:
     context-path: /api/v1
   tomcat:
     uri-encoding: UTF-8
+    max-header-size: 10485760
 
 spring:
   application:

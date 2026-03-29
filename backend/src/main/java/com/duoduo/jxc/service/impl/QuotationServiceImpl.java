@@ -3,6 +3,7 @@ package com.duoduo.jxc.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.duoduo.jxc.common.BizCode;
 import com.duoduo.jxc.common.PageResult;
 import com.duoduo.jxc.dto.sales.QuotationDTO;
 import com.duoduo.jxc.dto.sales.QuotationDetailDTO;
@@ -11,6 +12,8 @@ import com.duoduo.jxc.dto.sales.SalesOrderDTO;
 import com.duoduo.jxc.dto.sales.SalesOrderDetailDTO;
 import com.duoduo.jxc.entity.Quotation;
 import com.duoduo.jxc.entity.QuotationDetail;
+import com.duoduo.jxc.enums.QuotationStatusEnum;
+import com.duoduo.jxc.exception.BusinessException;
 import com.duoduo.jxc.mapper.QuotationDetailMapper;
 import com.duoduo.jxc.mapper.QuotationMapper;
 import com.duoduo.jxc.service.QuotationService;
@@ -29,6 +32,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class QuotationServiceImpl extends ServiceImpl<QuotationMapper, Quotation> implements QuotationService {
+
+    private static final String QUOTATION_PREFIX = "BJ";
 
     private final QuotationDetailMapper detailMapper;
     private final SalesOrderService salesOrderService;
@@ -87,10 +92,10 @@ public class QuotationServiceImpl extends ServiceImpl<QuotationMapper, Quotation
         
         // 生成单号
         if (!StringUtils.hasText(quotation.getQuotationNo())) {
-            quotation.setQuotationNo("BJ" + LocalDate.now().toString().replace("-", "") + UUID.randomUUID().toString().substring(0, 6).toUpperCase());
+            quotation.setQuotationNo(QUOTATION_PREFIX + LocalDate.now().toString().replace("-", "") + UUID.randomUUID().toString().substring(0, 6).toUpperCase());
         }
         if (quotation.getQuotationStatus() == null) {
-            quotation.setQuotationStatus("draft");
+            quotation.setQuotationStatus(QuotationStatusEnum.DRAFT.getValue());
         }
         
         save(quotation);
@@ -112,6 +117,7 @@ public class QuotationServiceImpl extends ServiceImpl<QuotationMapper, Quotation
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(QuotationDTO dto) {
+        assertDraft(dto.getQuotationId(), BizCode.BAD_REQUEST);
         Quotation quotation = new Quotation();
         BeanUtils.copyProperties(dto, quotation);
         updateById(quotation);
@@ -138,6 +144,7 @@ public class QuotationServiceImpl extends ServiceImpl<QuotationMapper, Quotation
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
+        assertDraft(id, BizCode.BAD_REQUEST);
         removeById(id);
         LambdaQueryWrapper<QuotationDetail> deleteWrapper = new LambdaQueryWrapper<>();
         deleteWrapper.eq(QuotationDetail::getQuotationId, id);
@@ -150,12 +157,22 @@ public class QuotationServiceImpl extends ServiceImpl<QuotationMapper, Quotation
         return dto;
     }
 
+    private void assertDraft(Long id, BizCode bizCode) {
+        Quotation exist = getById(id);
+        if (exist == null) {
+            throw new BusinessException(BizCode.NOT_FOUND);
+        }
+        if (!QuotationStatusEnum.DRAFT.getValue().equals(exist.getQuotationStatus())) {
+            throw new BusinessException(bizCode, "非草稿状态不允许此操作");
+        }
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long convertToSalesOrder(Long quotationId) {
         Quotation quotation = getById(quotationId);
         if (quotation == null) {
-            throw new RuntimeException("报价单不存在");
+            throw new BusinessException(BizCode.BAD_REQUEST, "报价单不存在");
         }
 
         // 获取明细
@@ -193,7 +210,7 @@ public class QuotationServiceImpl extends ServiceImpl<QuotationMapper, Quotation
         // 更新报价单状态
         Quotation updateQuotation = new Quotation();
         updateQuotation.setQuotationId(quotationId);
-        updateQuotation.setQuotationStatus("accepted");
+        updateQuotation.setQuotationStatus(QuotationStatusEnum.ACCEPTED.getValue());
         updateById(updateQuotation);
 
         return orderId;

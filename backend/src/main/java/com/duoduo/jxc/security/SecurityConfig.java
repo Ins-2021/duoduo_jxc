@@ -57,7 +57,7 @@ public class SecurityConfig {
                 .accessDeniedHandler(accessDeniedHandler()));
 
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/auth/login", "/auth/login/wechat", "/auth/refresh", "/auth/jwks").permitAll()
                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                 .requestMatchers("/test-login-public").permitAll()
                 .anyRequest().authenticated());

@@ -1,17 +1,14 @@
 spring:
   datasource:
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:duoduo_jxc_test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    username: sa
-    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/duoduo_jxc_test?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true
+    username: root
+    password: ${DB_PASSWORD:Root@1234}
     hikari:
-      connection-init-sql: "SELECT 1"
+      connection-init-sql: "SET NAMES utf8mb4"
   sql:
     init:
-      mode: always
-      schema-locations: 
-        - classpath:sql/test_schema.sql
-      data-locations:
+      mode: never
 
 mybatis-plus:
   configuration:

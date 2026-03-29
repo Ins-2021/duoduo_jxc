@@ -100,10 +100,10 @@ REPO_STATUS: "已有基础代码框架"
 | T036 | trae | API单元测试执行 | 21:50 | ✅ 完成 | 已配置MySQL，待运行测试验证 |
 | T037 | opencode | Git提交小程序代码 | 21:50 | ✅ 完成 | f130112 小程序+前端页面+Bug修复 |
 | B001 | codebuddy | [Bug] PurchaseOrder状态码错误 | 22:00 | ✅ 完成 | 已使用StockInOutStatusEnum |
-| B002 | codebuddy | [Bug] 库存Service状态保护缺失 | 22:00 | 🔄 部分完成 | 3/4完成（缺TransferOrder） |
+| B002 | codebuddy | [Bug] TransferOrder状态保护 | 22:00 | ✅ 完成 | assertEditable方法已添加 |
 | B003 | trae | [Bug] 权限控制缺失 | 22:00 | ✅ 完成 | 5个控制器已添加@PreAuthorize |
 | B004 | codebuddy | [Bug] 硬编码问题 | 22:00 | ✅ 完成 | 已创建QuotationStatusEnum |
-| B005 | trae | [Bug] Service实现不完整 | 22:00 | 🔴 严重 | 10个Service仍是空壳（11行代码） |
+| B005 | opencode | [Bug] Service实现不完整 | 22:00 | ✅ 完成 | 8个Service已补全CRUD方法 |
 
 ### 监控检查项
 

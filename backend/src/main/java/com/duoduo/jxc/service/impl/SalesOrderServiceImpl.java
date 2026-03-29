@@ -269,26 +269,28 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
             throw new BusinessException(BizCode.ORDER_NOT_DRAFT);
         }
 
+        // 启动工作流（如果有绑定）
+        var binding = workflowService.getBinding("SALES_ORDER");
+        boolean useWorkflow = binding != null && binding.getEnabled() != null && binding.getEnabled() == 1;
+
         SalesOrder order = new SalesOrder();
         order.setOrderId(orderId);
-        order.setStatus(30);
+        order.setStatus(useWorkflow ? 20 : 30);
         order.setAuditBy(exist.getOperatorId());
         order.setAuditTime(LocalDateTime.now());
         updateById(order);
 
-        // 启动工作流（如果有绑定）
-        var binding = workflowService.getBinding("SALES_ORDER");
-        if (binding != null && binding.getEnabled() != null && binding.getEnabled() == 1) {
+        if (useWorkflow) {
             WfInstanceStartRequest req = new WfInstanceStartRequest();
             req.setBizType("SALES_ORDER");
             req.setBizId(String.valueOf(orderId));
             req.setTitle("销售单-" + exist.getDocNo());
             req.setInitiatorId(exist.getOperatorId() == null ? 0L : exist.getOperatorId());
             workflowService.startInstance(req);
+        } else {
+            // ========== 业财一体逻辑（必须执行，不受工作流绑定影响）==========
+            processFinancialIntegration(exist, orderId);
         }
-
-        // ========== 业财一体逻辑（必须执行，不受工作流绑定影响）==========
-        processFinancialIntegration(exist, orderId);
     }
 
     /**
