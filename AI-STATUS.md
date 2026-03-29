@@ -103,7 +103,7 @@ REPO_STATUS: "已有基础代码框架"
 | B002 | codebuddy | [Bug] TransferOrder状态保护 | 22:00 | ✅ 完成 | assertEditable方法已添加 |
 | B003 | trae | [Bug] 权限控制缺失 | 22:00 | ✅ 完成 | 5个控制器已添加@PreAuthorize |
 | B004 | codebuddy | [Bug] 硬编码问题 | 22:00 | ✅ 完成 | 已创建QuotationStatusEnum |
-| B005 | opencode | [Bug] Service实现不完整 | 22:00 | ✅ 完成 | 8个Service已补全CRUD方法 |
+| B005 | opencode | [Bug] Service实现不完整 | 22:00 | ✅ 完成 | 所有Service已补齐（9be71bc） |
 
 ### 监控检查项
 
@@ -156,10 +156,10 @@ REPO_STATUS: "已有基础代码框架"
 - ✅ T037: opencode - 小程序代码已提交
 
 ### 待验收
-1. ⬜ 运行完整单元测试 `mvn test`
-2. ⬜ 验证所有Bug修复
-3. ⬜ 最终代码提交
-4. ⬜ 项目验收
+1. ⬜ BOM管理模块开发
+2. ⬜ 数据导入导出功能
+3. ⬜ 完整报表系统
+4. ⬜ 最终项目验收
 
 ---
 
