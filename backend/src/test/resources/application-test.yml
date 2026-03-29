@@ -19,3 +19,4 @@ flowable:
   database-type: mysql
   async-executor-activate: false
   history-level: full
+  check-process-definitions: false
