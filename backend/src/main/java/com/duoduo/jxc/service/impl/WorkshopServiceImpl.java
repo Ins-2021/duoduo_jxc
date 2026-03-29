@@ -25,7 +25,7 @@ public class WorkshopServiceImpl extends ServiceImpl<WorkshopMapper, Workshop> i
     @Override
     public PageResult<WorkshopDTO> pageQuery(PageQuery query) {
         Page<Workshop> page = new Page<>(query.getPageNum(), query.getPageSize());
-
+        
         LambdaQueryWrapper<Workshop> wrapper = new LambdaQueryWrapper<>();
         Object keywordObj = query.getParam("keyword");
         if (keywordObj != null && StringUtils.hasText(keywordObj.toString())) {
@@ -35,13 +35,13 @@ public class WorkshopServiceImpl extends ServiceImpl<WorkshopMapper, Workshop> i
                    .like(Workshop::getCode, keyword);
         }
         Object factoryIdObj = query.getParam("factoryId");
-        if (factoryIdObj != null) {
+        if (factoryIdObj != null && StringUtils.hasText(factoryIdObj.toString())) {
             wrapper.eq(Workshop::getFactoryId, Long.valueOf(factoryIdObj.toString()));
         }
         wrapper.orderByDesc(Workshop::getWorkshopId);
 
         Page<Workshop> resultPage = this.page(page, wrapper);
-
+        
         List<WorkshopDTO> dtoList = resultPage.getRecords().stream().map(this::convertToDTO).collect(Collectors.toList());
         return new PageResult<>(resultPage.getTotal(), dtoList);
     }
@@ -58,12 +58,15 @@ public class WorkshopServiceImpl extends ServiceImpl<WorkshopMapper, Workshop> i
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long create(WorkshopDTO dto) {
+        if (dto.getFactoryId() == null) {
+            throw new BusinessException(BizCode.BAD_REQUEST, "所属工厂ID不能为空");
+        }
         if (!StringUtils.hasText(dto.getCode()) || !StringUtils.hasText(dto.getName())) {
             throw new BusinessException(BizCode.BAD_REQUEST, "车间编码和名称不能为空");
         }
-
-        checkDuplicate(dto.getCode(), dto.getFactoryId(), null);
-
+        
+        checkDuplicate(dto.getFactoryId(), dto.getCode(), null);
+        
         Workshop workshop = new Workshop();
         BeanUtils.copyProperties(dto, workshop);
         this.save(workshop);
@@ -76,6 +79,9 @@ public class WorkshopServiceImpl extends ServiceImpl<WorkshopMapper, Workshop> i
         if (dto.getWorkshopId() == null) {
             throw new BusinessException(BizCode.BAD_REQUEST, "车间ID不能为空");
         }
+        if (dto.getFactoryId() == null) {
+            throw new BusinessException(BizCode.BAD_REQUEST, "所属工厂ID不能为空");
+        }
         if (!StringUtils.hasText(dto.getCode()) || !StringUtils.hasText(dto.getName())) {
             throw new BusinessException(BizCode.BAD_REQUEST, "车间编码和名称不能为空");
         }
@@ -85,7 +91,7 @@ public class WorkshopServiceImpl extends ServiceImpl<WorkshopMapper, Workshop> i
             throw new BusinessException(BizCode.NOT_FOUND);
         }
 
-        checkDuplicate(dto.getCode(), dto.getFactoryId(), dto.getWorkshopId());
+        checkDuplicate(dto.getFactoryId(), dto.getCode(), dto.getWorkshopId());
 
         BeanUtils.copyProperties(dto, exist);
         this.updateById(exist);
@@ -101,12 +107,10 @@ public class WorkshopServiceImpl extends ServiceImpl<WorkshopMapper, Workshop> i
         this.removeById(id);
     }
 
-    private void checkDuplicate(String code, Long factoryId, Long excludeId) {
+    private void checkDuplicate(Long factoryId, String code, Long excludeId) {
         LambdaQueryWrapper<Workshop> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Workshop::getCode, code);
-        if (factoryId != null) {
-            wrapper.eq(Workshop::getFactoryId, factoryId);
-        }
+        wrapper.eq(Workshop::getFactoryId, factoryId)
+               .eq(Workshop::getCode, code);
         if (excludeId != null) {
             wrapper.ne(Workshop::getWorkshopId, excludeId);
         }

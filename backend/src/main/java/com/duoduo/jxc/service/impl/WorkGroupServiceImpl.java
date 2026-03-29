@@ -25,7 +25,7 @@ public class WorkGroupServiceImpl extends ServiceImpl<WorkGroupMapper, WorkGroup
     @Override
     public PageResult<WorkGroupDTO> pageQuery(PageQuery query) {
         Page<WorkGroup> page = new Page<>(query.getPageNum(), query.getPageSize());
-
+        
         LambdaQueryWrapper<WorkGroup> wrapper = new LambdaQueryWrapper<>();
         Object keywordObj = query.getParam("keyword");
         if (keywordObj != null && StringUtils.hasText(keywordObj.toString())) {
@@ -34,18 +34,18 @@ public class WorkGroupServiceImpl extends ServiceImpl<WorkGroupMapper, WorkGroup
                    .or()
                    .like(WorkGroup::getCode, keyword);
         }
-        Object workshopIdObj = query.getParam("workshopId");
-        if (workshopIdObj != null) {
-            wrapper.eq(WorkGroup::getWorkshopId, Long.valueOf(workshopIdObj.toString()));
-        }
         Object factoryIdObj = query.getParam("factoryId");
-        if (factoryIdObj != null) {
+        if (factoryIdObj != null && StringUtils.hasText(factoryIdObj.toString())) {
             wrapper.eq(WorkGroup::getFactoryId, Long.valueOf(factoryIdObj.toString()));
+        }
+        Object workshopIdObj = query.getParam("workshopId");
+        if (workshopIdObj != null && StringUtils.hasText(workshopIdObj.toString())) {
+            wrapper.eq(WorkGroup::getWorkshopId, Long.valueOf(workshopIdObj.toString()));
         }
         wrapper.orderByDesc(WorkGroup::getGroupId);
 
         Page<WorkGroup> resultPage = this.page(page, wrapper);
-
+        
         List<WorkGroupDTO> dtoList = resultPage.getRecords().stream().map(this::convertToDTO).collect(Collectors.toList());
         return new PageResult<>(resultPage.getTotal(), dtoList);
     }
@@ -62,12 +62,18 @@ public class WorkGroupServiceImpl extends ServiceImpl<WorkGroupMapper, WorkGroup
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long create(WorkGroupDTO dto) {
+        if (dto.getFactoryId() == null) {
+            throw new BusinessException(BizCode.BAD_REQUEST, "所属工厂ID不能为空");
+        }
+        if (dto.getWorkshopId() == null) {
+            throw new BusinessException(BizCode.BAD_REQUEST, "所属车间ID不能为空");
+        }
         if (!StringUtils.hasText(dto.getCode()) || !StringUtils.hasText(dto.getName())) {
             throw new BusinessException(BizCode.BAD_REQUEST, "班组编码和名称不能为空");
         }
-
-        checkDuplicate(dto.getCode(), dto.getWorkshopId(), null);
-
+        
+        checkDuplicate(dto.getWorkshopId(), dto.getCode(), null);
+        
         WorkGroup group = new WorkGroup();
         BeanUtils.copyProperties(dto, group);
         this.save(group);
@@ -80,6 +86,12 @@ public class WorkGroupServiceImpl extends ServiceImpl<WorkGroupMapper, WorkGroup
         if (dto.getGroupId() == null) {
             throw new BusinessException(BizCode.BAD_REQUEST, "班组ID不能为空");
         }
+        if (dto.getFactoryId() == null) {
+            throw new BusinessException(BizCode.BAD_REQUEST, "所属工厂ID不能为空");
+        }
+        if (dto.getWorkshopId() == null) {
+            throw new BusinessException(BizCode.BAD_REQUEST, "所属车间ID不能为空");
+        }
         if (!StringUtils.hasText(dto.getCode()) || !StringUtils.hasText(dto.getName())) {
             throw new BusinessException(BizCode.BAD_REQUEST, "班组编码和名称不能为空");
         }
@@ -89,7 +101,7 @@ public class WorkGroupServiceImpl extends ServiceImpl<WorkGroupMapper, WorkGroup
             throw new BusinessException(BizCode.NOT_FOUND);
         }
 
-        checkDuplicate(dto.getCode(), dto.getWorkshopId(), dto.getGroupId());
+        checkDuplicate(dto.getWorkshopId(), dto.getCode(), dto.getGroupId());
 
         BeanUtils.copyProperties(dto, exist);
         this.updateById(exist);
@@ -105,12 +117,10 @@ public class WorkGroupServiceImpl extends ServiceImpl<WorkGroupMapper, WorkGroup
         this.removeById(id);
     }
 
-    private void checkDuplicate(String code, Long workshopId, Long excludeId) {
+    private void checkDuplicate(Long workshopId, String code, Long excludeId) {
         LambdaQueryWrapper<WorkGroup> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(WorkGroup::getCode, code);
-        if (workshopId != null) {
-            wrapper.eq(WorkGroup::getWorkshopId, workshopId);
-        }
+        wrapper.eq(WorkGroup::getWorkshopId, workshopId)
+               .eq(WorkGroup::getCode, code);
         if (excludeId != null) {
             wrapper.ne(WorkGroup::getGroupId, excludeId);
         }

@@ -17,7 +17,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -30,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 public class SecurityConfig {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final JwtRedisAuthoritiesConverter jwtRedisAuthoritiesConverter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -71,11 +71,8 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter c = new JwtGrantedAuthoritiesConverter();
-        c.setAuthoritiesClaimName("perms");
-        c.setAuthorityPrefix("");
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(c);
+        converter.setJwtGrantedAuthoritiesConverter(jwtRedisAuthoritiesConverter);
         return converter;
     }
 

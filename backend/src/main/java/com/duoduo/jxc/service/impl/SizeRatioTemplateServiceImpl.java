@@ -27,25 +27,19 @@ public class SizeRatioTemplateServiceImpl extends ServiceImpl<SizeRatioTemplateM
         Page<SizeRatioTemplate> page = new Page<>(query.getPageNum(), query.getPageSize());
         
         LambdaQueryWrapper<SizeRatioTemplate> wrapper = new LambdaQueryWrapper<>();
-        
-        Object keywordObj = query.getParams().get("keyword");
+        Object keywordObj = query.getParam("keyword");
         if (keywordObj != null && StringUtils.hasText(keywordObj.toString())) {
             wrapper.like(SizeRatioTemplate::getName, keywordObj.toString());
         }
-        
-        Object categoryIdObj = query.getParams().get("categoryId");
-        if (categoryIdObj != null) {
-            Long categoryId = categoryIdObj instanceof Long ? (Long) categoryIdObj : Long.valueOf(categoryIdObj.toString());
-            wrapper.eq(SizeRatioTemplate::getCategoryId, categoryId);
+        Object categoryIdObj = query.getParam("categoryId");
+        if (categoryIdObj != null && StringUtils.hasText(categoryIdObj.toString())) {
+            wrapper.eq(SizeRatioTemplate::getCategoryId, Long.valueOf(categoryIdObj.toString()));
         }
-        
         wrapper.orderByDesc(SizeRatioTemplate::getTemplateId);
 
         Page<SizeRatioTemplate> resultPage = this.page(page, wrapper);
         
-        List<SizeRatioTemplateDTO> dtoList = resultPage.getRecords().stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        List<SizeRatioTemplateDTO> dtoList = resultPage.getRecords().stream().map(this::convertToDTO).collect(Collectors.toList());
         return new PageResult<>(resultPage.getTotal(), dtoList);
     }
 
@@ -65,10 +59,7 @@ public class SizeRatioTemplateServiceImpl extends ServiceImpl<SizeRatioTemplateM
             throw new BusinessException(BizCode.BAD_REQUEST, "模板名称不能为空");
         }
         if (dto.getCategoryId() == null) {
-            throw new BusinessException(BizCode.BAD_REQUEST, "尺码类别不能为空");
-        }
-        if (!StringUtils.hasText(dto.getRatios())) {
-            throw new BusinessException(BizCode.BAD_REQUEST, "配比数据不能为空");
+            throw new BusinessException(BizCode.BAD_REQUEST, "尺码组ID不能为空");
         }
         
         checkDuplicate(dto.getName(), null);
@@ -85,16 +76,19 @@ public class SizeRatioTemplateServiceImpl extends ServiceImpl<SizeRatioTemplateM
         if (dto.getTemplateId() == null) {
             throw new BusinessException(BizCode.BAD_REQUEST, "模板ID不能为空");
         }
+        if (!StringUtils.hasText(dto.getName())) {
+            throw new BusinessException(BizCode.BAD_REQUEST, "模板名称不能为空");
+        }
+        if (dto.getCategoryId() == null) {
+            throw new BusinessException(BizCode.BAD_REQUEST, "尺码组ID不能为空");
+        }
 
         SizeRatioTemplate exist = this.getById(dto.getTemplateId());
         if (exist == null) {
             throw new BusinessException(BizCode.NOT_FOUND);
         }
 
-        // 如果修改了名称，检查重复
-        if (StringUtils.hasText(dto.getName()) && !exist.getName().equals(dto.getName())) {
-            checkDuplicate(dto.getName(), dto.getTemplateId());
-        }
+        checkDuplicate(dto.getName(), dto.getTemplateId());
 
         BeanUtils.copyProperties(dto, exist);
         this.updateById(exist);

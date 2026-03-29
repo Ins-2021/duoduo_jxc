@@ -55,9 +55,9 @@ public class AuthTokenServiceImpl implements AuthTokenService {
             throw new BusinessException(BizCode.USER_NOT_FOUND);
         }
         List<String> perms = sysPermissionService.getUserPerms(user);
-        IssuedAccessToken access = issueAccessToken(user.getUserId(), user.getUsername(), perms);
+        IssuedAccessToken access = issueAccessToken(user.getUserId(), user.getUsername());
         String refresh = issueRefreshToken(user.getUserId(), user.getUsername());
-        saveOnlineSession(user.getUserId(), user.getUsername(), access.jti, access.expiresAt, refresh);
+        saveOnlineSession(user.getUserId(), user.getUsername(), access.jti, access.expiresAt, refresh, perms);
 
         TokenResponse resp = new TokenResponse();
         resp.setTokenType("Bearer");
@@ -86,8 +86,8 @@ public class AuthTokenServiceImpl implements AuthTokenService {
             throw new BusinessException(BizCode.USER_DISABLED);
         }
         List<String> perms = sysPermissionService.getUserPerms(user);
-        IssuedAccessToken access = issueAccessToken(user.getUserId(), user.getUsername(), perms);
-        saveOnlineSession(user.getUserId(), user.getUsername(), access.jti, access.expiresAt, refreshToken);
+        IssuedAccessToken access = issueAccessToken(user.getUserId(), user.getUsername());
+        saveOnlineSession(user.getUserId(), user.getUsername(), access.jti, access.expiresAt, refreshToken, perms);
 
         TokenResponse resp = new TokenResponse();
         resp.setTokenType("Bearer");
@@ -114,6 +114,8 @@ public class AuthTokenServiceImpl implements AuthTokenService {
         Long userId = jwt.getClaim("userId");
         if (userId != null) {
             stringRedisTemplate.delete("auth:online:user:" + userId);
+            // 清理权限缓存
+            stringRedisTemplate.delete("auth:perms:user:" + userId);
         }
         String jti = jwt.getId();
         Instant exp = jwt.getExpiresAt();
@@ -127,7 +129,7 @@ public class AuthTokenServiceImpl implements AuthTokenService {
         stringRedisTemplate.opsForValue().set("auth:blacklist:jti:" + jti, "1", ttl);
     }
 
-    private IssuedAccessToken issueAccessToken(Long userId, String username, List<String> perms) {
+    private IssuedAccessToken issueAccessToken(Long userId, String username) {
         Instant now = Instant.now();
         String jti = UUID.randomUUID().toString();
         Instant exp = now.plus(ACCESS_TTL);
@@ -138,7 +140,6 @@ public class AuthTokenServiceImpl implements AuthTokenService {
                 .subject(username)
                 .id(jti)
                 .claim("userId", userId)
-                .claim("perms", perms)
                 .build();
         String token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
         return new IssuedAccessToken(token, jti, exp);
@@ -153,7 +154,7 @@ public class AuthTokenServiceImpl implements AuthTokenService {
         return token;
     }
 
-    private void saveOnlineSession(Long userId, String username, String jti, Instant expiresAt, String refreshToken) {
+    private void saveOnlineSession(Long userId, String username, String jti, Instant expiresAt, String refreshToken, List<String> perms) {
         if (userId == null || !StringUtils.hasText(username) || !StringUtils.hasText(jti) || expiresAt == null) {
             return;
         }
@@ -166,11 +167,14 @@ public class AuthTokenServiceImpl implements AuthTokenService {
         session.lastSeenAt = now.toEpochMilli();
         session.expiresAt = expiresAt.toEpochMilli();
         session.refreshToken = refreshToken;
+        session.perms = perms;
         Duration ttl = Duration.between(now, expiresAt);
         if (ttl.isNegative() || ttl.isZero()) {
             return;
         }
         stringRedisTemplate.opsForValue().set("auth:online:user:" + userId, JSON.toJSONString(session), ttl);
+        // 同时将权限单独缓存，方便快速获取
+        stringRedisTemplate.opsForValue().set("auth:perms:user:" + userId, JSON.toJSONString(perms), ttl);
     }
 
     public void kickoutByUserId(Long userId) {
@@ -198,6 +202,8 @@ public class AuthTokenServiceImpl implements AuthTokenService {
             }
         }
         stringRedisTemplate.delete(key);
+        // 清理权限缓存
+        stringRedisTemplate.delete("auth:perms:user:" + userId);
     }
 
     private static class RefreshPayload {
@@ -225,5 +231,6 @@ public class AuthTokenServiceImpl implements AuthTokenService {
         public long lastSeenAt;
         public long expiresAt;
         public String refreshToken;
+        public List<String> perms;
     }
 }

@@ -27,27 +27,22 @@ public class SizeOptionServiceImpl extends ServiceImpl<SizeOptionMapper, SizeOpt
         Page<SizeOption> page = new Page<>(query.getPageNum(), query.getPageSize());
         
         LambdaQueryWrapper<SizeOption> wrapper = new LambdaQueryWrapper<>();
-        
-        Object keywordObj = query.getParams().get("keyword");
+        Object keywordObj = query.getParam("keyword");
         if (keywordObj != null && StringUtils.hasText(keywordObj.toString())) {
             String keyword = keywordObj.toString();
-            wrapper.and(w -> w.like(SizeOption::getName, keyword)
-                    .or().like(SizeOption::getCode, keyword));
+            wrapper.like(SizeOption::getName, keyword)
+                   .or()
+                   .like(SizeOption::getCode, keyword);
         }
-        
-        Object categoryIdObj = query.getParams().get("categoryId");
-        if (categoryIdObj != null) {
-            Long categoryId = categoryIdObj instanceof Long ? (Long) categoryIdObj : Long.valueOf(categoryIdObj.toString());
-            wrapper.eq(SizeOption::getCategoryId, categoryId);
+        Object categoryIdObj = query.getParam("categoryId");
+        if (categoryIdObj != null && StringUtils.hasText(categoryIdObj.toString())) {
+            wrapper.eq(SizeOption::getCategoryId, Long.valueOf(categoryIdObj.toString()));
         }
-        
-        wrapper.orderByDesc(SizeOption::getOptionId);
+        wrapper.orderByAsc(SizeOption::getSortOrder).orderByDesc(SizeOption::getOptionId);
 
         Page<SizeOption> resultPage = this.page(page, wrapper);
         
-        List<SizeOptionDTO> dtoList = resultPage.getRecords().stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        List<SizeOptionDTO> dtoList = resultPage.getRecords().stream().map(this::convertToDTO).collect(Collectors.toList());
         return new PageResult<>(resultPage.getTotal(), dtoList);
     }
 
@@ -64,13 +59,13 @@ public class SizeOptionServiceImpl extends ServiceImpl<SizeOptionMapper, SizeOpt
     @Transactional(rollbackFor = Exception.class)
     public Long create(SizeOptionDTO dto) {
         if (dto.getCategoryId() == null) {
-            throw new BusinessException(BizCode.BAD_REQUEST, "尺码类别不能为空");
+            throw new BusinessException(BizCode.BAD_REQUEST, "尺码组ID不能为空");
         }
-        if (!StringUtils.hasText(dto.getName())) {
-            throw new BusinessException(BizCode.BAD_REQUEST, "尺码选项名称不能为空");
+        if (!StringUtils.hasText(dto.getCode()) || !StringUtils.hasText(dto.getName())) {
+            throw new BusinessException(BizCode.BAD_REQUEST, "尺码编码和名称不能为空");
         }
         
-        checkDuplicate(dto.getCategoryId(), dto.getName(), dto.getCode(), null);
+        checkDuplicate(dto.getCategoryId(), dto.getCode(), null);
         
         SizeOption option = new SizeOption();
         BeanUtils.copyProperties(dto, option);
@@ -82,13 +77,13 @@ public class SizeOptionServiceImpl extends ServiceImpl<SizeOptionMapper, SizeOpt
     @Transactional(rollbackFor = Exception.class)
     public void update(SizeOptionDTO dto) {
         if (dto.getOptionId() == null) {
-            throw new BusinessException(BizCode.BAD_REQUEST, "尺码选项ID不能为空");
+            throw new BusinessException(BizCode.BAD_REQUEST, "尺码ID不能为空");
         }
         if (dto.getCategoryId() == null) {
-            throw new BusinessException(BizCode.BAD_REQUEST, "尺码类别不能为空");
+            throw new BusinessException(BizCode.BAD_REQUEST, "尺码组ID不能为空");
         }
-        if (!StringUtils.hasText(dto.getName())) {
-            throw new BusinessException(BizCode.BAD_REQUEST, "尺码选项名称不能为空");
+        if (!StringUtils.hasText(dto.getCode()) || !StringUtils.hasText(dto.getName())) {
+            throw new BusinessException(BizCode.BAD_REQUEST, "尺码编码和名称不能为空");
         }
 
         SizeOption exist = this.getById(dto.getOptionId());
@@ -96,7 +91,7 @@ public class SizeOptionServiceImpl extends ServiceImpl<SizeOptionMapper, SizeOpt
             throw new BusinessException(BizCode.NOT_FOUND);
         }
 
-        checkDuplicate(dto.getCategoryId(), dto.getName(), dto.getCode(), dto.getOptionId());
+        checkDuplicate(dto.getCategoryId(), dto.getCode(), dto.getOptionId());
 
         BeanUtils.copyProperties(dto, exist);
         this.updateById(exist);
@@ -112,29 +107,15 @@ public class SizeOptionServiceImpl extends ServiceImpl<SizeOptionMapper, SizeOpt
         this.removeById(id);
     }
 
-    private void checkDuplicate(Long categoryId, String name, String code, Long excludeId) {
-        if (StringUtils.hasText(name)) {
-            LambdaQueryWrapper<SizeOption> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(SizeOption::getCategoryId, categoryId)
-                   .eq(SizeOption::getName, name);
-            if (excludeId != null) {
-                wrapper.ne(SizeOption::getOptionId, excludeId);
-            }
-            if (this.count(wrapper) > 0) {
-                throw new BusinessException(BizCode.DUPLICATE, "该类别下尺码选项名称已存在");
-            }
+    private void checkDuplicate(Long categoryId, String code, Long excludeId) {
+        LambdaQueryWrapper<SizeOption> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SizeOption::getCategoryId, categoryId)
+               .eq(SizeOption::getCode, code);
+        if (excludeId != null) {
+            wrapper.ne(SizeOption::getOptionId, excludeId);
         }
-        
-        if (StringUtils.hasText(code)) {
-            LambdaQueryWrapper<SizeOption> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(SizeOption::getCategoryId, categoryId)
-                   .eq(SizeOption::getCode, code);
-            if (excludeId != null) {
-                wrapper.ne(SizeOption::getOptionId, excludeId);
-            }
-            if (this.count(wrapper) > 0) {
-                throw new BusinessException(BizCode.DUPLICATE, "该类别下尺码选项编码已存在");
-            }
+        if (this.count(wrapper) > 0) {
+            throw new BusinessException(BizCode.DUPLICATE, "该尺码组下已存在相同的尺码编码");
         }
     }
 

@@ -138,6 +138,13 @@ public enum BizCode {
     // ---- 打印 95xxx ----
     PRINT_TEMPLATE_NOT_FOUND(95001, "模板不存在"),
     PRINT_TEMPLATE_ID_EMPTY(95002, "templateId 不能为空"),
+
+    // ---- BOM 46xxx ----
+    BOM_NOT_FOUND(46001, "BOM不存在"),
+    BOM_ITEM_NOT_FOUND(46002, "BOM明细不存在"),
+    BOM_PROCESS_NOT_FOUND(46003, "BOM工序不存在"),
+    BOM_HAS_ITEMS(46004, "该BOM存在明细，不能删除"),
+    BOM_HAS_PROCESSES(46005, "该BOM存在工序，不能删除"),
     ;
 
     private final int code;

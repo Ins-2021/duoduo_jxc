@@ -30,14 +30,10 @@ public class FactoryServiceImpl extends ServiceImpl<FactoryMapper, Factory> impl
         Object keywordObj = query.getParam("keyword");
         if (keywordObj != null && StringUtils.hasText(keywordObj.toString())) {
             String keyword = keywordObj.toString();
-            wrapper.like(Factory::getName, keyword)
-                   .or()
-                   .like(Factory::getCode, keyword);
-            @Override
-    public void delete(Long id) {
-        removeById(id);
-    }
-}
+            wrapper.and(w -> w.like(Factory::getName, keyword)
+                    .or()
+                    .like(Factory::getCode, keyword));
+        }
         wrapper.orderByDesc(Factory::getFactoryId);
 
         Page<Factory> resultPage = this.page(page, wrapper);
