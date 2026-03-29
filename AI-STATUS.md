@@ -145,17 +145,21 @@ REPO_STATUS: "已有基础代码框架"
 
 ## 下一步行动
 
-### 高优先级（严重Bug）
-1. ⬜ B001: codebuddy - PurchaseOrder状态码错误（硬编码status=1）
-2. ⬜ B002: codebuddy - 库存Service状态保护缺失（4个Service）
-3. ⬜ B003: trae - 权限控制缺失（8个控制器）
-4. ⬜ T036: trae - API单元测试修复（81个错误，ApplicationContext问题）
+### 已完成 ✅
+- ✅ B001: codebuddy - PurchaseOrder状态码已修复
+- ✅ B002: codebuddy - 库存Service状态保护已修复
+- ✅ B003: trae - 权限控制已添加
+- ✅ B004: codebuddy - Quotation硬编码已修复
+- ✅ B005: opencode - 8个Service已补齐
+- ✅ T035: codebuddy - 工资管理period页面已完成
+- ✅ T036: trae - MySQL测试配置已完成
+- ✅ T037: opencode - 小程序代码已提交
 
-### 中优先级
-5. ⬜ T035: codebuddy - 补全工资管理-period页面
-6. ⬜ B004: codebuddy - 硬编码问题修复
-7. ⬜ B005: trae - Service实现不完整修复
-8. ⬜ T037: opencode - Git提交小程序代码（31个文件）
+### 待验收
+1. ⬜ 运行完整单元测试 `mvn test`
+2. ⬜ 验证所有Bug修复
+3. ⬜ 最终代码提交
+4. ⬜ 项目验收
 
 ---
 

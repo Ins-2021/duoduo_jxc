@@ -33,7 +33,11 @@ public class FactoryServiceImpl extends ServiceImpl<FactoryMapper, Factory> impl
             wrapper.like(Factory::getName, keyword)
                    .or()
                    .like(Factory::getCode, keyword);
-        }
+            @Override
+    public void delete(Long id) {
+        removeById(id);
+    }
+}
         wrapper.orderByDesc(Factory::getFactoryId);
 
         Page<Factory> resultPage = this.page(page, wrapper);
