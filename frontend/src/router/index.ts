@@ -564,6 +564,12 @@ export const routes: Array<RouteRecordRaw> = [
         meta: { title: '工资管理', icon: 'Wallet', perm: 'wage:menu:view' },
         children: [
           {
+            path: 'period',
+            name: 'WagePeriod',
+            component: () => import('../views/wage/period/index.vue'),
+            meta: { title: '工资期间', perm: 'wage:sheet:view' }
+          },
+          {
             path: 'sheet',
             name: 'WageSheet',
             component: () => import('../views/wage/sheet/index.vue'),

@@ -1,7 +1,7 @@
 # 项目状态跟踪
 
 > **维护者**：Manager-AI (opencode)
-> **更新时间**：2026-03-29 22:05
+> **更新时间**：2026-03-29 22:15
 > **职责规则**：AI-MANAGER-RULES.md
 
 ---
@@ -96,12 +96,12 @@ REPO_STATUS: "已有基础代码框架"
 | T032 | codebuddy | 小程序开发 | 21:40 | ✅ 完成 | 791依赖40页面零报错 |
 | T033 | trae | 前端-生产管理页面 | 21:50 | ✅ 完成 | 8个页面（order/plan/schedule/cut-order/cut-bundle/dashboard/quality/rework） |
 | T034 | codebuddy | 前端-成本核算页面 | 21:50 | ✅ 完成 | 4个页面（center/pool/allocation/product） |
-| T035 | codebuddy | 前端-工资管理页面 | 21:50 | 🔄 部分完成 | 3个页面（sheet/price/piece），缺period |
+| T035 | codebuddy | 前端-工资管理页面 | 21:50 | ✅ 完成 | 4个页面（sheet/price/piece/period） |
 | T036 | trae | API单元测试执行 | 21:50 | ❌ 失败 | 81个错误，ApplicationContext加载失败 |
-| T037 | opencode | Git提交小程序代码 | 21:50 | ⏳ 进行中 | 9个文件待提交 |
+| T037 | opencode | Git提交小程序代码 | 21:50 | ✅ 完成 | f130112 小程序+前端页面+Bug修复 |
 | B001 | codebuddy | [Bug] PurchaseOrder状态码错误 | 22:00 | 🔴 严重 | 行238硬编码status=1，应使用枚举 |
 | B002 | codebuddy | [Bug] 库存Service状态保护缺失 | 22:00 | 🔴 严重 | 4个库存Service缺少状态校验 |
-| B003 | trae | [Bug] 权限控制缺失 | 22:00 | 🔴 严重 | Process/Quality/Quotation控制器 |
+| B003 | trae | [Bug] 权限控制缺失 | 22:00 | ✅ 完成 | 5个控制器已添加@PreAuthorize |
 | B004 | codebuddy | [Bug] 硬编码问题 | 22:00 | 🟡 中等 | 单号前缀、状态码硬编码 |
 | B005 | trae | [Bug] Service实现不完整 | 22:00 | 🟡 中等 | 多个Service只有空壳 |
 

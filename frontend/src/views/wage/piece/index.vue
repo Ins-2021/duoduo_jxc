@@ -36,8 +36,11 @@
         <el-table-column prop="employeeName" label="员工姓名" width="100" />
         <el-table-column prop="styleCode" label="产品款号" width="110" />
         <el-table-column prop="styleName" label="产品名称" width="130" />
-        <el-table-column prop="processName" label="工序" width="90" />
+        <el-table-column prop="processCode" label="工序编码" width="90" />
+        <el-table-column prop="processName" label="工序名称" width="90" />
         <el-table-column prop="quantity" label="数量" width="80" />
+        <el-table-column prop="qualifiedQuantity" label="合格数" width="80" />
+        <el-table-column prop="defectQuantity" label="次品数" width="80" />
         <el-table-column prop="unitPrice" label="单价" width="100">
           <template #default="{ row }">¥{{ Number(row.unitPrice).toFixed(4) }}</template>
         </el-table-column>
@@ -46,6 +49,7 @@
             <span style="color: #67c23a; font-weight: bold;">{{ formatMoney(row.wageAmount) }}</span>
           </template>
         </el-table-column>
+        <el-table-column prop="workshopName" label="车间" width="100" />
         <el-table-column prop="auditStatus" label="审核状态" width="90">
           <template #default="{ row }">
             <el-tag :type="auditTag(row.auditStatus)">{{ auditMap[row.auditStatus] || '未知' }}</el-tag>
@@ -83,8 +87,20 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="员工姓名" required>
+            <el-form-item label="员工ID" required>
+              <el-input-number v-model="formData.employeeId" :min="1" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="员工姓名">
               <el-input v-model="formData.employeeName" placeholder="员工姓名" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="车间ID">
+              <el-input-number v-model="formData.workshopId" :min="0" style="width: 100%" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -113,14 +129,31 @@
           </el-col>
         </el-row>
         <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="计件数量" required>
-              <el-input-number v-model="formData.quantity" :precision="0" :min="0" />
+          <el-col :span="8">
+            <el-form-item label="总数量" required>
+              <el-input-number v-model="formData.quantity" :precision="0" :min="0" style="width: 100%" />
             </el-form-item>
           </el-col>
+          <el-col :span="8">
+            <el-form-item label="合格数量">
+              <el-input-number v-model="formData.qualifiedQuantity" :precision="0" :min="0" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="次品数量">
+              <el-input-number v-model="formData.defectQuantity" :precision="0" :min="0" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="计件单价" required>
               <el-input-number v-model="formData.unitPrice" :precision="4" :min="0" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="工资金额">
+              <el-input-number v-model="formData.wageAmount" :precision="4" :min="0" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -164,8 +197,16 @@ const auditTag = (status: number) => status === 0 ? 'warning' : status === 1 ? '
 const queryForm = reactive({ pageNum: 1, pageSize: 10, employeeName: '', styleCode: '', dateRange: null as string[] | null, auditStatus: undefined as number | undefined })
 const formData = reactive({
   id: undefined as number | undefined,
-  recordDate: '', employeeName: '', styleCode: '', styleName: '',
-  processCode: '', processName: '', quantity: 0, unitPrice: 0, remark: ''
+  recordDate: '', employeeId: undefined as number | undefined, employeeName: '',
+  employeeCode: '',
+  styleId: undefined as number | undefined,
+  styleCode: '', styleName: '',
+  processCode: '', processName: '',
+  productionId: undefined as number | undefined, productionNo: '',
+  quantity: 0, qualifiedQuantity: 0, defectQuantity: 0,
+  unitPrice: 0, wageAmount: 0,
+  workshopId: undefined as number | undefined, workshopName: '',
+  remark: ''
 })
 const tableData = ref<any[]>([])
 const total = ref(0)
@@ -182,7 +223,7 @@ const handleQuery = async () => {
   loading.value = true
   try {
     const params: any = { pageNum: queryForm.pageNum, pageSize: queryForm.pageSize, employeeName: queryForm.employeeName, styleCode: queryForm.styleCode, auditStatus: queryForm.auditStatus }
-    if (queryForm.dateRange?.length === 2) { params.startDate = queryForm.dateRange[0]; params.endDate = queryForm.dateRange[1] }
+    if (queryForm.dateRange?.length === 2) { params.recordDateFrom = queryForm.dateRange[0]; params.recordDateTo = queryForm.dateRange[1] }
     const res = await getPieceRecordPage(params)
     tableData.value = res.data?.list || []; total.value = res.data?.total || 0
   } catch { ElMessage.error('查询失败') }
@@ -195,8 +236,13 @@ const handleReset = () => {
 }
 
 const resetForm = () => Object.assign(formData, {
-  id: undefined, recordDate: '', employeeName: '', styleCode: '', styleName: '',
-  processCode: '', processName: '', quantity: 0, unitPrice: 0, remark: ''
+  id: undefined, recordDate: '', employeeId: undefined, employeeName: '', employeeCode: '',
+  styleId: undefined, styleCode: '', styleName: '',
+  processCode: '', processName: '',
+  productionId: undefined, productionNo: '',
+  quantity: 0, qualifiedQuantity: 0, defectQuantity: 0,
+  unitPrice: 0, wageAmount: 0,
+  workshopId: undefined, workshopName: '', remark: ''
 })
 
 const handleAdd = () => { dialogTitle.value = '新增计件'; resetForm(); dialogVisible.value = true }
@@ -235,7 +281,9 @@ const handleSummary = async () => {
   summaryVisible.value = true; summaryLoading.value = true
   try {
     const params: any = {}
-    if (queryForm.dateRange?.length === 2) { params.startDate = queryForm.dateRange[0]; params.endDate = queryForm.dateRange[1] }
+    if (queryForm.dateRange?.length === 2) { params.recordDateFrom = queryForm.dateRange[0]; params.recordDateTo = queryForm.dateRange[1] }
+    if (queryForm.employeeName) params.employeeName = queryForm.employeeName
+    if (queryForm.styleCode) params.styleCode = queryForm.styleCode
     const res = await getPieceRecordSummary(params)
     summaryData.value = res.data || []
   } catch { ElMessage.error('查询失败') }

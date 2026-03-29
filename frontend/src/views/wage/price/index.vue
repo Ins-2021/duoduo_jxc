@@ -10,9 +10,15 @@
         </el-form-item>
         <el-form-item label="工价类型">
           <el-select v-model="queryForm.priceType" placeholder="工价类型" clearable>
-            <el-option label="标准工价" value="standard" />
-            <el-option label="员工工价" value="employee" />
-            <el-option label="批次工价" value="batch" />
+            <el-option label="标准工价" :value="0" />
+            <el-option label="员工工价" :value="1" />
+            <el-option label="批次工价" :value="2" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="queryForm.status" placeholder="状态" clearable>
+            <el-option label="启用" :value="1" />
+            <el-option label="停用" :value="0" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -43,11 +49,16 @@
         <el-table-column prop="unit" label="单位" width="80" />
         <el-table-column prop="priceType" label="工价类型" width="100">
           <template #default="{ row }">
-            <el-tag :type="priceTypeTag(row.priceType)">{{ priceTypeMap[row.priceType] || row.priceType }}</el-tag>
+            <el-tag :type="priceTypeTag(row.priceType)">{{ priceTypeMap[row.priceType] || '未知' }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="effectiveDate" label="生效日期" width="110" />
         <el-table-column prop="expireDate" label="失效日期" width="110" />
+        <el-table-column prop="status" label="状态" width="80">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 1 ? 'success' : 'danger'">{{ row.status === 1 ? '启用' : '停用' }}</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="remark" label="备注" show-overflow-tooltip />
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
@@ -111,27 +122,30 @@
           <el-col :span="12">
             <el-form-item label="工价类型">
               <el-select v-model="formData.priceType" placeholder="请选择">
-                <el-option label="标准工价" value="standard" />
-                <el-option label="员工工价" value="employee" />
-                <el-option label="批次工价" value="batch" />
+                <el-option label="标准工价" :value="0" />
+                <el-option label="员工工价" :value="1" />
+                <el-option label="批次工价" :value="2" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="员工姓名">
-              <el-input v-model="formData.employeeName" placeholder="员工工价时填写" />
+            <el-form-item label="状态">
+              <el-radio-group v-model="formData.status">
+                <el-radio :value="1">启用</el-radio>
+                <el-radio :value="0">停用</el-radio>
+              </el-radio-group>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="生效日期">
-              <el-date-picker v-model="formData.effectiveDate" type="date" value-format="YYYY-MM-DD" />
+              <el-date-picker v-model="formData.effectiveDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="失效日期">
-              <el-date-picker v-model="formData.expireDate" type="date" value-format="YYYY-MM-DD" />
+              <el-date-picker v-model="formData.expireDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -152,15 +166,19 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getPiecePricePage, getPiecePriceDetail, createPiecePrice, updatePiecePrice, deletePiecePrice } from '@/api/wage'
 
-const priceTypeMap: Record<string, string> = { standard: '标准工价', employee: '员工工价', batch: '批次工价' }
-const priceTypeTag = (type: string) => type === 'employee' ? 'warning' : type === 'batch' ? 'danger' : 'success'
+const priceTypeMap: Record<number, string> = { 0: '标准工价', 1: '员工工价', 2: '批次工价' }
+const priceTypeTag = (type: number) => type === 1 ? 'warning' : type === 2 ? 'danger' : 'success'
 
-const queryForm = reactive({ pageNum: 1, pageSize: 10, styleCode: '', processCode: '', priceType: '' })
+const queryForm = reactive({ pageNum: 1, pageSize: 10, styleCode: '', processCode: '', priceType: undefined as number | undefined, status: undefined as number | undefined })
 const formData = reactive({
   priceId: undefined as number | undefined,
+  styleId: undefined as number | undefined,
   styleCode: '', styleName: '', processCode: '', processName: '',
+  employeeId: undefined as number | undefined,
   employeeName: '', unitPrice: 0, unit: '件',
-  priceType: 'standard', effectiveDate: '', expireDate: '', remark: ''
+  priceType: 0, batchId: undefined as number | undefined,
+  effectiveDate: '', expireDate: '',
+  status: 1, remark: ''
 })
 const tableData = ref<any[]>([])
 const total = ref(0)
@@ -177,11 +195,12 @@ const handleQuery = async () => {
   finally { loading.value = false }
 }
 
-const handleReset = () => { queryForm.styleCode = ''; queryForm.processCode = ''; queryForm.priceType = ''; queryForm.pageNum = 1; handleQuery() }
+const handleReset = () => { queryForm.styleCode = ''; queryForm.processCode = ''; queryForm.priceType = undefined; queryForm.status = undefined; queryForm.pageNum = 1; handleQuery() }
 
 const resetForm = () => Object.assign(formData, {
-  priceId: undefined, styleCode: '', styleName: '', processCode: '', processName: '',
-  employeeName: '', unitPrice: 0, unit: '件', priceType: 'standard', effectiveDate: '', expireDate: '', remark: ''
+  priceId: undefined, styleId: undefined, styleCode: '', styleName: '', processCode: '', processName: '',
+  employeeId: undefined, employeeName: '', unitPrice: 0, unit: '件',
+  priceType: 0, batchId: undefined, effectiveDate: '', expireDate: '', status: 1, remark: ''
 })
 
 const handleAdd = () => { dialogTitle.value = '新增工价'; resetForm(); dialogVisible.value = true }
