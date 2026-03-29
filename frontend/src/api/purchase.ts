@@ -18,7 +18,7 @@ export function getPurchaseOrderDetailPage(params: PageQuery & { docNo?: string;
 }
 
 export function getPurchaseOrderDetail(id: number) {
-  return request<PurchaseOrderDTO>({
+  return request({
     url: `/purchase/${id}`,
     method: 'get'
   })

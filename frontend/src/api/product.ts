@@ -13,8 +13,7 @@ export function getProductList(params: PageQuery & { spuName?: string; productCo
 }
 
 export function getProductCategoryTree() {
-  return request<ProductCategoryTreeNode[]>({
-    url: '/product/categories/tree',
+  return request({
     method: 'get'
   })
 }
@@ -51,8 +50,7 @@ export function getProductSkuPage(params: ProductSkuSelectQuery) {
 }
 
 export function getProductDetail(id: number) {
-  return request<ProductSpuDTO>({
-    url: `/product/${id}`,
+  return request({
     method: 'get'
   })
 }
@@ -81,8 +79,7 @@ export function deleteProduct(id: number) {
 }
 
 export function checkProductCode(productCode: string, excludeId?: number) {
-  return request<boolean>({
-    url: '/product/check-code',
+  return request({
     method: 'get',
     params: { productCode, excludeId }
   })

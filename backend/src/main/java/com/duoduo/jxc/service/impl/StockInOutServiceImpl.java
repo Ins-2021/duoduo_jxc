@@ -16,7 +16,9 @@ import com.duoduo.jxc.exception.BusinessException;
 import com.duoduo.jxc.mapper.StockInOutDetailMapper;
 import com.duoduo.jxc.mapper.StockInOutMapper;
 import com.duoduo.jxc.service.StockInOutService;
+import com.duoduo.jxc.service.InventoryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,12 +30,17 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StockInOutServiceImpl extends ServiceImpl<StockInOutMapper, StockInOut> implements StockInOutService {
 
+    private static final Integer DRAFT_STATUS = 0;
+    private static final Integer APPROVED_STATUS = 1;
+
     private final StockInOutDetailMapper detailMapper;
     private final InventoryConverter converter;
+    private final InventoryService inventoryService;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -91,7 +98,7 @@ public class StockInOutServiceImpl extends ServiceImpl<StockInOutMapper, StockIn
         BeanUtils.copyProperties(dto, entity);
         
         entity.setBillNo(generateOrderNo());
-        entity.setStatus(0);
+        entity.setStatus(DRAFT_STATUS);
         entity.setCreateTime(LocalDateTime.now());
         entity.setUpdateTime(LocalDateTime.now());
         save(entity);
@@ -111,6 +118,7 @@ public class StockInOutServiceImpl extends ServiceImpl<StockInOutMapper, StockIn
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(StockInOutDTO dto) {
+        assertDraft(dto.getInOutId(), BizCode.STOCK_IN_OUT_CANNOT_MODIFY);
         StockInOut entity = new StockInOut();
         BeanUtils.copyProperties(dto, entity);
         entity.setUpdateTime(LocalDateTime.now());
@@ -132,6 +140,7 @@ public class StockInOutServiceImpl extends ServiceImpl<StockInOutMapper, StockIn
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
+        assertDraft(id, BizCode.STOCK_IN_OUT_CANNOT_DELETE);
         detailMapper.delete(new LambdaQueryWrapper<StockInOutDetail>()
                 .eq(StockInOutDetail::getInOutId, id));
         removeById(id);
@@ -144,12 +153,48 @@ public class StockInOutServiceImpl extends ServiceImpl<StockInOutMapper, StockIn
         if (entity == null) {
             throw new BusinessException(BizCode.STOCK_IN_OUT_NOT_FOUND);
         }
-        if (!entity.getStatus().equals(0)) {
+        if (!DRAFT_STATUS.equals(entity.getStatus())) {
             throw new BusinessException(BizCode.STOCK_IN_OUT_CANNOT_APPROVE);
         }
-        entity.setStatus(1);
+        if (entity.getWarehouseId() == null || entity.getType() == null) {
+            throw new BusinessException(BizCode.BAD_REQUEST, "出入库单仓库和类型不能为空");
+        }
+
+        List<StockInOutDetail> details = detailMapper.selectList(
+                new LambdaQueryWrapper<StockInOutDetail>()
+                        .eq(StockInOutDetail::getInOutId, id));
+        if (details == null || details.isEmpty()) {
+            throw new BusinessException(BizCode.BAD_REQUEST, "出入库明细不能为空");
+        }
+
+        boolean isIn = entity.getType() != null && entity.getType() == 1;
+        for (StockInOutDetail detail : details) {
+            if (detail.getSkuId() == null || detail.getQty() == null || detail.getQty() <= 0) {
+                continue;
+            }
+            if (isIn) {
+                inventoryService.addStock(entity.getWarehouseId(), detail.getSkuId(), detail.getQty(),
+                        "STOCK_IN_OUT", entity.getInOutId(), entity.getBillNo());
+            } else {
+                inventoryService.deductStock(entity.getWarehouseId(), detail.getSkuId(), detail.getQty(),
+                        "STOCK_IN_OUT", entity.getInOutId(), entity.getBillNo());
+            }
+        }
+
+        entity.setStatus(APPROVED_STATUS);
         entity.setUpdateTime(LocalDateTime.now());
         updateById(entity);
+        log.info("出入库审核完成，库存已变动: inOutId={}, billNo={}, type={}", id, entity.getBillNo(), entity.getType());
+    }
+
+    private void assertDraft(Long id, BizCode bizCode) {
+        StockInOut exist = super.getById(id);
+        if (exist == null) {
+            throw new BusinessException(BizCode.STOCK_IN_OUT_NOT_FOUND);
+        }
+        if (!DRAFT_STATUS.equals(exist.getStatus())) {
+            throw new BusinessException(bizCode);
+        }
     }
 
     private String generateOrderNo() {

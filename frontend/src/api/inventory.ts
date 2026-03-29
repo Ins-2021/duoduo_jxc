@@ -115,7 +115,7 @@ export const inventoryCheckApi = {
     method: 'post',
     data: buildPageQuery(data, data?.checkNo, { status: data?.status })
   }), (item: InventoryCheckDTO) => item),
-  getById: (id: number) => request<InventoryCheckDTO>({ url: `/inventory/check/${id}`, method: 'get' }),
+  getById: (id: number) => request({ url: `/inventory/check/${id}`, method: 'get' }),
   create: (data: InventoryCheckDTO) => request({ url: '/inventory/check', method: 'post', data }),
   update: (data: InventoryCheckDTO) => request({ url: `/inventory/check/${data.checkId}`, method: 'put', data }),
   delete: (id: number) => request({ url: `/inventory/check/${id}`, method: 'delete' }),

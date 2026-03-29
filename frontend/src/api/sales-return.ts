@@ -9,15 +9,15 @@ export function getSalesReturnOrderList(params: PageQuery & { docNo?: string; cu
   })
 }
 
-export function getSalesReturnOrderDetail(id: number) {
-  return request<SalesReturnOrderDTO>({
+export function getSalesReturnDetail(id: number) {
+  return request({
     url: `/sales-return/${id}`,
     method: 'get'
   })
 }
 
-export function getSalesReturnSourceOrder(id: number) {
-  return request<SalesReturnSourceOrderDTO>({
+export function getSalesReturnSourceDetail(id: number) {
+  return request({
     url: `/sales-return/source/${id}`,
     method: 'get'
   })

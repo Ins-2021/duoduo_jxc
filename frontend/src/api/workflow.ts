@@ -99,7 +99,7 @@ export function getWorkflowDiagram(procInstId: string) {
 }
 
 export function getWorkflowDiagramState(procInstId: string) {
-  return request<WfDiagramStateResponse>({
+  return request({
     url: `/workflow/instances/${procInstId}/diagram-state`,
     method: 'get'
   })

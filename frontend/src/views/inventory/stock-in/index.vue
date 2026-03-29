@@ -110,6 +110,7 @@ const queryForm = reactive({
 
 const formData = reactive({
   stockId: undefined,
+  stockNo: '',
   stockType: '其他入库',
   stockDirection: 1,
   warehouseName: '',
@@ -144,10 +145,11 @@ const handleAdd = () => {
   dialogTitle.value = '新增入库'
   Object.assign(formData, {
     stockId: undefined,
+    stockNo: '',
     stockType: '其他入库',
     stockDirection: 1,
     warehouseName: '',
-    stockDate: new Date(),
+    stockDate: new Date().toISOString().slice(0, 10),
     remark: ''
   })
   dialogVisible.value = true

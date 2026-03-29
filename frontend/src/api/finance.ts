@@ -349,7 +349,18 @@ export const writeOffApi = {
       }
     })
   },
-  update: (_data: never) => Promise.reject(new Error('核销单暂不支持前端修改')),
+  update: (data: WriteOffView) => {
+    return request({
+      url: `/finance/write-off/${data.writeOffId}`,
+      method: 'put',
+      data: {
+        ...data,
+        type: data.writeOffType === '应收核销' ? 'receivable' : 'payable',
+        amount: data.writeOffAmount,
+        billNo: data.partnerName
+      }
+    })
+  },
   delete: (id: number) => {
     return request({
       url: `/finance/write-off/${id}`,

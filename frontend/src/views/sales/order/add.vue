@@ -846,7 +846,7 @@ const saveOrder = async () => {
         skuId: ids.skuId,
         qty: Number(item.qty),
         unitPrice: Number(item.unitPrice),
-        lineAmount: calculateAmount(item)
+        lineAmount: Number(calculateAmount(item))
       })
     }
   } catch (e: any) {
@@ -855,15 +855,15 @@ const saveOrder = async () => {
   }
 
   const submitData = {
-    orderType: 1, // 批发单(销售单)
-    docDate: formData.date,
-    customerId: formData.customer ? Number(formData.customer) : undefined,
+      orderType: 1, // 批发单(销售单)
+      docDate: typeof formData.date === 'string' ? formData.date : (formData.date as Date).toISOString().split('T')[0],
+      customerId: formData.customer ? Number(formData.customer) : undefined,
     remark: formData.remark,
-    totalAmount: finalTotalAmount.value,
-    discountAmount: new Decimal(finalTotalAmount.value).minus(new Decimal(formData.discountedAmount)).toFixed(2),
-    actualAmount: formData.discountedAmount,
-    otherFee: formData.otherFee,
-    paidAmount: formData.deposit,
+    totalAmount: Number(finalTotalAmount.value),
+    discountAmount: Number(new Decimal(finalTotalAmount.value).minus(new Decimal(formData.discountedAmount)).toFixed(2)),
+    actualAmount: Number(formData.discountedAmount),
+    otherFee: Number(formData.otherFee || 0),
+    paidAmount: Number(formData.deposit || 0),
     details
   }
   

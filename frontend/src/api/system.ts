@@ -14,7 +14,7 @@ export const docNoRuleApi = {
     })
   },
   getById: (id: number) => {
-    return request<DocNoRuleDTO>({
+    return request({
       url: `/settings/doc-no-rule/${id}`,
       method: 'get'
     })
@@ -132,8 +132,7 @@ export function deleteRole(roleId: number) {
 }
 
 export function getRoleMenuIds(roleId: number) {
-  return request<number[]>({
-    url: `/system/roles/${roleId}/menus`,
+  return request({
     method: 'get'
   })
 }
@@ -147,8 +146,7 @@ export function assignRoleMenus(roleId: number, payload: number[] | { menuIds: n
 }
 
 export function getMenuTree() {
-  return request<MenuTreeNode[]>({
-    url: '/system/menus/tree',
+  return request({
     method: 'get'
   })
 }

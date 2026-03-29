@@ -61,6 +61,8 @@ public enum BizCode {
     // ---- 采购 50xxx ----
     PURCHASE_ORDER_NOT_FOUND(50001, "采购单不存在"),
     ORDER_NOT_DRAFT(50002, "只能提交草稿状态的订单"),
+    PURCHASE_ORDER_CANNOT_MODIFY(50003, "已审核的采购单不允许修改"),
+    PURCHASE_ORDER_CANNOT_DELETE(50004, "已审核的采购单不允许删除"),
 
     // ---- 销售补充 45xxx ----
     BOOKING_ORDER_INVALID(45001, "无效的预订单"),
@@ -83,6 +85,15 @@ public enum BizCode {
     STOCK_IN_OUT_NOT_FOUND(60007, "出入库单不存在"),
     STOCK_IN_OUT_CANNOT_APPROVE(60008, "只能审核待审核状态的出入库单"),
     INVENTORY_CHECK_NOT_FOUND(60009, "盘点单不存在"),
+    TRANSFER_ORDER_WAREHOUSE_CONFLICT(60010, "调出仓与调入仓不能相同"),
+    TRANSFER_ORDER_CANNOT_MODIFY(60011, "已审核的调拨单不允许修改"),
+    TRANSFER_ORDER_CANNOT_DELETE(60012, "已审核的调拨单不允许删除"),
+    ASSEMBLY_ORDER_CANNOT_MODIFY(60013, "已审核的组装拆卸单不允许修改"),
+    ASSEMBLY_ORDER_CANNOT_DELETE(60014, "已审核的组装拆卸单不允许删除"),
+    STOCK_IN_OUT_CANNOT_MODIFY(60015, "已审核的出入库单不允许修改"),
+    STOCK_IN_OUT_CANNOT_DELETE(60016, "已审核的出入库单不允许删除"),
+    INVENTORY_CHECK_CANNOT_MODIFY(60017, "已完成的盘点单不允许修改"),
+    INVENTORY_CHECK_CANNOT_DELETE(60018, "已完成的盘点单不允许删除"),
 
     // ---- 财务 70xxx ----
     PAYMENT_ORDER_NOT_FOUND(70001, "付款单不存在"),

@@ -110,8 +110,9 @@ const queryForm = reactive({
 
 const formData = reactive({
   stockId: undefined,
+  stockNo: '',
   stockType: '其他出库',
-  stockDirection: 0,
+  stockDirection: 2,
   warehouseName: '',
   stockDate: '',
   remark: ''
@@ -124,7 +125,7 @@ const dialogTitle = ref('')
 
 const handleQuery = async () => {
   try {
-    const res = await stockInOutApi.pageList({ ...queryForm, stockDirection: 0 })
+    const res = await stockInOutApi.pageList({ ...queryForm, stockDirection: 2 })
     tableData.value = res.data.list
     total.value = res.data.total
   } catch (error) {
@@ -144,10 +145,11 @@ const handleAdd = () => {
   dialogTitle.value = '新增出库'
   Object.assign(formData, {
     stockId: undefined,
+    stockNo: '',
     stockType: '其他出库',
-    stockDirection: 0,
+    stockDirection: 2,
     warehouseName: '',
-    stockDate: new Date(),
+    stockDate: new Date().toISOString().slice(0, 10),
     remark: ''
   })
   dialogVisible.value = true

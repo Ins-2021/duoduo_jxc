@@ -10,13 +10,16 @@ import com.duoduo.jxc.common.PageResult;
 import com.duoduo.jxc.converter.InventoryConverter;
 import com.duoduo.jxc.dto.inventory.AssemblyOrderDTO;
 import com.duoduo.jxc.dto.inventory.AssemblyOrderDetailDTO;
+import com.duoduo.jxc.enums.AssemblyTypeEnum;
 import com.duoduo.jxc.entity.AssemblyOrder;
 import com.duoduo.jxc.entity.AssemblyOrderDetail;
 import com.duoduo.jxc.exception.BusinessException;
 import com.duoduo.jxc.mapper.AssemblyOrderDetailMapper;
 import com.duoduo.jxc.mapper.AssemblyOrderMapper;
 import com.duoduo.jxc.service.AssemblyOrderService;
+import com.duoduo.jxc.service.InventoryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,12 +31,17 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AssemblyOrderServiceImpl extends ServiceImpl<AssemblyOrderMapper, AssemblyOrder> implements AssemblyOrderService {
 
+    private static final Integer DRAFT_STATUS = 0;
+    private static final Integer APPROVED_STATUS = 1;
+
     private final AssemblyOrderDetailMapper detailMapper;
     private final InventoryConverter converter;
+    private final InventoryService inventoryService;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -91,7 +99,7 @@ public class AssemblyOrderServiceImpl extends ServiceImpl<AssemblyOrderMapper, A
         BeanUtils.copyProperties(dto, entity);
         
         entity.setAssemblyNo(generateOrderNo());
-        entity.setStatus(0);
+        entity.setStatus(DRAFT_STATUS);
         entity.setCreateTime(LocalDateTime.now());
         entity.setUpdateTime(LocalDateTime.now());
         save(entity);
@@ -111,6 +119,7 @@ public class AssemblyOrderServiceImpl extends ServiceImpl<AssemblyOrderMapper, A
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(AssemblyOrderDTO dto) {
+        assertDraft(dto.getAssemblyId(), BizCode.ASSEMBLY_ORDER_CANNOT_MODIFY);
         AssemblyOrder entity = new AssemblyOrder();
         BeanUtils.copyProperties(dto, entity);
         entity.setUpdateTime(LocalDateTime.now());
@@ -132,6 +141,7 @@ public class AssemblyOrderServiceImpl extends ServiceImpl<AssemblyOrderMapper, A
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
+        assertDraft(id, BizCode.ASSEMBLY_ORDER_CANNOT_DELETE);
         detailMapper.delete(new LambdaQueryWrapper<AssemblyOrderDetail>()
                 .eq(AssemblyOrderDetail::getAssemblyId, id));
         removeById(id);
@@ -144,12 +154,56 @@ public class AssemblyOrderServiceImpl extends ServiceImpl<AssemblyOrderMapper, A
         if (entity == null) {
             throw new BusinessException(BizCode.ASSEMBLY_ORDER_NOT_FOUND);
         }
-        if (!entity.getStatus().equals(0)) {
+        if (!DRAFT_STATUS.equals(entity.getStatus())) {
             throw new BusinessException(BizCode.ASSEMBLY_ORDER_CANNOT_APPROVE);
         }
-        entity.setStatus(1);
+
+        List<AssemblyOrderDetail> details = detailMapper.selectList(
+                new LambdaQueryWrapper<AssemblyOrderDetail>()
+                        .eq(AssemblyOrderDetail::getAssemblyId, id));
+        if (details == null || details.isEmpty()) {
+            throw new BusinessException(BizCode.BAD_REQUEST, "组装拆卸明细不能为空");
+        }
+
+        boolean isAssembly = entity.getType() == null || AssemblyTypeEnum.ASSEMBLY.getValue().equals(entity.getType());
+        for (AssemblyOrderDetail detail : details) {
+            if (detail.getSkuId() == null || detail.getQty() == null || detail.getQty() <= 0) {
+                continue;
+            }
+            int itemType = detail.getItemType() != null ? detail.getItemType() : 1;
+            if (isAssembly) {
+                if (itemType == 2) {
+                    inventoryService.addStock(entity.getWarehouseId(), detail.getSkuId(), detail.getQty(),
+                            "ASSEMBLY", entity.getAssemblyId(), entity.getAssemblyNo());
+                } else {
+                    inventoryService.deductStock(entity.getWarehouseId(), detail.getSkuId(), detail.getQty(),
+                            "ASSEMBLY", entity.getAssemblyId(), entity.getAssemblyNo());
+                }
+            } else {
+                if (itemType == 2) {
+                    inventoryService.deductStock(entity.getWarehouseId(), detail.getSkuId(), detail.getQty(),
+                            "DISASSEMBLY", entity.getAssemblyId(), entity.getAssemblyNo());
+                } else {
+                    inventoryService.addStock(entity.getWarehouseId(), detail.getSkuId(), detail.getQty(),
+                            "DISASSEMBLY", entity.getAssemblyId(), entity.getAssemblyNo());
+                }
+            }
+        }
+
+        entity.setStatus(APPROVED_STATUS);
         entity.setUpdateTime(LocalDateTime.now());
         updateById(entity);
+        log.info("组装拆卸审核完成，库存已变动: assemblyId={}, assemblyNo={}, type={}", id, entity.getAssemblyNo(), entity.getType());
+    }
+
+    private void assertDraft(Long id, BizCode bizCode) {
+        AssemblyOrder exist = super.getById(id);
+        if (exist == null) {
+            throw new BusinessException(BizCode.ASSEMBLY_ORDER_NOT_FOUND);
+        }
+        if (!DRAFT_STATUS.equals(exist.getStatus())) {
+            throw new BusinessException(bizCode);
+        }
     }
 
     private String generateOrderNo() {

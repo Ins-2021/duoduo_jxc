@@ -10,7 +10,7 @@ export function getWarehouseList(params: WarehouseQuery) {
 }
 
 export function getWarehouseDetail(id: number) {
-  return request<WarehouseDTO>({
+  return request({
     url: `/warehouse/${id}`,
     method: 'get'
   })

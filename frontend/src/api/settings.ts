@@ -2,7 +2,7 @@ import request from '@/utils/request'
 import type { SystemSettingsDTO } from '@/types'
 
 export function getSystemSettings() {
-  return request<SystemSettingsDTO>({
+  return request({
     url: '/settings',
     method: 'get'
   })

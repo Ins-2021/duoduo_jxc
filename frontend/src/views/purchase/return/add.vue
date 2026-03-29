@@ -579,7 +579,7 @@ const generateEmptyRows = (count = 8) => {
 const formData = reactive({
   priceType: 'wholesale',
   customer: '',
-  date: new Date(),
+  date: new Date().toISOString().slice(0, 10),
   orderNo: '自动生成',
   needDelivery: false,
   details: generateEmptyRows(),
@@ -718,12 +718,12 @@ const saveOrder = async () => {
   const details = []
   const submitData = {
     orderType: 3, // 进货退货单
-    docDate: formData.date,
+    docDate: typeof formData.date === 'string' ? formData.date : new Date(formData.date).toISOString().slice(0, 10),
     supplierId,
     remark: formData.remark,
-    totalAmount: finalTotalAmount.value,
-    discountAmount: (parseFloat(finalTotalAmount.value) - parseFloat(formData.discountedAmount)).toFixed(2),
-    actualAmount: formData.discountedAmount,
+    totalAmount: Number(finalTotalAmount.value),
+    discountAmount: Number((parseFloat(finalTotalAmount.value) - parseFloat(formData.discountedAmount)).toFixed(2)),
+    actualAmount: Number(formData.discountedAmount),
     otherFee: formData.otherFee,
     paidAmount: formData.deposit,
     details

@@ -464,7 +464,7 @@ const fetchProducts = async () => {
       pageNum: 1,
       pageSize: 50, // 零售端可以适当加大或者做无限滚动
       spuName: searchKeyword.value || undefined,
-      categoryId: currentCategory.value !== 'all' ? currentCategory.value : undefined
+      categoryId: currentCategory.value !== 'all' ? Number(currentCategory.value) : undefined
     })
     
     // 转换后端数据为前端所需格式
@@ -755,17 +755,17 @@ const checkout = async () => {
     docDate: orderDate.value,
     customerId: customerId.value,
     remark: '',
-    totalAmount: totalAmount.value.toFixed(2),
-    discountAmount: discountAmount.value.toFixed(2),
-    actualAmount: actualAmount.value.toFixed(2),
+    totalAmount: Number(totalAmount.value.toFixed(2)),
+    discountAmount: Number(discountAmount.value.toFixed(2)),
+    actualAmount: Number(actualAmount.value.toFixed(2)),
     otherFee: 0,
-    paidAmount: actualAmount.value.toFixed(2), // 零售默认全额付款
+    paidAmount: Number(actualAmount.value.toFixed(2)), // 零售默认全额付款
     details: cartItems.value.map(item => ({
       spuId: item.spuId,
       skuId: item.skuId,
       qty: item.qty,
       unitPrice: item.price,
-      lineAmount: (item.qty * item.price).toFixed(2)
+      lineAmount: Number((item.qty * item.price).toFixed(2))
     }))
   }
   

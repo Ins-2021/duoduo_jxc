@@ -75,7 +75,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getSalesReturnOrderList, deleteSalesReturnOrder, auditSalesReturnOrder, getSalesReturnOrderDetail } from '@/api/sales-return'
+import { getSalesReturnOrderList, deleteSalesReturnOrder, auditSalesReturnOrder, getSalesReturnDetail } from '@/api/sales-return'
 
 const router = useRouter()
 const loading = ref(false)
@@ -107,7 +107,7 @@ const handleAdd = () => {
 }
 
 const handleDetail = (row: any) => {
-  getSalesReturnOrderDetail(row.orderId).then((res: any) => {
+  getSalesReturnDetail(row.orderId).then((res: any) => {
     currentDetail.value = res.data
     detailVisible.value = true
   })

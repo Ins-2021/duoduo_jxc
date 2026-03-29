@@ -19,6 +19,16 @@ public class Supplier {
     private String contactPhone;
     private String address;
     private BigDecimal initialArrears;
+    /** 评级: A/B/C/D */
+    private String rating;
+    /** 银行账户 */
+    private String bankAccount;
+    /** 开户行 */
+    private String bankName;
+    /** 结算方式 */
+    private String settlementType;
+    /** 信用额度 */
+    private BigDecimal creditLimit;
     private Integer status;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;

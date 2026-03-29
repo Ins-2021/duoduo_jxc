@@ -162,7 +162,7 @@ const handleAdd = () => {
     writeOffId: undefined,
     writeOffType: '',
     partnerName: '',
-    writeOffDate: new Date(),
+    writeOffDate: new Date().toISOString().slice(0, 10),
     writeOffAmount: 0,
     discountAmount: 0,
     paymentMethod: '现金',

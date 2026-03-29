@@ -83,7 +83,7 @@ const queryForm = reactive({
   pageSize: 10,
   productName: '',
   warehouseName: '',
-  alertType: ''
+  alertType: undefined
 })
 
 const tableData = ref([])

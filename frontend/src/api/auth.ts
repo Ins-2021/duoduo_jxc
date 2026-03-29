@@ -37,14 +37,14 @@ export function changePassword(data: ChangePasswordRequest) {
 }
 
 export function getProfile() {
-  return request<CurrentUserResponse>({
+  return request({
     url: '/system/profile',
     method: 'get'
   })
 }
 
 export function getRouters() {
-  return request<MenuTreeNode[]>({
+  return request({
     url: '/system/menus/routers',
     method: 'get'
   })

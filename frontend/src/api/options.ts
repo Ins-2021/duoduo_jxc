@@ -48,9 +48,9 @@ export async function getCategoryOptions() {
     method: 'get'
   })
   const options: Array<{ label: string; value: number | string }> = []
-  const walk = (nodes: Array<{ label: string; id: number | string; children?: Array<{ label: string; id: number | string; children?: unknown[] }> }>) => {
+  const walk = (nodes: Array<{ label?: string; name?: string; id: number | string; children?: any[] }>) => {
     nodes.forEach(node => {
-      options.push({ label: node.label || node.name, value: node.id })
+      options.push({ label: node.label || node.name || '', value: node.id })
       if (Array.isArray(node.children) && node.children.length > 0) {
         walk(node.children)
       }

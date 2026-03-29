@@ -10,12 +10,14 @@ import com.duoduo.jxc.common.PageResult;
 import com.duoduo.jxc.converter.InventoryConverter;
 import com.duoduo.jxc.dto.inventory.TransferOrderDTO;
 import com.duoduo.jxc.dto.inventory.TransferOrderDetailDTO;
+import com.duoduo.jxc.enums.TransferOrderStatusEnum;
 import com.duoduo.jxc.entity.TransferOrder;
 import com.duoduo.jxc.entity.TransferOrderDetail;
 import com.duoduo.jxc.exception.BusinessException;
 import com.duoduo.jxc.mapper.TransferOrderDetailMapper;
 import com.duoduo.jxc.mapper.TransferOrderMapper;
 import com.duoduo.jxc.service.TransferOrderService;
+import com.duoduo.jxc.service.InventoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -36,6 +38,7 @@ public class TransferOrderServiceImpl extends ServiceImpl<TransferOrderMapper, T
 
     private final TransferOrderDetailMapper detailMapper;
     private final InventoryConverter converter;
+    private final InventoryService inventoryService;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -85,11 +88,12 @@ public class TransferOrderServiceImpl extends ServiceImpl<TransferOrderMapper, T
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long create(TransferOrderDTO dto) {
+        validateWarehouses(dto.getFromWarehouseId(), dto.getToWarehouseId());
         TransferOrder entity = new TransferOrder();
         BeanUtils.copyProperties(dto, entity);
         
         entity.setTransferNo(generateOrderNo());
-        entity.setStatus(0);
+        entity.setStatus(TransferOrderStatusEnum.PENDING.getValue());
         entity.setCreateTime(LocalDateTime.now());
         entity.setUpdateTime(LocalDateTime.now());
         save(entity);
@@ -109,6 +113,8 @@ public class TransferOrderServiceImpl extends ServiceImpl<TransferOrderMapper, T
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(TransferOrderDTO dto) {
+        assertPending(dto.getTransferId(), BizCode.TRANSFER_ORDER_CANNOT_MODIFY);
+        validateWarehouses(dto.getFromWarehouseId(), dto.getToWarehouseId());
         TransferOrder entity = new TransferOrder();
         BeanUtils.copyProperties(dto, entity);
         entity.setUpdateTime(LocalDateTime.now());
@@ -130,6 +136,7 @@ public class TransferOrderServiceImpl extends ServiceImpl<TransferOrderMapper, T
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
+        assertPending(id, BizCode.TRANSFER_ORDER_CANNOT_DELETE);
         detailMapper.delete(new LambdaQueryWrapper<TransferOrderDetail>()
                 .eq(TransferOrderDetail::getTransferId, id));
         removeById(id);
@@ -142,12 +149,32 @@ public class TransferOrderServiceImpl extends ServiceImpl<TransferOrderMapper, T
         if (entity == null) {
             throw new BusinessException(BizCode.TRANSFER_ORDER_NOT_FOUND);
         }
-        if (!entity.getStatus().equals(0)) {
+        if (!TransferOrderStatusEnum.PENDING.getValue().equals(entity.getStatus())) {
             throw new BusinessException(BizCode.TRANSFER_ORDER_CANNOT_APPROVE);
         }
-        entity.setStatus(1);
+        validateWarehouses(entity.getFromWarehouseId(), entity.getToWarehouseId());
+
+        List<TransferOrderDetail> details = detailMapper.selectList(
+                new LambdaQueryWrapper<TransferOrderDetail>()
+                        .eq(TransferOrderDetail::getTransferId, id));
+
+        // 调出仓扣减库存，调入仓增加库存
+        for (TransferOrderDetail detail : details) {
+            if (detail.getSkuId() == null || detail.getQty() == null || detail.getQty() <= 0) {
+                continue;
+            }
+            // 调出仓出库
+            inventoryService.deductStock(entity.getFromWarehouseId(), detail.getSkuId(), detail.getQty(),
+                    "TRANSFER_OUT", entity.getTransferId(), entity.getTransferNo());
+            // 调入仓入库
+            inventoryService.addStock(entity.getToWarehouseId(), detail.getSkuId(), detail.getQty(),
+                    "TRANSFER_IN", entity.getTransferId(), entity.getTransferNo());
+        }
+
+        entity.setStatus(TransferOrderStatusEnum.APPROVED.getValue());
         entity.setUpdateTime(LocalDateTime.now());
         updateById(entity);
+        log.info("调拨审核完成，库存已双向变动: transferId={}, transferNo={}", id, entity.getTransferNo());
     }
 
     @Override
@@ -157,12 +184,28 @@ public class TransferOrderServiceImpl extends ServiceImpl<TransferOrderMapper, T
         if (entity == null) {
             throw new BusinessException(BizCode.TRANSFER_ORDER_NOT_FOUND);
         }
-        if (!entity.getStatus().equals(0)) {
+        if (!TransferOrderStatusEnum.PENDING.getValue().equals(entity.getStatus())) {
             throw new BusinessException(BizCode.TRANSFER_ORDER_CANNOT_REJECT);
         }
-        entity.setStatus(4);
+        entity.setStatus(TransferOrderStatusEnum.CANCELLED.getValue());
         entity.setUpdateTime(LocalDateTime.now());
         updateById(entity);
+    }
+
+    private void assertPending(Long id, BizCode bizCode) {
+        TransferOrder exist = super.getById(id);
+        if (exist == null) {
+            throw new BusinessException(BizCode.TRANSFER_ORDER_NOT_FOUND);
+        }
+        if (!TransferOrderStatusEnum.PENDING.getValue().equals(exist.getStatus())) {
+            throw new BusinessException(bizCode);
+        }
+    }
+
+    private void validateWarehouses(Long fromWarehouseId, Long toWarehouseId) {
+        if (fromWarehouseId != null && fromWarehouseId.equals(toWarehouseId)) {
+            throw new BusinessException(BizCode.TRANSFER_ORDER_WAREHOUSE_CONFLICT);
+        }
     }
 
     private String generateOrderNo() {

@@ -281,7 +281,8 @@ const confirmBatch = async () => {
     const uniqueValues = Array.from(new Set(lines))
     
     try {
-      await batchSaveAttributeOptions(currentBatchAttrRef.id, { values: uniqueValues })
+      const valuesDTOs = uniqueValues.map(v => ({ attributeId: currentBatchAttrRef.id, optionValue: v, status: 1 }))
+      await batchSaveAttributeOptions(currentBatchAttrRef.id, valuesDTOs)
       ElMessage.success('批量保存成功')
       batchVisible.value = false
       fetchAttributes()

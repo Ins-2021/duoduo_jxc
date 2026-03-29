@@ -10,7 +10,7 @@ export function getSupplierList(params: SupplierQuery) {
 }
 
 export function getSupplierDetail(id: number) {
-  return request<SupplierDTO>({
+  return request({
     url: `/supplier/${id}`,
     method: 'get'
   })

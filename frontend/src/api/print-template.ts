@@ -16,7 +16,7 @@ export function pagePrintTemplate(params: PrintTemplateQuery) {
 }
 
 export function getPrintTemplate(id: number) {
-  return request<PrintTemplateDTO>({
+  return request({
     url: `/print-template/${id}`,
     method: 'get'
   })

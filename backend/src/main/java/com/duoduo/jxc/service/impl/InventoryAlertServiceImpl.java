@@ -12,6 +12,10 @@ import com.duoduo.jxc.dto.inventory.InventoryAlertDTO;
 import com.duoduo.jxc.entity.InventoryAlert;
 import com.duoduo.jxc.exception.BusinessException;
 import com.duoduo.jxc.mapper.InventoryAlertMapper;
+import com.duoduo.jxc.entity.Inventory;
+import com.duoduo.jxc.entity.ProductSku;
+import com.duoduo.jxc.mapper.InventoryMapper;
+import com.duoduo.jxc.mapper.ProductSkuMapper;
 import com.duoduo.jxc.service.InventoryAlertService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -36,6 +42,8 @@ import java.util.stream.Collectors;
 public class InventoryAlertServiceImpl extends ServiceImpl<InventoryAlertMapper, InventoryAlert> implements InventoryAlertService {
 
     private final InventoryConverter converter;
+    private final InventoryMapper inventoryMapper;
+    private final ProductSkuMapper productSkuMapper;
 
     @Override
     public PageResult<InventoryAlertDTO> pageList(PageQuery query) {
@@ -103,6 +111,85 @@ public class InventoryAlertServiceImpl extends ServiceImpl<InventoryAlertMapper,
     @Transactional(rollbackFor = Exception.class)
     public void checkAlerts() {
         log.info("执行库存预警检查...");
+
+        // 1. 查询所有设置了预警阈值的SKU
+        List<ProductSku> skuList = productSkuMapper.selectList(
+                new LambdaQueryWrapper<ProductSku>()
+                        .gt(ProductSku::getWarningQty, 0)
+                        .eq(ProductSku::getStatus, 1));
+        if (skuList == null || skuList.isEmpty()) {
+            log.info("没有设置预警阈值的SKU，跳过");
+            return;
+        }
+
+        Map<Long, ProductSku> skuMap = skuList.stream()
+                .collect(Collectors.toMap(ProductSku::getSkuId, s -> s));
+
+        // 2. 查询所有库存
+        List<Inventory> inventoryList = inventoryMapper.selectList(null);
+        if (inventoryList == null || inventoryList.isEmpty()) {
+            log.info("库存为空，跳过");
+            return;
+        }
+
+        // 3. 查询已有的未处理预警，避免重复
+        List<InventoryAlert> existingAlerts = this.list(
+                new LambdaQueryWrapper<InventoryAlert>()
+                        .eq(InventoryAlert::getStatus, 0));
+        Map<String, InventoryAlert> existingKeyMap = existingAlerts.stream()
+                .collect(Collectors.toMap(
+                        a -> a.getWarehouseId() + "_" + a.getSkuId(),
+                        a -> a));
+
+        // 4. 检查每个库存是否需要预警
+        List<InventoryAlert> newAlerts = new ArrayList<>();
+        for (Inventory inv : inventoryList) {
+            ProductSku sku = skuMap.get(inv.getSkuId());
+            if (sku == null) {
+                continue;
+            }
+            int currentQty = inv.getQty() != null ? inv.getQty() : 0;
+            String key = inv.getWarehouseId() + "_" + inv.getSkuId();
+
+            // 库存不足预警
+            if (currentQty < sku.getWarningQty() && !existingKeyMap.containsKey(key + "_LOW")) {
+                InventoryAlert alert = new InventoryAlert();
+                alert.setWarehouseId(inv.getWarehouseId());
+                alert.setSkuId(inv.getSkuId());
+                alert.setSkuCode(sku.getSkuCode());
+                alert.setAttr1(sku.getAttr1());
+                alert.setAttr2(sku.getAttr2());
+                alert.setCurrentQty(currentQty);
+                alert.setMinQty(sku.getWarningQty());
+                alert.setAlertType(1); // 1-库存不足
+                alert.setStatus(0);
+                alert.setAlertTime(LocalDateTime.now());
+                newAlerts.add(alert);
+            }
+            // 库存为零预警
+            if (currentQty <= 0 && !existingKeyMap.containsKey(key + "_ZERO")) {
+                InventoryAlert alert = new InventoryAlert();
+                alert.setWarehouseId(inv.getWarehouseId());
+                alert.setSkuId(inv.getSkuId());
+                alert.setSkuCode(sku.getSkuCode());
+                alert.setAttr1(sku.getAttr1());
+                alert.setAttr2(sku.getAttr2());
+                alert.setCurrentQty(currentQty);
+                alert.setMinQty(sku.getWarningQty());
+                alert.setAlertType(2); // 2-库存为零
+                alert.setStatus(0);
+                alert.setAlertTime(LocalDateTime.now());
+                newAlerts.add(alert);
+            }
+        }
+
+        // 5. 批量保存新预警
+        if (!newAlerts.isEmpty()) {
+            this.saveBatch(newAlerts);
+            log.info("库存预警检查完成，新增预警{}条", newAlerts.size());
+        } else {
+            log.info("库存预警检查完成，无新增预警");
+        }
     }
 
     private InventoryAlertDTO toDTO(InventoryAlert entity) {

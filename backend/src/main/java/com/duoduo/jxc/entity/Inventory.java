@@ -49,4 +49,10 @@ public class Inventory extends BaseEntity {
      */
     @TableField("locked_qty")
     private Integer lockedQty;
+
+    /**
+     * 批次号
+     */
+    @TableField("batch_no")
+    private String batchNo;
 }

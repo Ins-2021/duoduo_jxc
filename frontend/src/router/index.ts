@@ -50,6 +50,12 @@ export const routes: Array<RouteRecordRaw> = [
             meta: { title: '修改销售预定', hidden: true, perm: 'sales:booking:edit' }
           },
           {
+            path: 'quotation',
+            name: 'SalesQuotation',
+            component: () => import('../views/quotation/index.vue'),
+            meta: { title: '销售报价', perm: 'sales:quotation:view' }
+          },
+          {
             path: 'order',
             name: 'SalesOrder',
             component: () => import('../views/sales/order/index.vue'),
@@ -190,6 +196,24 @@ export const routes: Array<RouteRecordRaw> = [
             name: 'InventoryAlert',
             component: () => import('../views/inventory/alert/index.vue'),
             meta: { title: '库存预警', perm: 'inventory:alert:view' }
+          },
+          {
+            path: 'batch',
+            name: 'InventoryBatch',
+            component: () => import('../views/batch/index.vue'),
+            meta: { title: '批次管理', perm: 'inventory:batch:view' }
+          },
+          {
+            path: 'barcode',
+            name: 'InventoryBarcode',
+            component: () => import('../views/barcode/index.vue'),
+            meta: { title: '条码管理', perm: 'inventory:barcode:view' }
+          },
+          {
+            path: 'barcode/rule',
+            name: 'InventoryBarcodeRule',
+            component: () => import('../views/barcode/rule.vue'),
+            meta: { title: '条码规则', perm: 'inventory:barcode:view' }
           }
         ]
       },
@@ -240,6 +264,12 @@ export const routes: Array<RouteRecordRaw> = [
             name: 'FinanceIncomeExpense',
             component: () => import('../views/finance/income-expense/index.vue'),
             meta: { title: '收支记录', perm: 'finance:income-expense:view' }
+          },
+          {
+            path: 'supplier-recon',
+            name: 'FinanceSupplierRecon',
+            component: () => import('../views/supplier/reconciliation.vue'),
+            meta: { title: '供应商对账', perm: 'finance:supplier-recon:view' }
           }
         ]
       },
@@ -272,6 +302,12 @@ export const routes: Array<RouteRecordRaw> = [
             name: 'DataProductEdit',
             component: () => import('../views/data/product/add.vue'),
             meta: { title: '编辑商品', hidden: true, perm: 'data:product:edit' }
+          },
+          {
+            path: 'style',
+            name: 'DataStyle',
+            component: () => import('../views/style/index.vue'),
+            meta: { title: '款式管理', perm: 'data:style:view' }
           },
           {
             path: 'category',
@@ -308,6 +344,32 @@ export const routes: Array<RouteRecordRaw> = [
             name: 'DataBrand',
             component: () => import('../views/data/brand/index.vue'),
             meta: { title: '品牌管理', perm: 'data:brand:view' }
+          }
+        ]
+      },
+      {
+        path: 'mes',
+        name: 'MES',
+        redirect: '/mes/process',
+        meta: { title: '生产执行', icon: 'Setting', perm: 'mes:menu:view' },
+        children: [
+          {
+            path: 'process',
+            name: 'MesProcess',
+            component: () => import('../views/process/index.vue'),
+            meta: { title: '工序管理', perm: 'mes:process:view' }
+          },
+          {
+            path: 'quality/standard',
+            name: 'QualityStandard',
+            component: () => import('../views/quality/standard.vue'),
+            meta: { title: '质检标准', perm: 'mes:quality:view' }
+          },
+          {
+            path: 'quality/check',
+            name: 'QualityCheck',
+            component: () => import('../views/quality/check.vue'),
+            meta: { title: '质检记录', perm: 'mes:quality:view' }
           }
         ]
       },

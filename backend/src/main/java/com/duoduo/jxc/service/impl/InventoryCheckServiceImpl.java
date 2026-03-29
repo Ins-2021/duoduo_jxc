@@ -10,13 +10,16 @@ import com.duoduo.jxc.common.PageResult;
 import com.duoduo.jxc.converter.InventoryConverter;
 import com.duoduo.jxc.dto.inventory.InventoryCheckDTO;
 import com.duoduo.jxc.dto.inventory.InventoryCheckDetailDTO;
+import com.duoduo.jxc.enums.InventoryCheckStatusEnum;
 import com.duoduo.jxc.entity.InventoryCheck;
 import com.duoduo.jxc.entity.InventoryCheckDetail;
 import com.duoduo.jxc.exception.BusinessException;
 import com.duoduo.jxc.mapper.InventoryCheckDetailMapper;
 import com.duoduo.jxc.mapper.InventoryCheckMapper;
 import com.duoduo.jxc.service.InventoryCheckService;
+import com.duoduo.jxc.service.InventoryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,12 +31,14 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class InventoryCheckServiceImpl extends ServiceImpl<InventoryCheckMapper, InventoryCheck> implements InventoryCheckService {
 
     private final InventoryCheckDetailMapper detailMapper;
     private final InventoryConverter converter;
+    private final InventoryService inventoryService;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -86,7 +91,7 @@ public class InventoryCheckServiceImpl extends ServiceImpl<InventoryCheckMapper,
         BeanUtils.copyProperties(dto, entity);
         
         entity.setCheckNo(generateOrderNo());
-        entity.setStatus(0);
+        entity.setStatus(InventoryCheckStatusEnum.DRAFT.getValue());
         entity.setCreateTime(LocalDateTime.now());
         entity.setUpdateTime(LocalDateTime.now());
         save(entity);
@@ -106,6 +111,7 @@ public class InventoryCheckServiceImpl extends ServiceImpl<InventoryCheckMapper,
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(InventoryCheckDTO dto) {
+        assertEditable(dto.getCheckId(), BizCode.INVENTORY_CHECK_CANNOT_MODIFY);
         InventoryCheck entity = new InventoryCheck();
         BeanUtils.copyProperties(dto, entity);
         entity.setUpdateTime(LocalDateTime.now());
@@ -127,6 +133,7 @@ public class InventoryCheckServiceImpl extends ServiceImpl<InventoryCheckMapper,
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
+        assertEditable(id, BizCode.INVENTORY_CHECK_CANNOT_DELETE);
         detailMapper.delete(new LambdaQueryWrapper<InventoryCheckDetail>()
                 .eq(InventoryCheckDetail::getCheckId, id));
         removeById(id);
@@ -139,9 +146,46 @@ public class InventoryCheckServiceImpl extends ServiceImpl<InventoryCheckMapper,
         if (entity == null) {
             throw new BusinessException(BizCode.INVENTORY_CHECK_NOT_FOUND);
         }
-        entity.setStatus(2);
+        if (!InventoryCheckStatusEnum.DRAFT.getValue().equals(entity.getStatus())
+                && !InventoryCheckStatusEnum.CHECKING.getValue().equals(entity.getStatus())) {
+            throw new BusinessException(BizCode.BAD_REQUEST, "只能完成草稿或盘点中状态的盘点单");
+        }
+
+        // 查询盘点明细
+        List<InventoryCheckDetail> details = detailMapper.selectList(
+                new LambdaQueryWrapper<InventoryCheckDetail>()
+                        .eq(InventoryCheckDetail::getCheckId, id));
+
+        // 根据差异数量调整库存
+        for (InventoryCheckDetail detail : details) {
+            if (detail.getSkuId() == null || detail.getDiffQty() == null || detail.getDiffQty() == 0) {
+                continue;
+            }
+            int diffQty = detail.getDiffQty();
+            if (diffQty > 0) {
+                inventoryService.addStock(entity.getWarehouseId(), detail.getSkuId(), diffQty,
+                        "INVENTORY_CHECK", entity.getCheckId(), entity.getCheckNo());
+            } else {
+                inventoryService.deductStock(entity.getWarehouseId(), detail.getSkuId(), Math.abs(diffQty),
+                        "INVENTORY_CHECK", entity.getCheckId(), entity.getCheckNo());
+            }
+        }
+
+        entity.setStatus(InventoryCheckStatusEnum.COMPLETED.getValue());
         entity.setUpdateTime(LocalDateTime.now());
         updateById(entity);
+        log.info("盘点完成，库存已调整: checkId={}, checkNo={}", id, entity.getCheckNo());
+    }
+
+    private void assertEditable(Long id, BizCode bizCode) {
+        InventoryCheck exist = super.getById(id);
+        if (exist == null) {
+            throw new BusinessException(BizCode.INVENTORY_CHECK_NOT_FOUND);
+        }
+        if (!InventoryCheckStatusEnum.DRAFT.getValue().equals(exist.getStatus())
+                && !InventoryCheckStatusEnum.CHECKING.getValue().equals(exist.getStatus())) {
+            throw new BusinessException(bizCode);
+        }
     }
 
     private String generateOrderNo() {

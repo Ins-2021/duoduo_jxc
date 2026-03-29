@@ -10,7 +10,7 @@ export function getCustomerList(params: CustomerQuery) {
 }
 
 export function getCustomerDetail(id: number) {
-  return request<CustomerDTO>({
+  return request({
     url: `/customer/${id}`,
     method: 'get'
   })

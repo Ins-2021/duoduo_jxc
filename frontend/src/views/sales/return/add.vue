@@ -123,7 +123,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import { createSalesReturnOrder, getSalesReturnSourceOrder } from '@/api/sales-return'
+import { createSalesReturnOrder, getSalesReturnSourceDetail } from '@/api/sales-return'
 
 const router = useRouter()
 const route = useRoute()
@@ -187,7 +187,7 @@ const loadSourceOrder = async () => {
   }
   sourceLoading.value = true
   try {
-    const res: any = await getSalesReturnSourceOrder(sourceId)
+    const res: any = await getSalesReturnSourceDetail(sourceId)
     sourceOrder.value = res.data
     formData.originSalesId = String(res.data.orderId)
     formData.customerId = res.data.customerId
