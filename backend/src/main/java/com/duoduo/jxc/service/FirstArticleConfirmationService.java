@@ -12,4 +12,6 @@ public interface FirstArticleConfirmationService extends IService<FirstArticleCo
     Long create(FirstArticleConfirmationDTO dto);
     void update(FirstArticleConfirmationDTO dto);
     void delete(Long id);
+    void submitFirstArticle(FirstArticleConfirmationDTO dto);
+    void approveFirstArticle(Long id, boolean approved, String comment);
 }

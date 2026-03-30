@@ -7,6 +7,7 @@ public class DefectRecordDTO {
     private Long defectId;
     private String defectNo;
     private Long qualityCheckId;
+    private Long reworkId;
     private String defectType;
     private Integer quantity;
     private String handlingMethod;

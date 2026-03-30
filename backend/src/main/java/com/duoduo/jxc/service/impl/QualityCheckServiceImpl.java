@@ -4,21 +4,36 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.duoduo.jxc.common.PageResult;
+import com.duoduo.jxc.dto.DefectRecordDTO;
 import com.duoduo.jxc.dto.QualityCheckDTO;
 import com.duoduo.jxc.dto.QualityCheckQuery;
+import com.duoduo.jxc.dto.QualityCheckSubmitDTO;
+import com.duoduo.jxc.entity.DefectRecord;
 import com.duoduo.jxc.entity.QualityCheck;
+import com.duoduo.jxc.entity.ReworkOrder;
+import com.duoduo.jxc.mapper.DefectRecordMapper;
 import com.duoduo.jxc.mapper.QualityCheckMapper;
+import com.duoduo.jxc.mapper.ReworkOrderMapper;
 import com.duoduo.jxc.service.QualityCheckService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class QualityCheckServiceImpl extends ServiceImpl<QualityCheckMapper, QualityCheck> implements QualityCheckService {
+
+    private final DefectRecordMapper defectRecordMapper;
+    private final ReworkOrderMapper reworkOrderMapper;
+
+    public QualityCheckServiceImpl(DefectRecordMapper defectRecordMapper, ReworkOrderMapper reworkOrderMapper) {
+        this.defectRecordMapper = defectRecordMapper;
+        this.reworkOrderMapper = reworkOrderMapper;
+    }
 
     @Override
     public PageResult<QualityCheckDTO> pageQuery(QualityCheckQuery query) {
@@ -64,6 +79,35 @@ public class QualityCheckServiceImpl extends ServiceImpl<QualityCheckMapper, Qua
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
         removeById(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Long submitCheckResult(QualityCheckSubmitDTO dto) {
+        QualityCheck check = new QualityCheck();
+        BeanUtils.copyProperties(dto, check);
+        save(check);
+        
+        if ("rejected".equals(dto.getResult()) && dto.getDefects() != null && !dto.getDefects().isEmpty()) {
+            createReworkOrder(check, dto.getDefects());
+        }
+        
+        return check.getCheckId();
+    }
+
+    private void createReworkOrder(QualityCheck check, List<DefectRecordDTO> defects) {
+        ReworkOrder rework = new ReworkOrder();
+        rework.setCheckId(check.getCheckId());
+        rework.setBundleId(check.getBundleId());
+        rework.setStatus("pending");
+        reworkOrderMapper.insert(rework);
+        
+        for (DefectRecordDTO defect : defects) {
+            DefectRecord record = new DefectRecord();
+            BeanUtils.copyProperties(defect, record);
+            record.setReworkId(rework.getReworkId());
+            defectRecordMapper.insert(record);
+        }
     }
 
     private QualityCheckDTO convertToDTO(QualityCheck entity) {

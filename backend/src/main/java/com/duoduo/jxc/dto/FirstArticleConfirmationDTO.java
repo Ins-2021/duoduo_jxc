@@ -8,8 +8,12 @@ public class FirstArticleConfirmationDTO {
     private String confirmationNo;
     private Long orderId;
     private Long processId;
+    private String status;
     private String result;
     private Long checkerId;
+    private Long approverId;
+    private String approveComment;
+    private java.time.LocalDateTime approveTime;
     private java.time.LocalDateTime checkTime;
     private String remark;
 }

@@ -3,10 +3,12 @@ package com.duoduo.jxc.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.duoduo.jxc.common.BizCode;
 import com.duoduo.jxc.common.PageResult;
 import com.duoduo.jxc.dto.FirstArticleConfirmationDTO;
 import com.duoduo.jxc.dto.FirstArticleConfirmationQuery;
 import com.duoduo.jxc.entity.FirstArticleConfirmation;
+import com.duoduo.jxc.exception.BusinessException;
 import com.duoduo.jxc.mapper.FirstArticleConfirmationMapper;
 import com.duoduo.jxc.service.FirstArticleConfirmationService;
 import org.springframework.beans.BeanUtils;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,6 +67,29 @@ public class FirstArticleConfirmationServiceImpl extends ServiceImpl<FirstArticl
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
         removeById(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void submitFirstArticle(FirstArticleConfirmationDTO dto) {
+        FirstArticleConfirmation confirmation = new FirstArticleConfirmation();
+        BeanUtils.copyProperties(dto, confirmation);
+        confirmation.setStatus("pending");
+        save(confirmation);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void approveFirstArticle(Long id, boolean approved, String comment) {
+        FirstArticleConfirmation confirmation = getById(id);
+        if (confirmation == null) {
+            throw new BusinessException(BizCode.NOT_FOUND);
+        }
+        
+        confirmation.setStatus(approved ? "approved" : "rejected");
+        confirmation.setApproveComment(comment);
+        confirmation.setApproveTime(LocalDateTime.now());
+        updateById(confirmation);
     }
 
     private FirstArticleConfirmationDTO convertToDTO(FirstArticleConfirmation entity) {

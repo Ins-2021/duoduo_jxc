@@ -5,21 +5,39 @@ import com.duoduo.jxc.common.PageResult;
 import com.duoduo.jxc.common.Result;
 import com.duoduo.jxc.dto.QualityCheckDTO;
 import com.duoduo.jxc.dto.QualityCheckQuery;
+import com.duoduo.jxc.dto.QualityCheckSubmitDTO;
+import com.duoduo.jxc.dto.ReworkOrderDTO;
 import com.duoduo.jxc.service.QualityCheckService;
+import com.duoduo.jxc.service.ReworkOrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/qualitycheck")
+@RequestMapping("/api/quality/checks")
 @RequiredArgsConstructor
 public class QualityCheckController {
 
     private final QualityCheckService qualityCheckService;
+    private final ReworkOrderService reworkOrderService;
+
+    @Log(title = "质检记录", action = "提交质检结果")
+    @PostMapping
+    @PreAuthorize("@perm.has('mes:quality:add')")
+    public Result<Long> submitCheckResult(@Valid @RequestBody QualityCheckSubmitDTO dto) {
+        return Result.success(qualityCheckService.submitCheckResult(dto));
+    }
+
+    @Log(title = "质检记录", action = "查询关联返工单")
+    @GetMapping("/{id}/rework")
+    @PreAuthorize("@perm.has('mes:quality:view')")
+    public Result<ReworkOrderDTO> getReworkOrder(@PathVariable("id") Long id) {
+        return Result.success(reworkOrderService.getByCheckId(id));
+    }
 
     @Log(title = "质检记录", action = "分页查询")
-    @GetMapping("/list")
+    @GetMapping
     @PreAuthorize("@perm.has('mes:quality:view')")
     public Result<PageResult<QualityCheckDTO>> pageQuery(@Valid QualityCheckQuery query) {
         return Result.success(qualityCheckService.pageQuery(query));
@@ -30,13 +48,6 @@ public class QualityCheckController {
     @PreAuthorize("@perm.has('mes:quality:view')")
     public Result<QualityCheckDTO> getDetail(@PathVariable("id") Long id) {
         return Result.success(qualityCheckService.getDetail(id));
-    }
-
-    @Log(title = "质检记录", action = "新增")
-    @PostMapping
-    @PreAuthorize("@perm.has('mes:quality:add')")
-    public Result<Long> create(@Valid @RequestBody QualityCheckDTO dto) {
-        return Result.success(qualityCheckService.create(dto));
     }
 
     @Log(title = "质检记录", action = "修改")
