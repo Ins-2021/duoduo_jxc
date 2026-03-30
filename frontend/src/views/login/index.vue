@@ -40,11 +40,25 @@ if (import.meta.env.DEV) {
 const doLogin = async () => {
   loading.value = true
   try {
+    console.log('Starting login...')
     const res: any = await login(form)
+    console.log('Login response:', res)
     const data = res.data
+    console.log('Login data:', { accessToken: data.accessToken ? 'exists' : 'empty', refreshToken: data.refreshToken ? 'exists' : 'empty' })
     userStore.setTokens(data.accessToken, data.refreshToken)
+    // 获取用户权限信息
+    console.log('Fetching profile...')
+    const profileRes: any = await getProfile()
+    console.log('Profile response:', profileRes)
+    if (profileRes?.data) {
+      userStore.setProfile(profileRes.data)
+    }
     ElMessage.success('登录成功')
+    console.log('Navigating to /home')
     router.replace('/home')
+  } catch (error) {
+    console.error('Login error:', error)
+    ElMessage.error('登录失败')
   } finally {
     loading.value = false
   }
