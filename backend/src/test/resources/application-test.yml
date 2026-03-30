@@ -8,14 +8,17 @@ spring:
       connection-init-sql: "SET NAMES utf8mb4"
   sql:
     init:
-      mode: never
+      mode: always
+      schema-locations: 
+        - classpath:sql/test_schema.sql
+      data-locations:
 
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
 
 flowable:
-  database-schema-update: true
+  database-schema-update: false
   database-type: mysql
   async-executor-activate: false
   history-level: full

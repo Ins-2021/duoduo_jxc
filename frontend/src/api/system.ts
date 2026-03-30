@@ -147,6 +147,7 @@ export function assignRoleMenus(roleId: number, payload: number[] | { menuIds: n
 
 export function getMenuTree() {
   return request({
+    url: '/system/menus/tree',
     method: 'get'
   })
 }

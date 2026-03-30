@@ -84,3 +84,34 @@ export function checkProductCode(productCode: string, excludeId?: number) {
     params: { productCode, excludeId }
   })
 }
+
+export function getBrandList(params: PageQuery & { keyword?: string }) {
+  return request({
+    url: '/product/brand/page',
+    method: 'get',
+    params
+  })
+}
+
+export function addBrand(data: { brandName: string; brandCode?: string; remark?: string }) {
+  return request({
+    url: '/product/brand',
+    method: 'post',
+    data
+  })
+}
+
+export function updateBrand(data: { brandId: number; brandName: string; brandCode?: string; remark?: string }) {
+  return request({
+    url: `/product/brand/${data.brandId}`,
+    method: 'put',
+    data
+  })
+}
+
+export function deleteBrand(id: number) {
+  return request({
+    url: `/product/brand/${id}`,
+    method: 'delete'
+  })
+}

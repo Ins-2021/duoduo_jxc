@@ -9,4 +9,5 @@ import com.duoduo.jxc.entity.FinanceAccount;
 public interface FinanceAccountService extends IService<FinanceAccount> {
     PageResult<FinanceAccountDTO> pageQuery(FinanceAccountQuery query);
     Long addAccount(FinanceAccountDTO dto);
+    void updateAccount(FinanceAccountDTO dto);
 }

@@ -65,12 +65,18 @@ export const useUserStore = defineStore('user', {
       this.perms = readJson<string[]>(PERMS_KEY, [])
       this.profile = readJson<UserProfile>(PROFILE_KEY, {})
       this.initialized = true
+      console.log('UserStore initialized:', {
+        accessToken: this.accessToken ? 'exists' : 'empty',
+        perms: this.perms.length
+      })
     },
     setTokens(accessToken: string, refreshToken: string) {
       this.accessToken = accessToken || ''
       this.refreshToken = refreshToken || ''
+      console.log('setTokens called:', { accessToken: this.accessToken ? 'exists' : 'empty', refreshToken: this.refreshToken ? 'exists' : 'empty' })
       if (this.accessToken) {
         sessionStorage.setItem(ACCESS_TOKEN_KEY, this.accessToken)
+        console.log('Token saved to sessionStorage')
       } else {
         sessionStorage.removeItem(ACCESS_TOKEN_KEY)
       }
@@ -97,8 +103,10 @@ export const useUserStore = defineStore('user', {
       sessionStorage.removeItem(REFRESH_TOKEN_KEY)
     },
     setPerms(perms: string[]) {
+      console.log('Setting perms:', perms)
       this.perms = Array.isArray(perms) ? perms : []
       localStorage.setItem(PERMS_KEY, JSON.stringify(this.perms))
+      console.log('Perms saved to localStorage:', this.perms)
     },
     setProfile(profile: UserProfile) {
       this.profile = profile || {}

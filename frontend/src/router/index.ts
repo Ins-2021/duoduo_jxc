@@ -693,6 +693,8 @@ router.beforeEach((to) => {
   const userStore = useUserStore(pinia)
   userStore.initialize()
 
+  console.log('Router beforeEach:', to.path, 'perms:', userStore.perms.slice(0, 5), 'token exists:', !!userStore.accessToken)
+
   if (to.meta.title) {
     document.title = `${to.meta.title} - 多多进销存`
   } else {

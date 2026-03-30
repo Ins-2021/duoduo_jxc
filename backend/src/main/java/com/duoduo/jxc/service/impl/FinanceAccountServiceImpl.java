@@ -40,4 +40,10 @@ public class FinanceAccountServiceImpl extends ServiceImpl<FinanceAccountMapper,
         save(account);
         return account.getAccountId();
     }
+
+    @Override
+    public void updateAccount(FinanceAccountDTO dto) {
+        FinanceAccount account = converter.toEntity(dto);
+        updateById(account);
+    }
 }

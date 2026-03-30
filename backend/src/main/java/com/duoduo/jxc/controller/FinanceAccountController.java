@@ -46,7 +46,7 @@ public class FinanceAccountController {
     @PreAuthorize("@perm.has('finance:account:edit')")
     public Result<Void> update(@PathVariable Long id, @RequestBody FinanceAccountDTO dto) {
         dto.setAccountId(id);
-        financeAccountService.updateById(dto);
+        financeAccountService.updateAccount(dto);
         return Result.success();
     }
 
