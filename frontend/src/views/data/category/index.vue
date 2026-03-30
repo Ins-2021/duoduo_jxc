@@ -11,7 +11,7 @@
         <el-button type="primary" icon="Plus" v-perm="'data:category:add'" @click="handleAdd">添加分类</el-button>
         <el-button type="success" icon="Edit" v-perm="'data:category:edit'" :disabled="!singleSelected" @click="handleUpdate">修改分类</el-button>
         <el-button type="danger" icon="Delete" v-perm="'data:category:delete'" :disabled="!multipleSelected" @click="handleDeleteSelected">删除分类</el-button>
-        <el-button type="info" icon="Upload" @click="handleImport" disabled>导入分类</el-button>
+        <el-button type="info" icon="Upload" @click="handleImport">导入分类</el-button>
       </div>
 
       <div class="tree-container">
@@ -71,6 +71,56 @@
         </div>
       </template>
     </el-dialog>
+    <!-- 导入分类弹窗 -->
+    <el-dialog title="导入商品分类" v-model="importDialogVisible" width="500px" append-to-body>
+      <div class="import-tips">
+        <el-alert
+          title="导入说明"
+          type="info"
+          :closable="false"
+        >
+          <template #default>
+            <div>1. 请先下载导入模板，按模板格式填写数据</div>
+            <div>2. 支持导入字段：分类名称、上级分类、排序</div>
+            <div>3. 若上级分类不存在，将自动创建为顶级分类</div>
+          </template>
+        </el-alert>
+      </div>
+      
+      <div class="import-actions" style="margin-top: 20px;">
+        <el-button type="primary" plain @click="downloadTemplate">
+          <el-icon><Download /></el-icon>下载导入模板
+        </el-button>
+      </div>
+      
+      <el-upload
+        class="upload-area"
+        drag
+        action="/api/import-export/import/product-category"
+        :headers="uploadHeaders"
+        :on-success="handleImportSuccess"
+        :on-error="handleImportError"
+        :before-upload="beforeUpload"
+        accept=".xlsx,.xls"
+        style="margin-top: 20px;"
+      >
+        <el-icon class="el-icon--upload"><Upload /></el-icon>
+        <div class="el-upload__text">
+          拖拽文件到此处或 <em>点击上传</em>
+        </div>
+        <template #tip>
+          <div class="el-upload__tip">
+            仅支持 .xlsx 或 .xls 格式的Excel文件
+          </div>
+        </template>
+      </el-upload>
+      
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="importDialogVisible = false">关闭</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -78,7 +128,7 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, ElTree } from 'element-plus'
-import { Folder, Document, Plus, Upload, Edit, Delete } from '@element-plus/icons-vue'
+import { Folder, Document, Plus, Upload, Edit, Delete, Download } from '@element-plus/icons-vue'
 import { getProductCategoryTree, addProductCategory, updateProductCategory, deleteProductCategory } from '@/api/product'
 
 // 树形配置
@@ -151,8 +201,51 @@ const handleAdd = () => {
   dialogVisible.value = true
 }
 
+// 导入相关
+const importDialogVisible = ref(false)
+const uploadHeaders = computed(() => {
+  const token = localStorage.getItem('token')
+  return {
+    Authorization: `Bearer ${token}`
+  }
+})
+
 const handleImport = () => {
-  ElMessage.info('导入功能开发中...')
+  importDialogVisible.value = true
+}
+
+const downloadTemplate = () => {
+  // 下载导入模板
+  const link = document.createElement('a')
+  link.href = '/api/import-export/template/product-category'
+  link.download = '商品分类导入模板.xlsx'
+  link.click()
+  ElMessage.success('模板下载中...')
+}
+
+const beforeUpload = (file: File) => {
+  const isExcel = file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
+                  file.type === 'application/vnd.ms-excel'
+  if (!isExcel) {
+    ElMessage.error('请上传Excel文件(.xlsx或.xls)')
+    return false
+  }
+  return true
+}
+
+const handleImportSuccess = (response: any) => {
+  if (response.code === 200) {
+    ElMessage.success(`导入成功！共导入${response.data.successCount || 0}条数据`)
+    importDialogVisible.value = false
+    fetchCategories() // 刷新列表
+  } else {
+    ElMessage.error(response.message || '导入失败')
+  }
+}
+
+const handleImportError = (error: any) => {
+  console.error('导入失败:', error)
+  ElMessage.error('导入失败，请检查文件格式是否正确')
 }
 
 const handleEdit = (data: any) => {

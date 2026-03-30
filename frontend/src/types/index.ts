@@ -35,6 +35,13 @@ export type {
   SalesDailyReportDTO,
 } from './sales'
 
+// 报表/分析
+export type {
+  ProfitSummary, StyleProfit, CustomerProfit,
+  ColorProfit, SizeProfit, MonthlyProfit,
+  StyleProfitDetail, ProfitTrend,
+} from './report'
+
 // 库存
 export type {
   InventoryDTO, InventoryAlertDTO,

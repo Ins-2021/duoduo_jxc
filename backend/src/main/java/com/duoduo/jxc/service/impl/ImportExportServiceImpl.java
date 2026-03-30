@@ -79,6 +79,8 @@ public class ImportExportServiceImpl implements ImportExportService {
             switch (bizType) {
                 case "product":
                     return importProductData(file, record);
+                case "product-category":
+                    return importCategoryData(file, record);
                 case "customer":
                     return importCustomerData(file, record);
                 case "supplier":
@@ -265,6 +267,81 @@ public class ImportExportServiceImpl implements ImportExportService {
         return ImportResultDTO.of(record.getRecordId(), listener.getTotalCount(), successCount, realErrorList.size(), errorFilePath);
     }
 
+    private ImportResultDTO importCategoryData(MultipartFile file, ImportExportRecord record) throws Exception {
+        ProductCategoryImportListener listener = new ProductCategoryImportListener();
+        EasyExcel.read(file.getInputStream(), ProductCategoryImportDTO.class, listener).sheet().doRead();
+        
+        List<ProductCategoryImportDTO> successList = listener.getSuccessList();
+        List<ProductCategoryImportDTO> failList = listener.getFailList();
+        
+        // 获取现有分类名称映射
+        Map<String, Long> categoryMap = getCategoryMap();
+        
+        for (ProductCategoryImportDTO dto : listener.getCachedDataList()) {
+            try {
+                // 校验必填字段
+                if (!StringUtils.hasText(dto.getCategoryName())) {
+                    dto.setErrorMsg("分类名称不能为空");
+                    listener.addFail(dto);
+                    continue;
+                }
+                
+                // 检查分类是否已存在
+                if (categoryMap.containsKey(dto.getCategoryName())) {
+                    dto.setErrorMsg("分类名称已存在: " + dto.getCategoryName());
+                    listener.addFail(dto);
+                    continue;
+                }
+                
+                // 创建分类实体
+                ProductCategory category = new ProductCategory();
+                category.setCategoryName(dto.getCategoryName());
+                category.setSort(dto.getSort() != null ? dto.getSort() : 0);
+                category.setStatus(1);
+                category.setCreateTime(LocalDateTime.now());
+                
+                // 处理上级分类
+                if (StringUtils.hasText(dto.getParentName())) {
+                    Long parentId = categoryMap.get(dto.getParentName());
+                    if (parentId != null) {
+                        category.setParentId(parentId);
+                    } else {
+                        // 上级分类不存在，设为顶级
+                        category.setParentId(0L);
+                    }
+                } else {
+                    category.setParentId(0L);
+                }
+                
+                categoryMapper.insert(category);
+                
+                // 更新映射表
+                categoryMap.put(dto.getCategoryName(), category.getCategoryId());
+                
+                listener.addSuccess(dto);
+            } catch (Exception e) {
+                dto.setErrorMsg(e.getMessage());
+                listener.addFail(dto);
+            }
+        }
+        
+        // 更新导入记录
+        record.setStatus(1);
+        record.setSuccessCount(successList.size());
+        record.setErrorCount(failList.size());
+        recordMapper.updateById(record);
+        
+        // 构建结果
+        ImportResultDTO result = new ImportResultDTO();
+        result.setSuccessCount(successList.size());
+        result.setErrorCount(failList.size());
+        result.setTotalCount(successList.size() + failList.size());
+        if (!failList.isEmpty()) {
+            result.setErrorFilePath(generateCategoryErrorFile(failList));
+        }
+        return result;
+    }
+
     @Override
     public void exportData(String bizType, Map<String, Object> params, HttpServletResponse response) {
         String fileName = getExportFileName(bizType);
@@ -425,6 +502,7 @@ public class ImportExportServiceImpl implements ImportExportService {
     private String getTemplateFileName(String bizType) {
         return switch (bizType) {
             case "product" -> "商品导入模板.xlsx";
+            case "product-category" -> "商品分类导入模板.xlsx";
             case "customer" -> "客户导入模板.xlsx";
             case "supplier" -> "供应商导入模板.xlsx";
             default -> "导入模板.xlsx";
@@ -434,6 +512,7 @@ public class ImportExportServiceImpl implements ImportExportService {
     private String getTemplateSheetName(String bizType) {
         return switch (bizType) {
             case "product" -> "商品信息";
+            case "product-category" -> "商品分类";
             case "customer" -> "客户信息";
             case "supplier" -> "供应商信息";
             default -> "数据";
@@ -460,6 +539,10 @@ public class ImportExportServiceImpl implements ImportExportService {
                     Collections.singletonList("单位"), Collections.singletonList("成本价"),
                     Collections.singletonList("销售价"), Collections.singletonList("条码"),
                     Collections.singletonList("状态"));
+            case "product-category" -> Arrays.asList(
+                    Collections.singletonList("分类名称"),
+                    Collections.singletonList("上级分类"),
+                    Collections.singletonList("排序"));
             case "customer" -> Arrays.asList(
                     Collections.singletonList("客户编码"), Collections.singletonList("客户名称"),
                     Collections.singletonList("客户类型"), Collections.singletonList("联系人"),
@@ -478,6 +561,11 @@ public class ImportExportServiceImpl implements ImportExportService {
             case "product" -> Arrays.asList(
                     Arrays.asList("SP001", "测试商品1", "面料", "面料类", "件", "100", "150", "", "启用"),
                     Arrays.asList("SP002", "测试商品2", "辅料", "辅料类", "个", "50", "80", "", "启用"));
+            case "product-category" -> Arrays.asList(
+                    Arrays.asList("面料", "", "1"),
+                    Arrays.asList("辅料", "", "2"),
+                    Arrays.asList("针织面料", "面料", "1"),
+                    Arrays.asList("梭织面料", "面料", "2"));
             case "customer" -> Arrays.asList(
                     Arrays.asList("C001", "测试客户1", "批发", "张三", "13800138000", "测试地址", "李四", "启用"),
                     Arrays.asList("C002", "测试客户2", "零售", "王五", "13900139000", "测试地址2", "", "启用"));
@@ -520,6 +608,10 @@ public class ImportExportServiceImpl implements ImportExportService {
 
     private String generateSupplierErrorFile(List<SupplierImportDTO> errorList) {
         return "/tmp/error_supplier_" + System.currentTimeMillis() + ".xlsx";
+    }
+
+    private String generateCategoryErrorFile(List<ProductCategoryImportDTO> errorList) {
+        return "/tmp/error_category_" + System.currentTimeMillis() + ".xlsx";
     }
 
     private String getOrderStatusText(Integer status) {
