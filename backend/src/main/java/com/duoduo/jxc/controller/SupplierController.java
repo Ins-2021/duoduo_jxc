@@ -5,7 +5,7 @@ import com.duoduo.jxc.common.Result;
 import com.duoduo.jxc.dto.data.SupplierDTO;
 import com.duoduo.jxc.dto.data.SupplierQuery;
 import com.duoduo.jxc.entity.Supplier;
-import com.duoduo.jxc.service.data.SupplierService;
+import com.duoduo.jxc.service.SupplierService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;

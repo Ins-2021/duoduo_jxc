@@ -10,7 +10,7 @@ import com.duoduo.jxc.dto.inventory.StockInOutDTO;
 import com.duoduo.jxc.entity.Warehouse;
 import com.duoduo.jxc.service.InventoryCheckService;
 import com.duoduo.jxc.service.StockInOutService;
-import com.duoduo.jxc.service.data.WarehouseService;
+import com.duoduo.jxc.service.WarehouseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;

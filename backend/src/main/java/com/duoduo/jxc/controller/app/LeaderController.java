@@ -1,21 +1,28 @@
 package com.duoduo.jxc.controller.app;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.duoduo.jxc.common.PageResult;
 import com.duoduo.jxc.common.Result;
 import com.duoduo.jxc.dto.BundleDTO;
 import com.duoduo.jxc.dto.BundleQuery;
 import com.duoduo.jxc.dto.production.ProductionOrderDTO;
 import com.duoduo.jxc.dto.production.ProductionOrderQuery;
+import com.duoduo.jxc.entity.Bundle;
+import com.duoduo.jxc.entity.ProcessException;
 import com.duoduo.jxc.entity.SysUser;
+import com.duoduo.jxc.mapper.ProcessExceptionMapper;
 import com.duoduo.jxc.mapper.SysUserMapper;
+import com.duoduo.jxc.security.SecurityUtils;
 import com.duoduo.jxc.service.BundleService;
 import com.duoduo.jxc.service.ProductionOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 小程序-组长端接口
@@ -28,16 +35,33 @@ public class LeaderController {
     private final BundleService bundleService;
     private final ProductionOrderService productionOrderService;
     private final SysUserMapper sysUserMapper;
+    private final ProcessExceptionMapper processExceptionMapper;
 
     /**
      * 获取概览数据
      */
     @GetMapping("/overview")
     public Result<Map<String, Object>> getOverview() {
+        var allQuery = new BundleQuery();
+        allQuery.setPageNum(1);
+        allQuery.setPageSize(1);
+        long total = bundleService.pageQuery(allQuery).getTotal();
+
+        var pendingQuery = new BundleQuery();
+        pendingQuery.setPageNum(1);
+        pendingQuery.setPageSize(1);
+        // 待分配：status 为 pending 的扎包
+        long pending = bundleService.count(new LambdaQueryWrapper<Bundle>()
+                .eq(Bundle::getStatus, "pending")
+                .eq(Bundle::getDeleted, 0));
+        long completed = bundleService.count(new LambdaQueryWrapper<Bundle>()
+                .eq(Bundle::getStatus, "completed")
+                .eq(Bundle::getDeleted, 0));
+
         Map<String, Object> overview = new HashMap<>();
-        overview.put("totalTasks", 0);
-        overview.put("pendingTasks", 0);
-        overview.put("completedTasks", 0);
+        overview.put("totalTasks", total);
+        overview.put("pendingTasks", pending);
+        overview.put("completedTasks", completed);
         return Result.success(overview);
     }
 
@@ -49,7 +73,9 @@ public class LeaderController {
         var query = new BundleQuery();
         query.setPageNum(1);
         query.setPageSize(100);
-        return Result.success(bundleService.pageQuery(query).getList());
+        return Result.success(bundleService.pageQuery(query).getList().stream()
+                .filter(b -> "pending".equals(b.getStatus()))
+                .collect(Collectors.toList()));
     }
 
     /**
@@ -58,7 +84,7 @@ public class LeaderController {
     @GetMapping("/worker/list")
     public Result<List<SysUser>> getWorkerList() {
         return Result.success(sysUserMapper.selectList(
-                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<SysUser>()
+                new LambdaQueryWrapper<SysUser>()
                         .eq(SysUser::getStatus, 1)
                         .eq(SysUser::getDeleted, 0)));
     }
@@ -68,7 +94,13 @@ public class LeaderController {
      */
     @PostMapping("/assign")
     public Result<Void> assignTask(@RequestBody Map<String, Object> params) {
-        // 任务分配逻辑
+        Long bundleId = Long.valueOf(params.get("bundleId").toString());
+        // 更新扎包状态为 in_progress
+        Bundle bundle = bundleService.getById(bundleId);
+        if (bundle != null) {
+            bundle.setStatus("in_progress");
+            bundleService.updateById(bundle);
+        }
         return Result.success();
     }
 
@@ -90,7 +122,20 @@ public class LeaderController {
      */
     @GetMapping("/exception/list")
     public Result<List<Map<String, Object>>> getExceptionList() {
-        return Result.success(List.of());
+        List<ProcessException> exceptions = processExceptionMapper.selectList(
+                new LambdaQueryWrapper<ProcessException>()
+                        .ne(ProcessException::getStatus, "resolved")
+                        .orderByDesc(ProcessException::getCreateTime));
+        List<Map<String, Object>> result = exceptions.stream().map(e -> {
+            Map<String, Object> m = new HashMap<>();
+            m.put("id", e.getId());
+            m.put("type", e.getExceptionType());
+            m.put("description", e.getDescription());
+            m.put("status", e.getStatus());
+            m.put("createdAt", e.getCreateTime());
+            return m;
+        }).collect(Collectors.toList());
+        return Result.success(result);
     }
 
     /**
@@ -98,14 +143,29 @@ public class LeaderController {
      */
     @PostMapping("/exception/handle")
     public Result<Void> handleException(@RequestBody Map<String, Object> params) {
+        Long id = Long.valueOf(params.get("id").toString());
+        String handlingMethod = params.get("handlingMethod").toString();
+        String handlingResult = params.get("handlingResult").toString();
+
+        ProcessException exception = processExceptionMapper.selectById(id);
+        if (exception != null) {
+            exception.setHandlingMethod(handlingMethod);
+            exception.setHandlingResult(handlingResult);
+            exception.setStatus("resolved");
+            Long userId = SecurityUtils.getUserId();
+            exception.setHandledBy(userId);
+            exception.setHandledTime(LocalDateTime.now());
+            processExceptionMapper.updateById(exception);
+        }
         return Result.success();
     }
 
     /**
-     * 获取审批列表
+     * 获取审批列表（待首件确认的记录）
      */
     @GetMapping("/approval/list")
     public Result<List<Map<String, Object>>> getApprovalList() {
+        // 暂时返回空列表，首件确认审批走 InspectorController
         return Result.success(List.of());
     }
 
@@ -114,6 +174,7 @@ public class LeaderController {
      */
     @PostMapping("/approval")
     public Result<Void> approve(@RequestBody Map<String, Object> params) {
+        // 暂无独立审批逻辑，首件确认走 InspectorController
         return Result.success();
     }
 }

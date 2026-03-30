@@ -17,7 +17,7 @@ import com.duoduo.jxc.enums.TransactionTypeEnum;
 import com.duoduo.jxc.exception.BusinessException;
 import com.duoduo.jxc.mapper.*;
 import com.duoduo.jxc.service.*;
-import com.duoduo.jxc.service.data.CustomerService;
+import com.duoduo.jxc.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

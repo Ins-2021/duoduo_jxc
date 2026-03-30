@@ -112,7 +112,7 @@ public class ProcessRecordServiceImpl extends ServiceImpl<ProcessRecordMapper, P
         record.setQuantity(dto.getQuantity());
         record.setAmount(process.getStandardPrice().multiply(BigDecimal.valueOf(dto.getQuantity())));
         record.setStatus("pending");
-        record.setRecordTime(LocalDateTime.now());
+        record.setScanTime(LocalDateTime.now());
         save(record);
 
         updateBundleProcessStatus(bundle, dto.getProcessId(), dto.getWorkerId());
@@ -141,7 +141,7 @@ public class ProcessRecordServiceImpl extends ServiceImpl<ProcessRecordMapper, P
             entity.setRecordId(recordId);
             entity.setWorkerId(share.getWorkerId());
             entity.setShareRatio(share.getShareRatio());
-            entity.setAmount(record.getAmount().multiply(share.getShareRatio()));
+            entity.setShareAmount(record.getAmount().multiply(share.getShareRatio()));
             shareMapper.insert(entity);
         }
     }
@@ -158,7 +158,6 @@ public class ProcessRecordServiceImpl extends ServiceImpl<ProcessRecordMapper, P
         dto.setBundleNo(bundle.getBundleNo());
         dto.setStatus(bundle.getStatus());
         dto.setCreateTime(bundle.getCreateTime());
-        dto.setCompleteTime(bundle.getCompleteTime());
 
         List<BundleProcess> bundleProcesses = bundleProcessMapper.selectByBundleId(bundleId);
         List<BundleFlowDTO.BundleProcessFlowDTO> processFlows = bundleProcesses.stream()
@@ -257,7 +256,6 @@ public class ProcessRecordServiceImpl extends ServiceImpl<ProcessRecordMapper, P
 
         if (allCompleted) {
             bundle.setStatus("completed");
-            bundle.setCompleteTime(LocalDateTime.now());
             bundleMapper.updateById(bundle);
         }
     }

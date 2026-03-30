@@ -128,6 +128,7 @@ public class WorkflowFlowableEventListener implements FlowableEventListener {
                 .eq(WfTask::getTaskId, task.getId()));
         if (row != null && !Objects.equals(row.getStatus(), "done")) {
             row.setStatus("done");
+            row.setUpdateTime(LocalDateTime.now());
             wfTaskMapper.updateById(row);
         }
         updateInstanceCurrentTasks(procInstId);

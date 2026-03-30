@@ -1,16 +1,21 @@
 package com.duoduo.jxc.controller.app;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.duoduo.jxc.common.PageResult;
 import com.duoduo.jxc.common.Result;
 import com.duoduo.jxc.dto.production.CutBundleDTO;
 import com.duoduo.jxc.dto.production.CutOrderDTO;
 import com.duoduo.jxc.dto.production.CutOrderQuery;
+import com.duoduo.jxc.entity.CutBundle;
+import com.duoduo.jxc.entity.CutOrder;
 import com.duoduo.jxc.service.CutBundleService;
 import com.duoduo.jxc.service.CutOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,7 +94,11 @@ public class CutterController {
      */
     @PostMapping("/bundle/{id}/print")
     public Result<Void> printBundleLabel(@PathVariable Long id) {
-        // 调用条码打印服务
+        CutBundle bundle = cutBundleService.getById(id);
+        if (bundle != null) {
+            bundle.setQrCode("PRINTED_" + bundle.getBundleNo() + "_" + System.currentTimeMillis());
+            cutBundleService.updateById(bundle);
+        }
         return Result.success();
     }
 
@@ -98,11 +107,22 @@ public class CutterController {
      */
     @GetMapping("/stats/today")
     public Result<Map<String, Object>> getTodayStats() {
+        LocalDate today = LocalDate.now();
+        LocalDateTime dayStart = today.atStartOfDay();
+        LocalDateTime dayEnd = today.atTime(LocalTime.MAX);
+
+        long todayCutQuantity = cutOrderService.count(new LambdaQueryWrapper<CutOrder>()
+                .between(CutOrder::getCreateTime, dayStart, dayEnd));
+        long todayBundleCount = cutBundleService.count(new LambdaQueryWrapper<CutBundle>()
+                .between(CutBundle::getCreateTime, dayStart, dayEnd));
+        long pendingOrders = cutOrderService.count(new LambdaQueryWrapper<CutOrder>()
+                .eq(CutOrder::getStatus, "pending"));
+
         Map<String, Object> stats = new HashMap<>();
-        stats.put("date", LocalDate.now().toString());
-        stats.put("cutQuantity", 0);
-        stats.put("bundleCount", 0);
-        stats.put("pendingOrders", 0);
+        stats.put("date", today.toString());
+        stats.put("cutQuantity", todayCutQuantity);
+        stats.put("bundleCount", todayBundleCount);
+        stats.put("pendingOrders", pendingOrders);
         return Result.success(stats);
     }
 
@@ -111,6 +131,26 @@ public class CutterController {
      */
     @GetMapping("/records/today")
     public Result<List<CutBundleDTO>> getTodayRecords() {
-        return Result.success(List.of());
+        LocalDate today = LocalDate.now();
+        LocalDateTime dayStart = today.atStartOfDay();
+        LocalDateTime dayEnd = today.atTime(LocalTime.MAX);
+
+        List<CutBundle> bundles = cutBundleService.list(new LambdaQueryWrapper<CutBundle>()
+                .between(CutBundle::getCreateTime, dayStart, dayEnd)
+                .orderByDesc(CutBundle::getCreateTime));
+        // 转为DTO
+        List<CutBundleDTO> result = bundles.stream().map(b -> {
+            CutBundleDTO dto = new CutBundleDTO();
+            dto.setBundleId(b.getBundleId());
+            dto.setBundleNo(b.getBundleNo());
+            dto.setCuttingPlanId(b.getCuttingPlanId());
+            dto.setSize(b.getSize());
+            dto.setColor(b.getColor());
+            dto.setQuantity(b.getQuantity());
+            dto.setStatus(b.getStatus());
+            dto.setQrCode(b.getQrCode());
+            return dto;
+        }).collect(java.util.stream.Collectors.toList());
+        return Result.success(result);
     }
 }

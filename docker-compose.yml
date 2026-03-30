@@ -15,7 +15,30 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./backend/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./backend/sql/init.sql:/docker-entrypoint-initdb.d/00-init.sql
+      - ./backend/src/main/resources/sql/rbac_schema.sql:/docker-entrypoint-initdb.d/01-rbac_schema.sql
+      - ./backend/src/main/resources/sql/rbac_seed.sql:/docker-entrypoint-initdb.d/02-rbac_seed.sql
+      - ./backend/src/main/resources/sql/rbac_migration.sql:/docker-entrypoint-initdb.d/03-rbac_migration.sql
+      - ./backend/src/main/resources/sql/oauth2_schema.sql:/docker-entrypoint-initdb.d/04-oauth2_schema.sql
+      - ./backend/src/main/resources/sql/workflow_schema.sql:/docker-entrypoint-initdb.d/05-workflow_schema.sql
+      - ./backend/src/main/resources/sql/sales_return_schema.sql:/docker-entrypoint-initdb.d/06-sales_return_schema.sql
+      - ./backend/src/main/resources/sql/inventory_finance_schema.sql:/docker-entrypoint-initdb.d/07-inventory_finance_schema.sql
+      - ./backend/src/main/resources/sql/doc_no_rule_schema.sql:/docker-entrypoint-initdb.d/08-doc_no_rule_schema.sql
+      - ./backend/src/main/resources/sql/barcode_schema.sql:/docker-entrypoint-initdb.d/09-barcode_schema.sql
+      - ./backend/src/main/resources/sql/batch_schema.sql:/docker-entrypoint-initdb.d/10-batch_schema.sql
+      - ./backend/src/main/resources/sql/supplier_recon_schema.sql:/docker-entrypoint-initdb.d/11-supplier_recon_schema.sql
+      - ./backend/src/main/resources/sql/mes_production_migration.sql:/docker-entrypoint-initdb.d/12-mes_production_migration.sql
+      - ./backend/src/main/resources/sql/V1.0__codebuddy_modules.sql:/docker-entrypoint-initdb.d/13-V1.0_modules.sql
+      - ./backend/src/main/resources/sql/V1.1__production_modules.sql:/docker-entrypoint-initdb.d/14-V1.1_production.sql
+      - ./backend/src/main/resources/sql/V1.2__cost_wage_modules.sql:/docker-entrypoint-initdb.d/15-V1.2_cost_wage.sql
+      - ./backend/src/main/resources/sql/V1.3__cost_wage_new_entities.sql:/docker-entrypoint-initdb.d/16-V1.3_cost_wage_entities.sql
+      - ./backend/src/main/resources/sql/V1.4__missing_tables_patch.sql:/docker-entrypoint-initdb.d/17-V1.4_missing_tables.sql
+      - ./backend/src/main/resources/db/migration/V2026.03.30__add_capacity_alert_tables.sql:/docker-entrypoint-initdb.d/18-capacity_alert.sql
+      - ./backend/src/main/resources/sql/customer_level_migration.sql:/docker-entrypoint-initdb.d/19-customer_level_migration.sql
+      - ./backend/src/main/resources/sql/product_spu_alter.sql:/docker-entrypoint-initdb.d/20-product_spu_alter.sql
+      - ./backend/src/main/resources/sql/product_select_indexes.sql:/docker-entrypoint-initdb.d/21-product_select_indexes.sql
+      - ./backend/src/main/resources/sql/rbac_cost_wage_menu_patch.sql:/docker-entrypoint-initdb.d/22-rbac_cost_wage_menu_patch.sql
+      - ./backend/src/main/resources/sql/rbac_production_mes_perm_fix.sql:/docker-entrypoint-initdb.d/23-rbac_production_mes_perm_fix.sql
     command: >
       --default-authentication-plugin=mysql_native_password
       --character-set-server=utf8mb4

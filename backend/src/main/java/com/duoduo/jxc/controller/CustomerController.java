@@ -5,7 +5,7 @@ import com.duoduo.jxc.common.Result;
 import com.duoduo.jxc.dto.data.CustomerDTO;
 import com.duoduo.jxc.dto.data.CustomerQuery;
 import com.duoduo.jxc.entity.Customer;
-import com.duoduo.jxc.service.data.CustomerService;
+import com.duoduo.jxc.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;

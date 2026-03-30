@@ -447,3 +447,8 @@ CREATE TABLE `jxc_product_attribute_value` (
   PRIMARY KEY (`id`),
   KEY `idx_attribute_id` (`attribute_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品属性值表';
+
+-- ============================================================
+-- 以下模块表通过 docker-compose 挂载的 SQL 文件自动创建
+-- 见 docker-compose.yml 中 mysql 服务的 volumes 配置
+-- ============================================================

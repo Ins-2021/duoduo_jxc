@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("jxc_wage_sheet_detail")
+@TableName("jxc_payroll_sheet_detail")
 public class PayrollSheetDetail {
 
     @TableId(type = IdType.AUTO)

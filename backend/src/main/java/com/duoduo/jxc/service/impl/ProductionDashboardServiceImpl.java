@@ -177,7 +177,7 @@ public class ProductionDashboardServiceImpl implements ProductionDashboardServic
         List<Long> bundleIds = bundles.stream().map(Bundle::getBundleId).collect(Collectors.toList());
         LambdaQueryWrapper<ProcessRecord> recordWrapper = new LambdaQueryWrapper<>();
         recordWrapper.in(ProcessRecord::getBundleId, bundleIds);
-        recordWrapper.orderByDesc(ProcessRecord::getRecordTime);
+        recordWrapper.orderByDesc(ProcessRecord::getScanTime);
         recordWrapper.last("LIMIT 1");
 
         ProcessRecord record = recordMapper.selectOne(recordWrapper);
@@ -222,8 +222,8 @@ public class ProductionDashboardServiceImpl implements ProductionDashboardServic
 
     private Integer sumQuantityByDateRange(Long factoryId, LocalDate start, LocalDate end) {
         LambdaQueryWrapper<ProcessRecord> wrapper = new LambdaQueryWrapper<>();
-        wrapper.ge(ProcessRecord::getRecordTime, start.atStartOfDay());
-        wrapper.le(ProcessRecord::getRecordTime, end.atTime(23, 59, 59));
+        wrapper.ge(ProcessRecord::getScanTime, start.atStartOfDay());
+        wrapper.le(ProcessRecord::getScanTime, end.atTime(23, 59, 59));
         List<ProcessRecord> records = recordMapper.selectList(wrapper);
         return records.stream().mapToInt(ProcessRecord::getQuantity).sum();
     }

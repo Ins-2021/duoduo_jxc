@@ -1,5 +1,6 @@
 package com.duoduo.jxc.controller.app;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.duoduo.jxc.common.PageResult;
 import com.duoduo.jxc.common.Result;
 import com.duoduo.jxc.dto.BundleDTO;
@@ -10,6 +11,7 @@ import com.duoduo.jxc.dto.FirstArticleConfirmationDTO;
 import com.duoduo.jxc.dto.FirstArticleConfirmationQuery;
 import com.duoduo.jxc.dto.QualityCheckDTO;
 import com.duoduo.jxc.dto.QualityCheckQuery;
+import com.duoduo.jxc.entity.QualityCheck;
 import com.duoduo.jxc.service.BundleService;
 import com.duoduo.jxc.service.DefectRecordService;
 import com.duoduo.jxc.service.FirstArticleConfirmationService;
@@ -18,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,12 +68,29 @@ public class InspectorController {
      */
     @GetMapping("/stats/today")
     public Result<Map<String, Object>> getTodayStats() {
+        LocalDate today = LocalDate.now();
+        LocalDateTime dayStart = today.atStartOfDay();
+        LocalDateTime dayEnd = today.atTime(LocalTime.MAX);
+
+        long total = qualityCheckService.count(new LambdaQueryWrapper<QualityCheck>()
+                .between(QualityCheck::getCreateTime, dayStart, dayEnd));
+        long passed = qualityCheckService.count(new LambdaQueryWrapper<QualityCheck>()
+                .between(QualityCheck::getCreateTime, dayStart, dayEnd)
+                .eq(QualityCheck::getResult, "passed"));
+        long failed = qualityCheckService.count(new LambdaQueryWrapper<QualityCheck>()
+                .between(QualityCheck::getCreateTime, dayStart, dayEnd)
+                .ne(QualityCheck::getResult, "passed"));
+
+        String passRate = total > 0
+                ? String.format("%.1f", passed * 100.0 / total)
+                : "0";
+
         Map<String, Object> stats = new HashMap<>();
-        stats.put("date", LocalDate.now().toString());
-        stats.put("total", 0);
-        stats.put("passed", 0);
-        stats.put("failed", 0);
-        stats.put("passRate", "0");
+        stats.put("date", today.toString());
+        stats.put("total", total);
+        stats.put("passed", passed);
+        stats.put("failed", failed);
+        stats.put("passRate", passRate);
         return Result.success(stats);
     }
 
