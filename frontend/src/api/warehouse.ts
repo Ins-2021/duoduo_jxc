@@ -39,3 +39,7 @@ export function updateWarehouseStatus(id: number, status: number) {
     data: { status }
   })
 }
+
+export function getWarehouseOptions() {
+  return request({ url: '/warehouse/options', method: 'get' })
+}

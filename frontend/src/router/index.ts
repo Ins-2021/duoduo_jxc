@@ -422,6 +422,42 @@ export const routes: Array<RouteRecordRaw> = [
             meta: { title: '工序管理', perm: 'mes:process:view' }
           },
           {
+            path: 'scan',
+            name: 'MesScan',
+            component: () => import('../views/mes/scan/index.vue'),
+            meta: { title: '扫码计件', perm: 'mes:scan:view' }
+          },
+          {
+            path: 'records',
+            name: 'MesRecords',
+            component: () => import('../views/mes/records/index.vue'),
+            meta: { title: '计件记录', perm: 'mes:records:view' }
+          },
+          {
+            path: 'bundle',
+            name: 'MesBundle',
+            component: () => import('../views/mes/bundle/index.vue'),
+            meta: { title: '扎包流转', perm: 'mes:bundle:view' }
+          },
+          {
+            path: 'patrol',
+            name: 'MesPatrol',
+            component: () => import('../views/mes/patrol/index.vue'),
+            meta: { title: '巡检记录', perm: 'mes:patrol:view' }
+          },
+          {
+            path: 'rework',
+            name: 'MesRework',
+            component: () => import('../views/mes/rework/index.vue'),
+            meta: { title: '返工管理', perm: 'mes:rework:view' }
+          },
+          {
+            path: 'aql',
+            name: 'MesAql',
+            component: () => import('../views/mes/aql/index.vue'),
+            meta: { title: 'AQL标准', perm: 'mes:aql:view' }
+          },
+          {
             path: 'quality/standard',
             name: 'QualityStandard',
             component: () => import('../views/quality/standard.vue'),
@@ -432,6 +468,38 @@ export const routes: Array<RouteRecordRaw> = [
             name: 'QualityCheck',
             component: () => import('../views/quality/check.vue'),
             meta: { title: '质检记录', perm: 'mes:quality:view' }
+          }
+        ]
+      },
+      {
+        path: 'fabric',
+        name: 'Fabric',
+        redirect: '/fabric/list',
+        meta: { title: '面料管理', icon: 'Grid', perm: 'fabric:menu:view' },
+        children: [
+          {
+            path: 'list',
+            name: 'FabricList',
+            component: () => import('../views/fabric/list/index.vue'),
+            meta: { title: '面料档案', perm: 'fabric:list:view' }
+          },
+          {
+            path: 'inbound',
+            name: 'FabricInbound',
+            component: () => import('../views/fabric/inbound/index.vue'),
+            meta: { title: '面料入库', perm: 'fabric:inbound:view' }
+          },
+          {
+            path: 'requisition',
+            name: 'FabricRequisition',
+            component: () => import('../views/fabric/requisition/index.vue'),
+            meta: { title: '领料申请', perm: 'fabric:requisition:view' }
+          },
+          {
+            path: 'inventory',
+            name: 'FabricInventory',
+            component: () => import('../views/fabric/inventory/index.vue'),
+            meta: { title: '面料库存', perm: 'fabric:inventory:view' }
           }
         ]
       },

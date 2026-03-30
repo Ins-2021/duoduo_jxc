@@ -39,3 +39,7 @@ export function updateSupplierStatus(id: number, status: number) {
     data: { status }
   })
 }
+
+export function getSupplierOptions() {
+  return request({ url: '/supplier/options', method: 'get' })
+}
