@@ -3,10 +3,12 @@ package com.duoduo.jxc.print;
 import com.duoduo.jxc.JxcApplication;
 import com.duoduo.jxc.dto.print.PrintDataDTO;
 import com.duoduo.jxc.entity.PrintTemplate;
+import com.duoduo.jxc.entity.ProductSku;
 import com.duoduo.jxc.entity.ProductSpu;
 import com.duoduo.jxc.entity.SalesOrder;
 import com.duoduo.jxc.entity.SalesOrderDetail;
 import com.duoduo.jxc.mapper.PrintTemplateMapper;
+import com.duoduo.jxc.mapper.ProductSkuMapper;
 import com.duoduo.jxc.mapper.ProductSpuMapper;
 import com.duoduo.jxc.mapper.SalesOrderDetailMapper;
 import com.duoduo.jxc.mapper.SalesOrderMapper;
@@ -36,6 +38,9 @@ public class PrintDataServiceIT {
     private ProductSpuMapper productSpuMapper;
 
     @Autowired
+    private ProductSkuMapper productSkuMapper;
+
+    @Autowired
     private PrintDataService printDataService;
 
     @Test
@@ -56,9 +61,18 @@ public class PrintDataServiceIT {
         order.setDeleted(0);
         salesOrderMapper.insert(order);
 
+        ProductSku sku = new ProductSku();
+        sku.setSpuId(spu.getSpuId());
+        sku.setSkuCode("SKU001");
+        sku.setAttr1("黑色");
+        sku.setAttr2("XL");
+        sku.setStatus(1);
+        sku.setDeleted(0);
+        productSkuMapper.insert(sku);
+
         SalesOrderDetail d = new SalesOrderDetail();
         d.setOrderId(order.getOrderId());
-        d.setSkuId(1L);
+        d.setSkuId(sku.getSkuId());
         d.setSpuId(spu.getSpuId());
         d.setQty(2);
         d.setUnitPrice(new BigDecimal("100"));
@@ -79,6 +93,7 @@ public class PrintDataServiceIT {
         assertFalse(data.getItems().isEmpty());
         assertEquals("商品A", data.getItems().get(0).getName());
         assertEquals(2, data.getItems().get(0).getQty());
+        assertEquals("黑色", data.getItems().get(0).getAttr1());
+        assertEquals("XL", data.getItems().get(0).getAttr2());
     }
 }
-

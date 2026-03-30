@@ -79,7 +79,20 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      show-components: never
+  server:
+    port: -1  # 禁用单独的 actuator 端口，与主应用共用
+  health:
+    defaults:
+      enabled: false
+    diskspace:
+      enabled: true
+    ping:
+      enabled: true
 
 flowable:
   database-schema-update: true
@@ -90,3 +103,10 @@ jxc:
   file:
     storage-dir: ./data/uploads
     max-size-mb: 10
+
+wechat:
+  miniapp:
+    enabled: false
+    app-id: ${WECHAT_MINIAPP_APPID:}
+    secret: ${WECHAT_MINIAPP_SECRET:}
+    default-username: ${WECHAT_MINIAPP_DEFAULT_USERNAME:}

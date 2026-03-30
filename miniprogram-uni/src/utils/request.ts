@@ -1,10 +1,11 @@
 import Request from 'luch-request'
 
-const MOCK = true // 开发阶段使用 mock 数据
+// 生产环境必须设置为 false，确保使用真实 API
+const MOCK = import.meta.env.VITE_USE_MOCK === 'true' || false
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
 
-// Mock 数据
+// 只在开发环境且明确启用 MOCK 时才使用模拟数据
 const mockData: Record<string, any> = {
   'GET /auth/user/info': {
     code: 0, data: { id: 1, name: '张三', code: 'W001', departmentName: '缝制一车间', roles: ['worker'], avatar: '' }

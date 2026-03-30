@@ -10,5 +10,7 @@ public class PrintDataItemDTO {
     private Integer qty;
     private BigDecimal price;
     private BigDecimal amount;
+    private String attr1;
+    private String attr2;
 }
 

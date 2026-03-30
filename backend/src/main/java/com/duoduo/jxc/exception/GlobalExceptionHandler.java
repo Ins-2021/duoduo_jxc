@@ -6,6 +6,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -46,6 +47,15 @@ public class GlobalExceptionHandler {
         }
         log.error("唯一键冲突: {}", raw, e);
         return Result.error(400, msg);
+    }
+
+    /**
+     * 处理乐观锁冲突异常
+     */
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public Result<?> handleOptimisticLockingFailureException(OptimisticLockingFailureException e) {
+        log.warn("乐观锁冲突: 数据已被其他用户修改，请刷新后重试");
+        return Result.error(409, "数据已被其他用户修改，请刷新后重试");
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

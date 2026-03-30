@@ -31,8 +31,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (user == null) {
             throw new UsernameNotFoundException("用户不存在");
         }
-        if (user.getStatus() != null && user.getStatus() == 0) {
-            throw new UsernameNotFoundException("用户已停用");
+        if (user.getStatus() != 1) {
+            throw new com.duoduo.jxc.exception.BusinessException(com.duoduo.jxc.common.BizCode.USER_DISABLED);
         }
         List<String> perms = sysPermissionService.getUserPerms(user);
         List<? extends GrantedAuthority> authorities = perms.stream()

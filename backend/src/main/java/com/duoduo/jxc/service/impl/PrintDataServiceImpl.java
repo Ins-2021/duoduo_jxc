@@ -6,10 +6,12 @@ import com.duoduo.jxc.dto.print.PrintDataDTO;
 import com.duoduo.jxc.dto.print.PrintDataItemDTO;
 import com.duoduo.jxc.entity.PrintTemplate;
 import com.duoduo.jxc.entity.ProductSpu;
+import com.duoduo.jxc.entity.ProductSku;
 import com.duoduo.jxc.entity.SalesOrder;
 import com.duoduo.jxc.entity.SalesOrderDetail;
 import com.duoduo.jxc.exception.BusinessException;
 import com.duoduo.jxc.mapper.PrintTemplateMapper;
+import com.duoduo.jxc.mapper.ProductSkuMapper;
 import com.duoduo.jxc.mapper.ProductSpuMapper;
 import com.duoduo.jxc.mapper.SalesOrderDetailMapper;
 import com.duoduo.jxc.mapper.SalesOrderMapper;
@@ -31,6 +33,7 @@ public class PrintDataServiceImpl implements PrintDataService {
     private final SalesOrderMapper salesOrderMapper;
     private final SalesOrderDetailMapper salesOrderDetailMapper;
     private final ProductSpuMapper productSpuMapper;
+    private final ProductSkuMapper productSkuMapper;
 
     @Override
     public PrintDataDTO previewData(Long templateId, String bizId) {
@@ -65,6 +68,7 @@ public class PrintDataServiceImpl implements PrintDataService {
         List<SalesOrderDetail> details = salesOrderDetailMapper.selectList(new LambdaQueryWrapper<SalesOrderDetail>()
                 .eq(SalesOrderDetail::getOrderId, orderId));
         Map<Long, String> spuNameMap = loadSpuNameMap(details);
+        Map<Long, ProductSku> skuMap = loadSkuMap(details);
 
         PrintDataDTO dto = new PrintDataDTO();
         dto.setBillNo(order.getDocNo());
@@ -81,10 +85,29 @@ public class PrintDataServiceImpl implements PrintDataService {
             i.setQty(d.getQty());
             i.setPrice(d.getUnitPrice());
             i.setAmount(d.getLineAmount());
+            ProductSku sku = d.getSkuId() != null ? skuMap.get(d.getSkuId()) : null;
+            if (sku != null) {
+                i.setAttr1(sku.getAttr1());
+                i.setAttr2(sku.getAttr2());
+            }
             return i;
         }).toList();
         dto.setItems(items);
         return dto;
+    }
+
+    private Map<Long, ProductSku> loadSkuMap(List<SalesOrderDetail> details) {
+        if (details == null || details.isEmpty()) {
+            return Map.of();
+        }
+        Set<Long> skuIds = details.stream().map(SalesOrderDetail::getSkuId).filter(Objects::nonNull).collect(Collectors.toSet());
+        if (skuIds.isEmpty()) {
+            return Map.of();
+        }
+        List<ProductSku> skus = productSkuMapper.selectList(new LambdaQueryWrapper<ProductSku>()
+                .in(ProductSku::getSkuId, skuIds)
+                .eq(ProductSku::getDeleted, 0));
+        return skus.stream().collect(Collectors.toMap(ProductSku::getSkuId, s -> s, (a, b) -> a));
     }
 
     private Map<Long, String> loadSpuNameMap(List<SalesOrderDetail> details) {

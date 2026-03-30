@@ -99,6 +99,10 @@ public enum BizCode {
     PAYMENT_ORDER_NOT_FOUND(70001, "付款单不存在"),
     RECEIPT_ORDER_NOT_FOUND(70002, "收款单不存在"),
     INCOME_EXPENSE_NOT_FOUND(70003, "收支单不存在"),
+    FINANCE_ACCOUNT_NOT_FOUND(70004, "财务账户不存在"),
+    FINANCE_TRANSACTION_NOT_FOUND(70005, "财务交易记录不存在"),
+    PAYABLE_NOT_FOUND(70006, "应付账款不存在"),
+    WRITE_OFF_NOT_FOUND(70007, "核销记录不存在"),
 
     // ---- 财务补充 72xxx ----
     RECEIVABLE_NOT_FOUND(72001, "应收账款不存在"),
@@ -108,6 +112,45 @@ public enum BizCode {
     SETTLEMENT_DATE_EMPTY(72007, "结算日期不能为空"),
     SETTLEMENT_ALREADY_EXISTS(72008, "该日期已生成日结单"),
     SETTLEMENT_NO_ORDERS(72009, "该日期没有可结算的零售单"),
+
+    // ---- 报价 73xxx ----
+    QUOTATION_NOT_FOUND(73001, "报价单不存在"),
+
+    // ---- 成本 74xxx ----
+    PRODUCT_COST_NOT_FOUND(74001, "产品成本不存在"),
+    COST_ALLOCATION_NOT_FOUND(74002, "成本分摊不存在"),
+    COST_POOL_NOT_FOUND(74003, "成本池不存在"),
+    COST_CENTER_NOT_FOUND(74004, "成本中心不存在"),
+
+    // ---- 生产 75xxx ----
+    FACTORY_NOT_FOUND(75001, "工厂不存在"),
+    WORKSHOP_NOT_FOUND(75002, "车间不存在"),
+    WORK_GROUP_NOT_FOUND(75003, "班组不存在"),
+    STYLE_NOT_FOUND(75004, "款式不存在"),
+    STYLE_COLORWAY_NOT_FOUND(75005, "款式配色不存在"),
+    FIRST_ARTICLE_NOT_FOUND(75006, "首件确认记录不存在"),
+
+    // ---- 基础数据 76xxx ----
+    COLOR_NOT_FOUND(76001, "颜色不存在"),
+    SIZE_CATEGORY_NOT_FOUND(76002, "尺码分类不存在"),
+    SIZE_OPTION_NOT_FOUND(76003, "尺码选项不存在"),
+    SIZE_CHART_NOT_FOUND(76004, "尺码表不存在"),
+    SIZE_RATIO_TEMPLATE_NOT_FOUND(76005, "尺码配比模板不存在"),
+    PRODUCT_BRAND_NOT_FOUND(76006, "品牌不存在"),
+
+    // ---- 面料 77xxx ----
+    FABRIC_NOT_FOUND(77001, "面料不存在"),
+    FABRIC_INBOUND_NOT_FOUND(77002, "面料入库单不存在"),
+    FABRIC_REQUISITION_NOT_FOUND(77003, "领料单不存在"),
+
+    // ---- 条码 78xxx ----
+    BARCODE_NOT_FOUND(78001, "条码不存在"),
+
+    // ---- 库存交易 79xxx ----
+    INVENTORY_TRANSACTION_NOT_FOUND(79001, "库存交易记录不存在"),
+
+    // ---- 预警 79xxx ----
+    INVENTORY_ALERT_NOT_FOUND(79101, "库存预警不存在"),
 
     // ---- 系统 80xxx ----
     ROLE_NOT_FOUND(80001, "角色不存在"),
@@ -134,6 +177,7 @@ public enum BizCode {
     FILE_SAVE_FAILED(90004, "文件保存失败"),
     FILE_ID_EMPTY(90005, "fileId 不能为空"),
     FILE_NOT_FOUND(90006, "文件不存在"),
+    FILE_TYPE_NOT_ALLOWED(90007, "不支持的文件类型"),
 
     // ---- 打印 95xxx ----
     PRINT_TEMPLATE_NOT_FOUND(95001, "模板不存在"),

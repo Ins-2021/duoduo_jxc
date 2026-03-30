@@ -26,9 +26,31 @@ public class AdminBootstrap implements ApplicationRunner {
             return;
         }
         if (admin.getPassword() == null || admin.getPassword().isBlank()) {
-            admin.setPassword(passwordEncoder.encode("admin123"));
+            // 从环境变量读取默认密码，如未设置则生成随机密码
+            String defaultPassword = System.getenv("ADMIN_DEFAULT_PASSWORD");
+            if (defaultPassword == null || defaultPassword.isBlank()) {
+                defaultPassword = generateRandomPassword();
+                System.out.println("=================================================================");
+                System.out.println("【安全警告】管理员密码未设置，已生成随机密码:");
+                System.out.println("用户名: admin");
+                System.out.println("密码: " + defaultPassword);
+                System.out.println("请立即登录并修改密码！");
+                System.out.println("可通过设置 ADMIN_DEFAULT_PASSWORD 环境变量指定初始密码");
+                System.out.println("=================================================================");
+            }
+            admin.setPassword(passwordEncoder.encode(defaultPassword));
             sysUserMapper.updateById(admin);
         }
+    }
+
+    private String generateRandomPassword() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+        StringBuilder sb = new StringBuilder();
+        java.security.SecureRandom random = new java.security.SecureRandom();
+        for (int i = 0; i < 12; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 }
 

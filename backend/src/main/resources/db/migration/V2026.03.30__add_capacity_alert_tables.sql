@@ -52,3 +52,33 @@ CREATE INDEX idx_alert_rule_status ON capacity_alert_rule(status);
 INSERT INTO capacity_alert_rule (rule_name, metric_type, factory_id, warning_threshold, critical_threshold, notify_type, status) VALUES
 ('工厂A产能利用率预警', 'utilization', 1, 80.00, 90.00, 'system', 'active'),
 ('工厂A积压预警', 'backlog', 1, 3.00, 5.00, 'system', 'active');
+
+CREATE TABLE jxc_bom_color_mapping (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    bom_id BIGINT NOT NULL,
+    bom_item_id BIGINT NOT NULL,
+    product_color VARCHAR(50) NOT NULL,
+    actual_material_id BIGINT NOT NULL,
+    actual_material_color VARCHAR(50),
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    create_by BIGINT,
+    update_by BIGINT,
+    deleted TINYINT DEFAULT 0,
+    INDEX idx_bom_item_id (bom_item_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='BOM颜色映射规则';
+
+CREATE TABLE jxc_bom_size_mapping (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    bom_id BIGINT NOT NULL,
+    bom_item_id BIGINT NOT NULL,
+    product_size VARCHAR(50) NOT NULL,
+    actual_material_id BIGINT NOT NULL,
+    actual_usage DECIMAL(10,4),
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    create_by BIGINT,
+    update_by BIGINT,
+    deleted TINYINT DEFAULT 0,
+    INDEX idx_bom_item_id (bom_item_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='BOM尺码映射规则';
