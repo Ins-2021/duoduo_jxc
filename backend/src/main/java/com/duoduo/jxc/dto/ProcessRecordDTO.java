@@ -10,4 +10,6 @@ public class ProcessRecordDTO {
     private Long bundleId;
     private Integer quantity;
     private java.math.BigDecimal amount;
+    private String status;
+    private java.time.LocalDateTime recordTime;
 }

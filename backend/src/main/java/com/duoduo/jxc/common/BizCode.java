@@ -145,6 +145,15 @@ public enum BizCode {
     BOM_PROCESS_NOT_FOUND(46003, "BOM工序不存在"),
     BOM_HAS_ITEMS(46004, "该BOM存在明细，不能删除"),
     BOM_HAS_PROCESSES(46005, "该BOM存在工序，不能删除"),
+
+    // ---- MES 工序计件 47xxx ----
+    BUNDLE_NOT_FOUND(47001, "扎包不存在"),
+    PROCESS_SEQUENCE_ERROR(47002, "工序顺序错误"),
+    DUPLICATE_RECORD(47003, "重复计件"),
+    INVALID_SHARE_RATIO(47004, "分成比例无效"),
+    PROCESS_NOT_FOUND(47005, "工序不存在"),
+    RECORD_NOT_FOUND(47006, "计件记录不存在"),
+    BUNDLE_PROCESS_NOT_FOUND(47007, "扎包工序不存在"),
     ;
 
     private final int code;

@@ -8,15 +8,11 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("jxc_process_record")
-public class ProcessRecord extends BaseEntity {
+@TableName("jxc_process_dependency")
+public class ProcessDependency extends BaseEntity {
     @TableId(type = IdType.AUTO)
-    private Long recordId;
-    private Long workerId;
+    private Long dependencyId;
     private Long processId;
-    private Long bundleId;
-    private Integer quantity;
-    private java.math.BigDecimal amount;
-    private String status;
-    private java.time.LocalDateTime recordTime;
+    private Long preProcessId;
+    private Integer sortOrder;
 }

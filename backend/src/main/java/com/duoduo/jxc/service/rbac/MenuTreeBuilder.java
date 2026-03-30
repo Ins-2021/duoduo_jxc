@@ -16,6 +16,9 @@ public class MenuTreeBuilder {
             if (m == null) {
                 continue;
             }
+            if ("F".equals(m.getMenuType())) {
+                continue;
+            }
             MenuTreeNode n = new MenuTreeNode();
             n.setMenuId(m.getMenuId());
             n.setParentId(m.getParentId());

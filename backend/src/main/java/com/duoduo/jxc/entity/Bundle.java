@@ -16,4 +16,5 @@ public class Bundle extends BaseEntity {
     private Long orderId;
     private Long currentProcessId;
     private String status;
+    private java.time.LocalDateTime completeTime;
 }
