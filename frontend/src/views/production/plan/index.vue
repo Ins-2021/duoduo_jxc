@@ -98,11 +98,11 @@ const handleQuery = async () => {
 }
 
 const handleAdd = () => {
-  ElMessage.info('开发中')
+  ElMessage.info('功能即将上线，敬请期待')
 }
 
 const handleEdit = (row: any) => {
-  ElMessage.info('开发中')
+  ElMessage.info('功能即将上线，敬请期待')
 }
 
 const handleDelete = (row: any) => {

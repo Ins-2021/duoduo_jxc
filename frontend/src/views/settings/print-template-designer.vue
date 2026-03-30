@@ -458,7 +458,7 @@ const saveAndExit = async () => {
 }
 
 const preview = () => {
-  ElMessage.info('预览功能开发中')
+  ElMessage.info('功能即将上线，敬请期待')
 }
 
 const backToList = () => {

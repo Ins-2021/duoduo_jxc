@@ -14,6 +14,7 @@ export function getProductList(params: PageQuery & { spuName?: string; productCo
 
 export function getProductCategoryTree() {
   return request({
+    url: '/product/categories/tree',
     method: 'get'
   })
 }
@@ -51,6 +52,7 @@ export function getProductSkuPage(params: ProductSkuSelectQuery) {
 
 export function getProductDetail(id: number) {
   return request({
+    url: `/product/${id}`,
     method: 'get'
   })
 }
@@ -80,6 +82,7 @@ export function deleteProduct(id: number) {
 
 export function checkProductCode(productCode: string, excludeId?: number) {
   return request({
+    url: '/product/check-code',
     method: 'get',
     params: { productCode, excludeId }
   })

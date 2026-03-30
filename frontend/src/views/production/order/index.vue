@@ -157,7 +157,7 @@ const handleAdd = () => {
 }
 
 const handleImport = () => {
-  ElMessage.info('从销售单导入功能开发中')
+  ElMessage.info('功能即将上线，敬请期待')
 }
 
 const handleDetail = (row: any) => {

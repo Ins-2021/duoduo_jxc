@@ -133,6 +133,7 @@ export function deleteRole(roleId: number) {
 
 export function getRoleMenuIds(roleId: number) {
   return request({
+    url: `/system/roles/${roleId}/menus`,
     method: 'get'
   })
 }

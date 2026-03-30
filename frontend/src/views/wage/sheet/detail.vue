@@ -148,7 +148,7 @@ const handlePay = async () => {
   } catch (e) { if (e !== 'cancel') ElMessage.error('操作失败') }
 }
 
-const handlePrint = () => { ElMessage.info('打印功能开发中') }
+const handlePrint = () => { ElMessage.info('功能即将上线，敬请期待') }
 
 onMounted(() => { if (sheetId) loadData() })
 </script>

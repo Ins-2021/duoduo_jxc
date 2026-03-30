@@ -172,7 +172,7 @@ const handleQuery = () => {
 }
 
 const handleAdd = () => {
-  ElMessage.info('新增质检功能开发中')
+  ElMessage.info('功能即将上线，敬请期待')
 }
 
 const handleDetail = (row: any) => {

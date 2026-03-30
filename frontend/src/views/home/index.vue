@@ -373,14 +373,14 @@ const go = (t: GoTarget) => {
   if (t === 'salesStats') return router.push('/reports')
   if (t === 'arAp') return router.push('/finance/receivable')
   if (t === 'printHelper') {
-    ElMessage.info('打印助手下载功能开发中')
+    ElMessage.info('功能即将上线，敬请期待')
     return
   }
   if (t === 'pcHelper') {
     window.open('https://example.com/wechat', '_blank')
     return
   }
-  ElMessage.info('功能开发中')
+  ElMessage.info('功能即将上线，敬请期待')
 }
 
 onMounted(() => {

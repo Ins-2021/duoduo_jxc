@@ -11,7 +11,7 @@
         <el-button type="primary" icon="Plus" v-perm="'data:category:add'" @click="handleAdd">添加分类</el-button>
         <el-button type="success" icon="Edit" v-perm="'data:category:edit'" :disabled="!singleSelected" @click="handleUpdate">修改分类</el-button>
         <el-button type="danger" icon="Delete" v-perm="'data:category:delete'" :disabled="!multipleSelected" @click="handleDeleteSelected">删除分类</el-button>
-        <el-button type="info" icon="Upload" @click="handleImport">导入分类</el-button>
+        <el-button type="info" icon="Upload" @click="handleImport" disabled>导入分类</el-button>
       </div>
 
       <div class="tree-container">
