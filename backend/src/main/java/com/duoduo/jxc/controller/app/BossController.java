@@ -4,6 +4,7 @@ import com.duoduo.jxc.common.Result;
 import com.duoduo.jxc.dto.production.ProductionOrderDTO;
 import com.duoduo.jxc.dto.production.ProductionOrderQuery;
 import com.duoduo.jxc.dto.production.ProductionStatistics;
+import com.duoduo.jxc.dto.report.CapacityAlertDTO;
 import com.duoduo.jxc.service.CapacityAlertService;
 import com.duoduo.jxc.service.ProductionDashboardService;
 import com.duoduo.jxc.service.ProductionOrderService;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,17 +79,26 @@ public class BossController {
      */
     @GetMapping("/alert/list")
     public Result<List<Map<String, Object>>> getAlerts() {
-        List<Map<String, Object>> alerts = capacityAlertService.getActiveAlerts(null).stream()
-                .map(a -> {
-                    Map<String, Object> m = new HashMap<>();
-                    m.put("id", a.getAlertId());
-                    m.put("level", a.getAlertLevel());
-                    m.put("title", a.getMessage());
-                    m.put("description", a.getMessage());
-                    m.put("createdAt", a.getCreatedAt());
-                    return m;
-                }).collect(Collectors.toList());
-        return Result.success(alerts);
+        try {
+            List<CapacityAlertDTO> activeAlerts = capacityAlertService.getActiveAlerts(null);
+            if (activeAlerts == null || activeAlerts.isEmpty()) {
+                return Result.success(new ArrayList<>());
+            }
+            List<Map<String, Object>> alerts = activeAlerts.stream()
+                    .filter(a -> a != null)
+                    .map(a -> {
+                        Map<String, Object> m = new HashMap<>();
+                        m.put("id", a.getAlertId());
+                        m.put("level", a.getAlertLevel());
+                        m.put("title", a.getMessage());
+                        m.put("description", a.getMessage());
+                        m.put("createdAt", a.getCreatedAt());
+                        return m;
+                    }).collect(Collectors.toList());
+            return Result.success(alerts);
+        } catch (Exception e) {
+            return Result.success(new ArrayList<>());
+        }
     }
 
     /**

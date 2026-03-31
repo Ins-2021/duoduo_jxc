@@ -41,14 +41,27 @@ public class CapacityAlertServiceImpl implements CapacityAlertService {
     public List<CapacityAlertDTO> getActiveAlerts(Long factoryId) {
         log.info("获取活跃产能预警: factoryId={}", factoryId);
 
-        if (factoryId != null) {
-            return alertMapper.selectActiveAlertsByFactory(factoryId).stream()
+        try {
+            if (factoryId != null) {
+                List<CapacityAlert> alerts = alertMapper.selectActiveAlertsByFactory(factoryId);
+                if (alerts == null) {
+                    return new ArrayList<>();
+                }
+                return alerts.stream()
+                        .map(this::convertToDTO)
+                        .collect(Collectors.toList());
+            }
+            List<CapacityAlert> alerts = alertMapper.selectActiveAlerts();
+            if (alerts == null) {
+                return new ArrayList<>();
+            }
+            return alerts.stream()
                     .map(this::convertToDTO)
                     .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("获取活跃产能预警失败: factoryId={}, error={}", factoryId, e.getMessage());
+            return new ArrayList<>();
         }
-        return alertMapper.selectActiveAlerts().stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
     }
 
     @Override

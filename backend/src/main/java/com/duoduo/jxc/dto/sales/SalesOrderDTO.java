@@ -9,7 +9,7 @@ import java.util.List;
 public class SalesOrderDTO {
     private Long orderId;
     private String docNo;
-    private Integer orderType; // 1:批发单, 2:零售单, 3:销售预订单
+    private Integer orderType = 1; // 1:批发单, 2:零售单, 3:销售预订单，默认为批发单
     private LocalDate docDate;
     private Long storeId;
     private Long customerId;

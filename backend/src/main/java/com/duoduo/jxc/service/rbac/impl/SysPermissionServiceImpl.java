@@ -32,9 +32,7 @@ public class SysPermissionServiceImpl implements SysPermissionService {
                     .eq(SysMenu::getStatus, 1)
                     .isNotNull(SysMenu::getPerms)
                     .ne(SysMenu::getPerms, ""));
-            List<String> perms = new ArrayList<>(allMenus.stream().map(SysMenu::getPerms).toList());
-            perms.add("*:*:*");
-            return perms.stream().distinct().toList();
+            return allMenus.stream().map(SysMenu::getPerms).distinct().toList();
         }
         return sysMenuMapper.selectPermsByUserId(user.getUserId());
     }
