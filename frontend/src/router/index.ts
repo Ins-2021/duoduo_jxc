@@ -378,10 +378,22 @@ export const routes: Array<RouteRecordRaw> = [
             meta: { title: '生产排程', perm: 'production:schedule:view' }
           },
           {
+            path: 'schedule/form/:id?',
+            name: 'ProductionScheduleForm',
+            component: () => import('../views/production/schedule/form.vue'),
+            meta: { title: '生产排程表单', hidden: true, perm: 'production:schedule:add' }
+          },
+          {
             path: 'cut-order',
             name: 'CutOrder',
             component: () => import('../views/production/cut-order/index.vue'),
             meta: { title: '裁床单', perm: 'production:cut-order:view' }
+          },
+          {
+            path: 'cut-order/form/:id?',
+            name: 'CutOrderForm',
+            component: () => import('../views/production/cut-order/form.vue'),
+            meta: { title: '裁床单表单', hidden: true, perm: 'production:cut-order:add' }
           },
           {
             path: 'cut-bundle',
@@ -711,18 +723,6 @@ export const routes: Array<RouteRecordRaw> = [
             name: 'SettingsStaff',
             component: () => import('../views/settings/staff/index.vue'),
             meta: { title: '职员管理', perm: 'settings:staff:view' }
-          },
-          {
-            path: 'permissions',
-            name: 'SettingsPermissions',
-            component: () => import('../views/settings/permissions/index.vue'),
-            meta: { title: '权限设置', perm: 'settings:permissions:view' }
-          },
-          {
-            path: 'data-auth',
-            name: 'SettingsDataAuth',
-            component: () => import('../views/settings/data-auth/index.vue'),
-            meta: { title: '数据授权', perm: 'settings:data-auth:view' }
           }
         ]
       }

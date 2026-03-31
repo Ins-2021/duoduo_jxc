@@ -7,6 +7,7 @@ import com.duoduo.jxc.common.PageResult;
 import com.duoduo.jxc.dto.wage.PayrollSheetDTO;
 import com.duoduo.jxc.dto.wage.PayrollSheetQuery;
 import com.duoduo.jxc.entity.wage.PayrollSheet;
+import com.duoduo.jxc.enums.SalarySheetStatusEnum;
 import com.duoduo.jxc.exception.BusinessException;
 import com.duoduo.jxc.mapper.PayrollSheetMapper;
 import com.duoduo.jxc.service.PayrollSheetService;
@@ -101,12 +102,12 @@ public class PayrollSheetServiceImpl extends ServiceImpl<PayrollSheetMapper, Pay
         if (entity == null) {
             throw new BusinessException("工资单不存在");
         }
-        if (entity.getStatus() != 0) {
+        if (entity.getStatus() != SalarySheetStatusEnum.DRAFT.getCode()) {
             throw new BusinessException("只有草稿状态的工资单才能提交");
         }
         PayrollSheet update = new PayrollSheet();
         update.setSheetId(id);
-        update.setStatus(1);
+        update.setStatus(SalarySheetStatusEnum.PENDING_AUDIT.getCode());
         update.setSubmitTime(LocalDateTime.now());
         updateById(update);
         log.info("工资单[{}]已提交审核", entity.getSheetNo());
@@ -119,17 +120,17 @@ public class PayrollSheetServiceImpl extends ServiceImpl<PayrollSheetMapper, Pay
         if (entity == null) {
             throw new BusinessException("工资单不存在");
         }
-        if (entity.getStatus() != 1) {
+        if (entity.getStatus() != SalarySheetStatusEnum.PENDING_AUDIT.getCode()) {
             throw new BusinessException("只有待审核状态的工资单才能审核");
         }
         PayrollSheet update = new PayrollSheet();
         update.setSheetId(id);
-        if (approved == 1) {
-            update.setStatus(2);
+        if (approved == SalarySheetStatusEnum.APPROVED.getCode()) {
+            update.setStatus(SalarySheetStatusEnum.APPROVED.getCode());
             update.setAuditTime(LocalDateTime.now());
             log.info("工资单[{}]审核通过", entity.getSheetNo());
         } else {
-            update.setStatus(0);
+            update.setStatus(SalarySheetStatusEnum.DRAFT.getCode());
             log.info("工资单[{}]审核驳回", entity.getSheetNo());
         }
         updateById(update);

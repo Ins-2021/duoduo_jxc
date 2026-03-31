@@ -7,9 +7,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 分页查询参数
+ * 分页查询参数基类
  *
  * @author duoduo
+ * @since 2026-03-31
  */
 @Data
 public class PageQuery implements Serializable {

@@ -12,6 +12,8 @@ import com.duoduo.jxc.dto.sales.SalesOrderDetailDTO;
 import com.duoduo.jxc.dto.sales.SalesOrderQuery;
 import com.duoduo.jxc.dto.workflow.WfInstanceStartRequest;
 import com.duoduo.jxc.entity.*;
+import com.duoduo.jxc.enums.CommonStatusEnum;
+import com.duoduo.jxc.enums.SalesOrderStatusEnum;
 import com.duoduo.jxc.enums.SalesOrderTypeEnum;
 import com.duoduo.jxc.enums.TransactionTypeEnum;
 import com.duoduo.jxc.exception.BusinessException;
@@ -199,10 +201,10 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         order.setActualAmount(actualAmount);
 
         // 生成单号
-        String prefix = dto.getOrderType() == 3 ? "YD" : "XS";
+        String prefix = dto.getOrderType() == SalesOrderTypeEnum.BOOKING.getCode() ? "YD" : "XS";
         order.setDocNo(prefix + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + System.currentTimeMillis());
         if (order.getStatus() == null) {
-            order.setStatus(10); // 默认草稿
+            order.setStatus(SalesOrderStatusEnum.DRAFT.getCode()); // 默认草稿
         }
         if (order.getDocDate() == null) {
             order.setDocDate(LocalDate.now());
@@ -215,7 +217,7 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
             detailEntities.forEach(d -> {
                 d.setDetailId(null);
                 d.setOrderId(order.getOrderId());
-                if (dto.getOrderType() == 3) {
+                if (dto.getOrderType() == SalesOrderTypeEnum.BOOKING.getCode()) {
                     d.setBookedQty(d.getQty());
                     d.setUnfulfilledQty(d.getQty());
                 }
@@ -249,7 +251,7 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
             detailEntities.forEach(d -> {
                 d.setOrderId(order.getOrderId());
                 d.setDetailId(null);
-                if (dto.getOrderType() == 3) {
+                if (dto.getOrderType() == SalesOrderTypeEnum.BOOKING.getCode()) {
                     d.setBookedQty(d.getQty());
                     d.setUnfulfilledQty(d.getQty());
                 }
@@ -265,7 +267,7 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         if (exist == null) {
             throw new BusinessException(BizCode.SALES_ORDER_NOT_FOUND);
         }
-        if (exist.getStatus() != 10) {
+        if (exist.getStatus() != SalesOrderStatusEnum.DRAFT.getCode()) {
             throw new BusinessException(BizCode.ORDER_NOT_DRAFT);
         }
         
@@ -282,17 +284,17 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         if (exist == null) {
             throw new BusinessException(BizCode.SALES_ORDER_NOT_FOUND);
         }
-        if (exist.getStatus() != 10) {
+        if (exist.getStatus() != SalesOrderStatusEnum.DRAFT.getCode()) {
             throw new BusinessException(BizCode.ORDER_NOT_DRAFT);
         }
 
         // 启动工作流（如果有绑定）
         var binding = workflowService.getBinding("SALES_ORDER");
-        boolean useWorkflow = binding != null && binding.getEnabled() != null && binding.getEnabled() == 1;
+        boolean useWorkflow = binding != null && binding.getEnabled() != null && binding.getEnabled() == CommonStatusEnum.ENABLED.getCode();
 
         SalesOrder order = new SalesOrder();
         order.setOrderId(orderId);
-        order.setStatus(useWorkflow ? 20 : 30);
+        order.setStatus(useWorkflow ? SalesOrderStatusEnum.PENDING_AUDIT.getCode() : SalesOrderStatusEnum.RUNNING.getCode());
         order.setAuditBy(exist.getOperatorId());
         order.setAuditTime(LocalDateTime.now());
         updateById(order);
@@ -319,13 +321,13 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         detailWrapper.eq(SalesOrderDetail::getOrderId, orderId);
         List<SalesOrderDetail> details = detailMapper.selectList(detailWrapper);
 
-        if (exist.getOrderType() == 1) {
+        if (exist.getOrderType() == SalesOrderTypeEnum.WHOLESALE.getCode()) {
             // ---------- 批发单：生成应收 ----------
             createReceivable(exist, orderId, details);
-        } else if (exist.getOrderType() == 2) {
+        } else if (exist.getOrderType() == SalesOrderTypeEnum.RETAIL.getCode()) {
             // ---------- 零售单：日结日清 ----------
             processRetailOrder(exist, orderId, details);
-        } else if (exist.getOrderType() == 3) {
+        } else if (exist.getOrderType() == SalesOrderTypeEnum.BOOKING.getCode()) {
             // ---------- 预订单：审核后锁定库存 ----------
             lockInventoryForBooking(orderId, details);
         }
@@ -494,7 +496,7 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         if (exist == null) {
             throw new BusinessException(BizCode.SALES_ORDER_NOT_FOUND);
         }
-        if (exist.getStatus() != 30) {
+        if (exist.getStatus() != SalesOrderStatusEnum.RUNNING.getCode()) {
             throw new BusinessException(BizCode.SALES_ORDER_NOT_AUDITED);
         }
 
@@ -530,7 +532,7 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
 
         LambdaUpdateWrapper<SalesOrder> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(SalesOrder::getOrderId, orderId)
-                .set(SalesOrder::getStatus, 10)
+                .set(SalesOrder::getStatus, SalesOrderStatusEnum.DRAFT.getCode())
                 .set(SalesOrder::getAuditBy, null)
                 .set(SalesOrder::getAuditTime, null);
         update(updateWrapper);
@@ -540,7 +542,7 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
     @Transactional(rollbackFor = Exception.class)
     public void convertToSales(Long bookingOrderId) {
         SalesOrderDTO booking = getDetail(bookingOrderId);
-        if (booking == null || booking.getOrderType() != 3) {
+        if (booking == null || booking.getOrderType() != SalesOrderTypeEnum.BOOKING.getCode()) {
             throw new BusinessException(BizCode.BOOKING_ORDER_INVALID);
         }
 
@@ -563,17 +565,17 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
 
         // 创建新的销售单（根据未发货数量生成新的明细？）
         // 原始实现是直接拿整个 booking 对象改掉，但其实应该只把未发货的部分转为销售单，不过这里按照原逻辑：
-        booking.setOrderType(1); // 批发单
+        booking.setOrderType(SalesOrderTypeEnum.WHOLESALE.getCode()); // 批发单
         booking.setOrderId(null);
         booking.setDocNo(null);
-        booking.setStatus(10); // 草稿
+        booking.setStatus(SalesOrderStatusEnum.DRAFT.getCode()); // 草稿
         
         createOrder(booking);
         
         // 更新原预订单状态
         SalesOrder updateBooking = new SalesOrder();
         updateBooking.setOrderId(bookingOrderId);
-        updateBooking.setStatus(40); // 已完成
+        updateBooking.setStatus(SalesOrderStatusEnum.FINISHED.getCode()); // 已完成
         updateById(updateBooking);
     }
 }

@@ -10,6 +10,7 @@ import com.duoduo.jxc.common.PageResult;
 import com.duoduo.jxc.converter.FinanceConverter;
 import com.duoduo.jxc.dto.finance.IncomeExpenseDTO;
 import com.duoduo.jxc.entity.IncomeExpense;
+import com.duoduo.jxc.enums.IncomeExpenseTypeEnum;
 import com.duoduo.jxc.exception.BusinessException;
 import com.duoduo.jxc.mapper.IncomeExpenseMapper;
 import com.duoduo.jxc.service.IncomeExpenseService;
@@ -120,10 +121,10 @@ public class IncomeExpenseServiceImpl extends ServiceImpl<IncomeExpenseMapper, I
             com.duoduo.jxc.entity.FinanceAccount account = financeAccountMapper.selectById(entity.getAccountId());
             if (account != null) {
                 java.math.BigDecimal newBalance = account.getBalance() != null ? account.getBalance() : java.math.BigDecimal.ZERO;
-                if (entity.getType() == 1) {
+                if (entity.getType() == IncomeExpenseTypeEnum.INCOME.getValue()) {
                     // 收入：余额增加
                     newBalance = newBalance.add(entity.getAmount());
-                } else if (entity.getType() == 2) {
+                } else if (entity.getType() == IncomeExpenseTypeEnum.EXPENSE.getValue()) {
                     // 支出：余额减少
                     newBalance = newBalance.subtract(entity.getAmount());
                 }

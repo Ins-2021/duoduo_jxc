@@ -4,6 +4,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 
+/**
+ * 安全工具类
+ *
+ * @author duoduo
+ * @since 2026-03-31
+ */
 public class SecurityUtils {
 
     public static Jwt getJwt() {

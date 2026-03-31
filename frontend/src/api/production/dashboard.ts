@@ -46,7 +46,7 @@ export interface ProductionOrdersResult {
  */
 export function getProductionStatistics(factoryId?: number): Promise<ProductionStatistics> {
   return request({
-    url: '/api/production/dashboard/statistics',
+    url: '/production/dashboard/statistics',
     method: 'get',
     params: { factoryId }
   })
@@ -57,7 +57,7 @@ export function getProductionStatistics(factoryId?: number): Promise<ProductionS
  */
 export function getProductionOrders(factoryId?: number): Promise<ProductionOrdersResult> {
   return request({
-    url: '/api/production/dashboard/orders',
+    url: '/production/dashboard/orders',
     method: 'get',
     params: { factoryId }
   })

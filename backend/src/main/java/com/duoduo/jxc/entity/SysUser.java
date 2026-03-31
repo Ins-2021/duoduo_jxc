@@ -6,6 +6,12 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * 系统用户实体类
+ *
+ * @author duoduo
+ * @since 2026-03-31
+ */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @TableName("jxc_sys_user")

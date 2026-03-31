@@ -7,6 +7,7 @@ import com.duoduo.jxc.common.PageResult;
 import com.duoduo.jxc.dto.wage.PayrollPeriodDTO;
 import com.duoduo.jxc.dto.wage.PayrollPeriodQuery;
 import com.duoduo.jxc.entity.PayrollPeriod;
+import com.duoduo.jxc.enums.SalarySheetStatusEnum;
 import com.duoduo.jxc.mapper.PayrollPeriodMapper;
 import com.duoduo.jxc.service.PayrollPeriodService;
 import lombok.RequiredArgsConstructor;
@@ -100,10 +101,10 @@ public class PayrollPeriodServiceImpl extends ServiceImpl<PayrollPeriodMapper, P
     @Transactional(rollbackFor = Exception.class)
     public void submit(Long id) {
         PayrollPeriod entity = getById(id);
-        if (entity == null || entity.getStatus() != 0) {
+        if (entity == null || entity.getStatus() != SalarySheetStatusEnum.DRAFT.getCode()) {
             throw new RuntimeException("只有草稿状态的工资单才能提交审核");
         }
-        entity.setStatus(1);
+        entity.setStatus(SalarySheetStatusEnum.PENDING_AUDIT.getCode());
         entity.setSubmitTime(LocalDateTime.now());
         entity.setUpdateTime(LocalDateTime.now());
         updateById(entity);
@@ -113,10 +114,10 @@ public class PayrollPeriodServiceImpl extends ServiceImpl<PayrollPeriodMapper, P
     @Transactional(rollbackFor = Exception.class)
     public void audit(Long id, boolean approved) {
         PayrollPeriod entity = getById(id);
-        if (entity == null || entity.getStatus() != 1) {
+        if (entity == null || entity.getStatus() != SalarySheetStatusEnum.PENDING_AUDIT.getCode()) {
             throw new RuntimeException("只有待审核状态的工资单才能审核");
         }
-        entity.setStatus(approved ? 2 : 0);
+        entity.setStatus(approved ? SalarySheetStatusEnum.APPROVED.getCode() : SalarySheetStatusEnum.DRAFT.getCode());
         entity.setAuditTime(LocalDateTime.now());
         entity.setUpdateTime(LocalDateTime.now());
         updateById(entity);

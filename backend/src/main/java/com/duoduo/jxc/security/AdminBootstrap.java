@@ -4,11 +4,19 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.duoduo.jxc.entity.SysUser;
 import com.duoduo.jxc.mapper.SysUserMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+/**
+ * 管理员账号初始化引导类
+ *
+ * @author duoduo
+ * @since 2026-03-31
+ */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class AdminBootstrap implements ApplicationRunner {
@@ -30,19 +38,24 @@ public class AdminBootstrap implements ApplicationRunner {
             String defaultPassword = System.getenv("ADMIN_DEFAULT_PASSWORD");
             if (defaultPassword == null || defaultPassword.isBlank()) {
                 defaultPassword = generateRandomPassword();
-                System.out.println("=================================================================");
-                System.out.println("【安全警告】管理员密码未设置，已生成随机密码:");
-                System.out.println("用户名: admin");
-                System.out.println("密码: " + defaultPassword);
-                System.out.println("请立即登录并修改密码！");
-                System.out.println("可通过设置 ADMIN_DEFAULT_PASSWORD 环境变量指定初始密码");
-                System.out.println("=================================================================");
+                log.warn("=================================================================");
+                log.warn("【安全警告】管理员密码未设置，已生成随机密码:");
+                log.warn("用户名: admin");
+                log.warn("密码: {}", defaultPassword);
+                log.warn("请立即登录并修改密码！");
+                log.warn("可通过设置 ADMIN_DEFAULT_PASSWORD 环境变量指定初始密码");
+                log.warn("=================================================================");
             }
             admin.setPassword(passwordEncoder.encode(defaultPassword));
             sysUserMapper.updateById(admin);
         }
     }
 
+    /**
+     * 生成随机密码
+     *
+     * @return 随机密码
+     */
     private String generateRandomPassword() {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
         StringBuilder sb = new StringBuilder();

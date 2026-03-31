@@ -47,8 +47,11 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getCutOrderList, deleteCutOrder } from '@/api/production'
+
+const router = useRouter()
 
 defineOptions({ name: 'CutOrderList' })
 
@@ -97,11 +100,11 @@ const handleQuery = async () => {
 }
 
 const handleAdd = () => {
-  ElMessage.info('功能即将上线，敬请期待')
+  router.push('/production/cut-order/form')
 }
 
 const handleEdit = (row: any) => {
-  ElMessage.info('功能即将上线，敬请期待')
+  router.push(`/production/cut-order/form/${row.planId}`)
 }
 
 const handleDelete = (row: any) => {

@@ -4,6 +4,12 @@ import lombok.Data;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 
+/**
+ * 商品SPU数据传输对象
+ *
+ * @author duoduo
+ * @since 2026-03-31
+ */
 @Data
 public class ProductSpuDTO {
     private Long spuId;

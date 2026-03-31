@@ -35,7 +35,7 @@ public class AuthController {
      */
     @PostMapping("/login/wechat")
     public Result<TokenResponse> loginByWechat(@RequestBody Map<String, String> params) {
-        // TODO: 接入微信小程序登录，此处先用默认账号模拟
+        // FIXME: 2026-03-31 接入微信小程序登录，此处先用默认账号模拟
         // 实际需要调用微信 code2session 接口获取 openid
         return Result.success(authTokenService.login("worker", "123456"));
     }

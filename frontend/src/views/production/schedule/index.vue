@@ -46,8 +46,11 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getProductionScheduleList, deleteProductionSchedule } from '@/api/production'
+
+const router = useRouter()
 
 defineOptions({ name: 'ProductionScheduleList' })
 
@@ -98,11 +101,11 @@ const handleQuery = async () => {
 }
 
 const handleAdd = () => {
-  ElMessage.info('功能即将上线，敬请期待')
+  router.push('/production/schedule/form')
 }
 
 const handleEdit = (row: any) => {
-  ElMessage.info('功能即将上线，敬请期待')
+  router.push(`/production/schedule/form/${row.scheduleId}`)
 }
 
 const handleDelete = (row: any) => {

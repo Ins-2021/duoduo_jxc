@@ -2,6 +2,8 @@ package com.duoduo.jxc.security;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.duoduo.jxc.entity.SysUser;
+import com.duoduo.jxc.enums.DeletedStatusEnum;
+import com.duoduo.jxc.enums.UserStatusEnum;
 import com.duoduo.jxc.mapper.SysUserMapper;
 import com.duoduo.jxc.service.rbac.SysPermissionService;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +27,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         SysUser user = sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>()
-                .eq(SysUser::getDeleted, 0)
+                .eq(SysUser::getDeleted, DeletedStatusEnum.NOT_DELETED.getCode())
                 .eq(SysUser::getUsername, username)
                 .last("limit 1"));
         if (user == null) {
             throw new UsernameNotFoundException("用户不存在");
         }
-        if (user.getStatus() != 1) {
+        if (user.getStatus() != UserStatusEnum.ENABLED.getCode()) {
             throw new com.duoduo.jxc.exception.BusinessException(com.duoduo.jxc.common.BizCode.USER_DISABLED);
         }
         List<String> perms = sysPermissionService.getUserPerms(user);
