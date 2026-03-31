@@ -18,6 +18,7 @@ import com.duoduo.jxc.mapper.InventoryCheckDetailMapper;
 import com.duoduo.jxc.mapper.InventoryCheckMapper;
 import com.duoduo.jxc.service.InventoryCheckService;
 import com.duoduo.jxc.service.InventoryService;
+import com.duoduo.jxc.service.DocNoRuleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -39,6 +40,7 @@ public class InventoryCheckServiceImpl extends ServiceImpl<InventoryCheckMapper,
     private final InventoryCheckDetailMapper detailMapper;
     private final InventoryConverter converter;
     private final InventoryService inventoryService;
+    private final DocNoRuleService docNoRuleService;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -189,8 +191,6 @@ public class InventoryCheckServiceImpl extends ServiceImpl<InventoryCheckMapper,
     }
 
     private String generateOrderNo() {
-        String dateStr = LocalDateTime.now().format(DATE_FORMATTER);
-        String randomStr = UUID.randomUUID().toString().replace("-", "").substring(0, 6).toUpperCase();
-        return "PD" + dateStr + randomStr;
+        return docNoRuleService.generateDocNo("PD");
     }
 }

@@ -16,3 +16,8 @@ frontend/tests/
 test-screenshots/
 */**/dist
 **/node_modules
+**/target
+bin/
+.settings/
+.classpath
+.project

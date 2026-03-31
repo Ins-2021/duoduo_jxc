@@ -15,6 +15,7 @@ import com.duoduo.jxc.mapper.FabricInboundMapper;
 import com.duoduo.jxc.mapper.FabricMapper;
 import com.duoduo.jxc.service.FabricInboundService;
 import com.duoduo.jxc.service.FabricInventoryService;
+import com.duoduo.jxc.service.DocNoRuleService;
 import com.duoduo.jxc.enums.FabricInboundStatusEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ public class FabricInboundServiceImpl extends ServiceImpl<FabricInboundMapper, F
     private final FabricConverter converter;
     private final FabricMapper fabricMapper;
     private final FabricInventoryService fabricInventoryService;
+    private final DocNoRuleService docNoRuleService;
     private static final AtomicInteger counter = new AtomicInteger(1);
 
     @Override
@@ -113,8 +115,6 @@ public class FabricInboundServiceImpl extends ServiceImpl<FabricInboundMapper, F
     }
 
     private String generateInboundNo() {
-        String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        int seq = counter.getAndIncrement() % 10000;
-        return "FBIN" + dateStr + String.format("%04d", seq);
+        return docNoRuleService.generateDocNo("MRK");
     }
 }

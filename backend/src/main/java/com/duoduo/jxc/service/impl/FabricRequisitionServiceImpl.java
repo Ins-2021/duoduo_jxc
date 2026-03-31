@@ -15,6 +15,7 @@ import com.duoduo.jxc.mapper.FabricMapper;
 import com.duoduo.jxc.mapper.FabricRequisitionMapper;
 import com.duoduo.jxc.service.FabricInventoryService;
 import com.duoduo.jxc.service.FabricRequisitionService;
+import com.duoduo.jxc.service.DocNoRuleService;
 import com.duoduo.jxc.enums.FabricRequisitionStatusEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ public class FabricRequisitionServiceImpl extends ServiceImpl<FabricRequisitionM
     private final FabricConverter converter;
     private final FabricMapper fabricMapper;
     private final FabricInventoryService fabricInventoryService;
+    private final DocNoRuleService docNoRuleService;
     private static final AtomicInteger counter = new AtomicInteger(1);
 
     @Override
@@ -124,8 +126,6 @@ public class FabricRequisitionServiceImpl extends ServiceImpl<FabricRequisitionM
     }
 
     private String generateRequisitionNo() {
-        String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        int seq = counter.getAndIncrement() % 10000;
-        return "FBREQ" + dateStr + String.format("%04d", seq);
+        return docNoRuleService.generateDocNo("MLL");
     }
 }
