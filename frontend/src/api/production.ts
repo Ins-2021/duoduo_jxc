@@ -16,6 +16,15 @@ export function updateProductionOrder(id: number, data: any) {
 export function deleteProductionOrder(id: number) {
   return request({ url: `/production/order/${id}`, method: 'delete' })
 }
+export function updateProductionOrderStatus(id: number, status: string) {
+  return request({ url: `/production/order/${id}/status`, method: 'put', params: { status } })
+}
+export function calculateMaterialRequirement(id: number) {
+  return request({ url: `/production/order/${id}/material-requirement`, method: 'get' })
+}
+export function productionInbound(id: number, data: any) {
+  return request({ url: `/production/order/${id}/inbound`, method: 'post', data })
+}
 
 // Production Plan API
 export function getProductionPlanList(params: any) {

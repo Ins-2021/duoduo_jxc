@@ -135,7 +135,6 @@ settings:field-settings:view
 settings:menu:view
 settings:op-log:clear
 settings:op-log:view
-settings:permissions:view
 settings:print-template:add
 settings:print-template:delete
 settings:print-template:edit

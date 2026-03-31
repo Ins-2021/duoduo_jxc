@@ -20,9 +20,9 @@ public class AssemblyOrder {
     private Integer status;
     private LocalDateTime assemblyDate;
     private String remark;
-    private Long createdBy;
+    private Long createBy;
     private LocalDateTime createTime;
-    private Long updatedBy;
+    private Long updateBy;
     private LocalDateTime updateTime;
     @TableLogic
     private Integer deleted;

@@ -102,7 +102,7 @@ const queryForm = reactive({
 })
 
 const formData = reactive({
-  transferOrderId: undefined,
+  transferId: undefined,
   outWarehouseName: '',
   inWarehouseName: '',
   transferDate: '',
@@ -134,7 +134,7 @@ const handleReset = () => {
 const handleAdd = () => {
   dialogTitle.value = '新增调拨'
   Object.assign(formData, {
-    transferOrderId: undefined,
+    transferId: undefined,
     outWarehouseName: '',
     inWarehouseName: '',
     transferDate: new Date(),
@@ -145,7 +145,7 @@ const handleAdd = () => {
 
 const handleView = async (row: any) => {
   try {
-    const res = await transferOrderApi.getById(row.transferOrderId)
+    const res = await transferOrderApi.getById(row.transferId)
     dialogTitle.value = '查看调拨'
     Object.assign(formData, res.data)
     dialogVisible.value = true
@@ -156,7 +156,7 @@ const handleView = async (row: any) => {
 
 const handleSubmit = async () => {
   try {
-    if (formData.transferOrderId) {
+    if (formData.transferId) {
       await transferOrderApi.update(formData)
       ElMessage.success('更新成功')
     } else {
@@ -173,7 +173,7 @@ const handleSubmit = async () => {
 const handleApprove = async (row: any) => {
   try {
     await ElMessageBox.confirm('确定要审核该调拨单吗？', '提示', { type: 'warning' })
-    await transferOrderApi.approve(row.transferOrderId)
+    await transferOrderApi.approve(row.transferId)
     ElMessage.success('审核成功')
     handleQuery()
   } catch (error) {
@@ -186,7 +186,7 @@ const handleApprove = async (row: any) => {
 const handleDelete = async (row: any) => {
   try {
     await ElMessageBox.confirm('确定要删除该调拨单吗？', '提示', { type: 'warning' })
-    await transferOrderApi.delete(row.transferOrderId)
+    await transferOrderApi.delete(row.transferId)
     ElMessage.success('删除成功')
     handleQuery()
   } catch (error) {

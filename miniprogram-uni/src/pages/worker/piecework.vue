@@ -4,6 +4,9 @@
       <text>⚠️ 离线模式，数据将缓存后自动同步</text>
     </view>
     <scan-input v-model="bundleNo" placeholder="请输入或扫描扎包号" @confirm="handleScan" />
+    <view class="qr-scan-btn" @click="openQrScanner">
+      <text>📷 扫描二维码</text>
+    </view>
     <view class="bundle-info" v-if="bundleInfo">
       <view class="info-card">
         <view class="info-row"><text class="label">扎包号</text><text class="value">{{ bundleInfo.bundleNo }}</text></view>
@@ -43,14 +46,14 @@
     <view class="records-section">
       <view class="section-title">今日计件记录</view>
       <view class="record-list">
-        <view class="record-item" v-for="item in todayRecords" :key="item.id">
+        <view class="record-item" v-for="item in todayRecords" :key="item.recordId">
           <view class="record-left">
             <text class="bundle-no">{{ item.bundleNo }}</text>
             <text class="process-name">{{ item.processName }}</text>
           </view>
           <view class="record-right">
             <text class="quantity">×{{ item.quantity }}</text>
-            <text class="amount">¥{{ item.amount }}</text>
+            <text class="amount">¥{{ item.amount || 0 }}</text>
           </view>
         </view>
         <view v-if="todayRecords.length === 0" class="empty">暂无计件记录</view>
@@ -62,10 +65,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import ScanInput from '@/components/scan-input/scan-input.vue'
-import { getBundleInfo, submitPiecework, getTodayRecords } from '@/api/worker'
+import { getBundleInfo, submitPiecework, getTodayRecords as getWorkerTodayRecords } from '@/api/worker'
+import { scanWithQrCode, getTodayRecords } from '@/api/scan'
 import { useOfflineStore } from '@/store/offline'
+import { useUserStore } from '@/store/user'
 
 const offlineStore = useOfflineStore()
+const userStore = useUserStore()
 const isOffline = ref(offlineStore.isOffline)
 const bundleNo = ref('')
 const bundleInfo = ref<any>(null)
@@ -74,11 +80,60 @@ const selectedProcessId = ref<number | null>(null)
 const quantity = ref(1)
 const submitting = ref(false)
 const todayRecords = ref<any[]>([])
+const lastQrCodeNo = ref('')
 
 onMounted(() => { loadTodayRecords() })
 
+const openQrScanner = () => {
+  uni.scanCode({
+    scanType: ['qrCode'],
+    success: (res) => {
+      handleQrCodeScan(res.result)
+    },
+    fail: () => {
+      uni.showToast({ title: '扫码失败', icon: 'none' })
+    }
+  })
+}
+
+const handleQrCodeScan = async (qrContent: string) => {
+  let qrCodeNo = qrContent
+  try {
+    const parsed = JSON.parse(qrContent)
+    qrCodeNo = parsed.no || qrContent
+  } catch {
+    // 如果不是 JSON，直接使用原始内容
+  }
+
+  lastQrCodeNo.value = qrCodeNo
+
+  if (!selectedProcessId.value) {
+    uni.showToast({ title: '请先选择工序', icon: 'none' })
+    return
+  }
+
+  submitting.value = true
+  try {
+    const workerId = userStore.userInfo?.id
+    if (!workerId) {
+      uni.showToast({ title: '请先登录', icon: 'none' })
+      return
+    }
+
+    await scanWithQrCode(qrCodeNo, selectedProcessId.value, quantity.value)
+    uni.showToast({ title: '扫码计件成功', icon: 'success' })
+    quantity.value = 1
+    loadTodayRecords()
+  } catch (e: any) {
+    uni.showToast({ title: e.data?.message || '扫码计件失败', icon: 'none' })
+  } finally {
+    submitting.value = false
+  }
+}
+
 const handleScan = async (code: string) => {
   if (!code) return
+  bundleNo.value = code
   try {
     const res: any = await getBundleInfo(code)
     if (res.success) {
@@ -111,10 +166,22 @@ const handleSubmit = async () => {
 
 const loadTodayRecords = async () => {
   try {
-    const res: any = await getTodayRecords()
-    if (res.success) todayRecords.value = res.data || []
+    const workerId = userStore.userInfo?.id
+    if (workerId) {
+      const res: any = await getTodayRecords(workerId)
+      todayRecords.value = res.data || []
+    } else {
+      const res: any = await getWorkerTodayRecords()
+      todayRecords.value = res.data || []
+    }
   } catch {}
 }
+
+defineExpose({
+  onScanResult: (result: string) => {
+    handleQrCodeScan(result)
+  }
+})
 </script>
 
 <style scoped>
@@ -126,6 +193,15 @@ const loadTodayRecords = async () => {
   margin-bottom: 20rpx;
   font-size: 26rpx;
   text-align: center;
+}
+.qr-scan-btn {
+  background: linear-gradient(135deg, #52c41a, #389e0d);
+  color: #fff;
+  text-align: center;
+  padding: 24rpx;
+  border-radius: 12rpx;
+  margin: 20rpx 0;
+  font-size: 30rpx;
 }
 .info-card {
   background: #fff;
@@ -174,6 +250,12 @@ const loadTodayRecords = async () => {
   box-shadow: 0 8rpx 24rpx rgba(24,144,255,0.3);
 }
 .submit-btn.disabled { opacity: 0.6; }
+.section-title {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 16rpx;
+}
 .record-list { background: #fff; border-radius: 16rpx; overflow: hidden; }
 .record-item {
   display: flex;

@@ -17,5 +17,5 @@ export function saveSystemSettings(data: Partial<SystemSettingsDTO>) {
 }
 
 export function getStaffOptions() {
-  return request({ url: '/staff/options', method: 'get' })
+  return request({ url: '/options/staff', method: 'get' })
 }

@@ -66,5 +66,20 @@ public class ProductSpuDTO {
     private String attr1Name;
     private String attr2Name;
 
+    /**
+     * 关联款式ID
+     */
+    private Long styleId;
+
+    /**
+     * 款式编号（用于显示）
+     */
+    private String styleNo;
+
+    /**
+     * 款式名称（用于显示）
+     */
+    private String styleName;
+
     private List<ProductSkuDTO> skuList;
 }

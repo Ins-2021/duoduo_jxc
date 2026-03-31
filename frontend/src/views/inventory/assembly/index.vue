@@ -112,7 +112,7 @@ const queryForm = reactive({
 })
 
 const formData = reactive({
-  assemblyOrderId: undefined,
+  assemblyId: undefined,
   assemblyType: '组装',
   warehouseName: '',
   assemblyDate: '',
@@ -145,7 +145,7 @@ const handleReset = () => {
 const handleAdd = () => {
   dialogTitle.value = '新增组装'
   Object.assign(formData, {
-    assemblyOrderId: undefined,
+    assemblyId: undefined,
     assemblyType: '组装',
     warehouseName: '',
     assemblyDate: new Date(),
@@ -156,7 +156,7 @@ const handleAdd = () => {
 
 const handleView = async (row: any) => {
   try {
-    const res = await assemblyOrderApi.getById(row.assemblyOrderId)
+    const res = await assemblyOrderApi.getById(row.assemblyId)
     dialogTitle.value = '查看组装'
     Object.assign(formData, res.data)
     dialogVisible.value = true
@@ -167,7 +167,7 @@ const handleView = async (row: any) => {
 
 const handleSubmit = async () => {
   try {
-    if (formData.assemblyOrderId) {
+    if (formData.assemblyId) {
       await assemblyOrderApi.update(formData)
       ElMessage.success('更新成功')
     } else {
@@ -184,7 +184,7 @@ const handleSubmit = async () => {
 const handleApprove = async (row: any) => {
   try {
     await ElMessageBox.confirm('确定要审核该组装单吗？', '提示', { type: 'warning' })
-    await assemblyOrderApi.approve(row.assemblyOrderId)
+    await assemblyOrderApi.approve(row.assemblyId)
     ElMessage.success('审核成功')
     handleQuery()
   } catch (error) {
@@ -197,7 +197,7 @@ const handleApprove = async (row: any) => {
 const handleDelete = async (row: any) => {
   try {
     await ElMessageBox.confirm('确定要删除该组装单吗？', '提示', { type: 'warning' })
-    await assemblyOrderApi.delete(row.assemblyOrderId)
+    await assemblyOrderApi.delete(row.assemblyId)
     ElMessage.success('删除成功')
     handleQuery()
   } catch (error) {

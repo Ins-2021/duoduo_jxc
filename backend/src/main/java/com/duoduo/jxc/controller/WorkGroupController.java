@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping({"/workgroup", "/work-group"})
+@RequestMapping("/work-group")
 @RequiredArgsConstructor
 public class WorkGroupController {
 

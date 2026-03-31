@@ -1,17 +1,17 @@
 import request from '@/utils/request'
 
 export function getStyleList(params: any) {
-  return request({ url: '/api/style/list', method: 'get', params })
+  return request({ url: '/style/list', method: 'get', params })
 }
 export function getStyleDetail(id: number) {
-  return request({ url: `/api/style/${id}`, method: 'get' })
+  return request({ url: `/style/${id}`, method: 'get' })
 }
 export function createStyle(data: any) {
-  return request({ url: '/api/style', method: 'post', data })
+  return request({ url: '/style', method: 'post', data })
 }
 export function updateStyle(id: number, data: any) {
-  return request({ url: `/api/style/${id}`, method: 'put', data })
+  return request({ url: `/style/${id}`, method: 'put', data })
 }
 export function deleteStyle(id: number) {
-  return request({ url: `/api/style/${id}`, method: 'delete' })
+  return request({ url: `/style/${id}`, method: 'delete' })
 }

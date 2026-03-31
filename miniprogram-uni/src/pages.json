@@ -8,6 +8,7 @@
     { "path": "pages/common/scan/index", "style": { "navigationBarTitleText": "扫码" } },
     { "path": "pages/worker/index", "style": { "navigationBarTitleText": "首页" } },
     { "path": "pages/worker/piecework", "style": { "navigationBarTitleText": "扫码计件" } },
+    { "path": "pages/worker/records", "style": { "navigationBarTitleText": "计件记录" } },
     { "path": "pages/worker/task", "style": { "navigationBarTitleText": "我的任务" } },
     { "path": "pages/worker/wage", "style": { "navigationBarTitleText": "工资查询" } },
     { "path": "pages/worker/wage-detail", "style": { "navigationBarTitleText": "工资明细" } },
@@ -36,9 +37,11 @@
     { "path": "pages/manager/order", "style": { "navigationBarTitleText": "订单管理" } },
     { "path": "pages/manager/staff", "style": { "navigationBarTitleText": "人员管理" } },
     { "path": "pages/manager/report", "style": { "navigationBarTitleText": "报表中心" } },
+    { "path": "pages/manager/report-detail", "style": { "navigationBarTitleText": "报表详情" } },
     { "path": "pages/boss/index", "style": { "navigationBarTitleText": "首页" } },
     { "path": "pages/boss/dashboard", "style": { "navigationBarTitleText": "经营大屏" } },
     { "path": "pages/boss/report", "style": { "navigationBarTitleText": "报表中心" } },
+    { "path": "pages/boss/report-detail", "style": { "navigationBarTitleText": "报表详情" } },
     { "path": "pages/boss/alert", "style": { "navigationBarTitleText": "预警中心" } }
   ],
   "globalStyle": {

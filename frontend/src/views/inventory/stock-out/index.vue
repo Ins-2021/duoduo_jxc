@@ -109,7 +109,7 @@ const queryForm = reactive({
 })
 
 const formData = reactive({
-  stockId: undefined,
+  inOutId: undefined,
   stockNo: '',
   stockType: '其他出库',
   stockDirection: 2,
@@ -144,7 +144,7 @@ const handleReset = () => {
 const handleAdd = () => {
   dialogTitle.value = '新增出库'
   Object.assign(formData, {
-    stockId: undefined,
+    inOutId: undefined,
     stockNo: '',
     stockType: '其他出库',
     stockDirection: 2,
@@ -157,7 +157,7 @@ const handleAdd = () => {
 
 const handleView = async (row: any) => {
   try {
-    const res = await stockInOutApi.getById(row.stockId)
+    const res = await stockInOutApi.getById(row.inOutId)
     dialogTitle.value = '查看出库'
     Object.assign(formData, res.data)
     dialogVisible.value = true
@@ -168,7 +168,7 @@ const handleView = async (row: any) => {
 
 const handleSubmit = async () => {
   try {
-    if (formData.stockId) {
+    if (formData.inOutId) {
       await stockInOutApi.update(formData)
       ElMessage.success('更新成功')
     } else {
@@ -185,7 +185,7 @@ const handleSubmit = async () => {
 const handleApprove = async (row: any) => {
   try {
     await ElMessageBox.confirm('确定要审核该出库单吗？', '提示', { type: 'warning' })
-    await stockInOutApi.approve(row.stockId)
+    await stockInOutApi.approve(row.inOutId)
     ElMessage.success('审核成功')
     handleQuery()
   } catch (error) {
@@ -198,7 +198,7 @@ const handleApprove = async (row: any) => {
 const handleDelete = async (row: any) => {
   try {
     await ElMessageBox.confirm('确定要删除该出库单吗？', '提示', { type: 'warning' })
-    await stockInOutApi.delete(row.stockId)
+    await stockInOutApi.delete(row.inOutId)
     ElMessage.success('删除成功')
     handleQuery()
   } catch (error) {

@@ -1,7 +1,0 @@
--- 销售/采购/库存等相关状态字段修改为 VARCHAR
-ALTER TABLE jxc_sales_order MODIFY COLUMN status VARCHAR(20) DEFAULT '10';
-ALTER TABLE jxc_sales_order MODIFY COLUMN settle_status VARCHAR(20) DEFAULT '0';
-ALTER TABLE jxc_purchase_order MODIFY COLUMN status VARCHAR(20) DEFAULT '10';
-ALTER TABLE jxc_receivable MODIFY COLUMN status VARCHAR(20) DEFAULT '0';
-ALTER TABLE jxc_payable MODIFY COLUMN status VARCHAR(20) DEFAULT '0';
-ALTER TABLE jxc_receipt MODIFY COLUMN status VARCHAR(20) DEFAULT '0';

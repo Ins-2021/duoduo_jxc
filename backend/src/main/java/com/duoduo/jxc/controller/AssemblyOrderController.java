@@ -57,7 +57,7 @@ public class AssemblyOrderController {
 
     @Log(title = "组装拆卸单管理", action = "审核")
     @PostMapping("/{id}/approve")
-    @PreAuthorize("@perm.has('inventory:assembly:approve')")
+    @PreAuthorize("@perm.has('inventory:assembly:audit')")
     public Result<Void> approve(@PathVariable Long id) {
         assemblyOrderService.approve(id);
         return Result.success();

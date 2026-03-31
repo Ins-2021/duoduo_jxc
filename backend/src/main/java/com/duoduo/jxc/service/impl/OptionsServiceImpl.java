@@ -5,11 +5,14 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.duoduo.jxc.dto.common.OptionDTO;
 import com.duoduo.jxc.entity.Customer;
 import com.duoduo.jxc.entity.FinanceAccount;
+import com.duoduo.jxc.entity.Store;
 import com.duoduo.jxc.entity.Supplier;
 import com.duoduo.jxc.entity.SysUser;
 import com.duoduo.jxc.entity.Warehouse;
+import com.duoduo.jxc.enums.CommonStatusEnum;
 import com.duoduo.jxc.mapper.CustomerMapper;
 import com.duoduo.jxc.mapper.FinanceAccountMapper;
+import com.duoduo.jxc.mapper.StoreMapper;
 import com.duoduo.jxc.mapper.SupplierMapper;
 import com.duoduo.jxc.mapper.SysUserMapper;
 import com.duoduo.jxc.mapper.WarehouseMapper;
@@ -19,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,22 +32,16 @@ public class OptionsServiceImpl implements OptionsService {
     private final SupplierMapper supplierMapper;
     private final WarehouseMapper warehouseMapper;
     private final FinanceAccountMapper financeAccountMapper;
+    private final StoreMapper storeMapper;
 
     @Override
     public List<OptionDTO> listStores() {
-        QueryWrapper<SysUser> wrapper = new QueryWrapper<>();
-        wrapper.select("distinct store_id as storeId", "store_name as storeName")
-            .eq("deleted", 0)
-            .isNotNull("store_id")
-            .isNotNull("store_name")
-            .ne("store_name", "");
-        List<Map<String, Object>> rows = sysUserMapper.selectMaps(wrapper);
-        return rows.stream()
-            .map(row -> new OptionDTO(
-                row.get("storeId") == null ? null : Long.valueOf(String.valueOf(row.get("storeId"))),
-                row.get("storeName") == null ? "" : String.valueOf(row.get("storeName"))
-            ))
-            .filter(o -> o.getValue() != null && StringUtils.hasText(o.getLabel()))
+        return storeMapper.selectList(new LambdaQueryWrapper<Store>()
+                .eq(Store::getDeleted, 0)
+                .eq(Store::getStatus, CommonStatusEnum.ENABLED.getCode())
+                .orderByAsc(Store::getStoreName))
+            .stream()
+            .map(e -> new OptionDTO(e.getStoreId(), e.getStoreName()))
             .collect(Collectors.toList());
     }
 

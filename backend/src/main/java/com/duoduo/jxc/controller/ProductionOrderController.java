@@ -3,9 +3,12 @@ package com.duoduo.jxc.controller;
 import com.duoduo.jxc.annotation.Log;
 import com.duoduo.jxc.common.PageResult;
 import com.duoduo.jxc.common.Result;
+import com.duoduo.jxc.dto.production.MaterialRequirementDTO;
+import com.duoduo.jxc.dto.production.ProductionInboundDTO;
 import com.duoduo.jxc.dto.production.ProductionOrderDTO;
 import com.duoduo.jxc.dto.production.ProductionOrderQuery;
 import com.duoduo.jxc.service.ProductionOrderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -60,6 +63,22 @@ public class ProductionOrderController {
     @PreAuthorize("@perm.has('production:order:edit')")
     public Result<Void> updateStatus(@PathVariable Long id, @RequestParam String status) {
         productionOrderService.updateStatus(id, status);
+        return Result.success();
+    }
+
+    @Log(title = "生产订单", action = "计算面料需求")
+    @GetMapping("/{id}/material-requirement")
+    @PreAuthorize("@perm.has('production:order:view')")
+    public Result<MaterialRequirementDTO> calculateMaterialRequirement(@PathVariable Long id) {
+        return Result.success(productionOrderService.calculateMaterialRequirement(id));
+    }
+
+    @Log(title = "生产订单", action = "生产入库")
+    @PostMapping("/{id}/inbound")
+    @PreAuthorize("@perm.has('production:order:inbound')")
+    public Result<Void> productionInbound(@PathVariable Long id, @Valid @RequestBody ProductionInboundDTO dto) {
+        dto.setProductionOrderId(id);
+        productionOrderService.productionInbound(dto);
         return Result.success();
     }
 }

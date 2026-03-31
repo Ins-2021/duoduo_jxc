@@ -1,4 +1,0 @@
-ALTER TABLE jxc_style 
-  ADD COLUMN IF NOT EXISTS designer_id BIGINT COMMENT '设计师ID',
-  ADD COLUMN IF NOT EXISTS target_age_group VARCHAR(50) COMMENT '目标年龄段',
-  ADD COLUMN IF NOT EXISTS tech_pack VARCHAR(500) COMMENT '工艺单附件';

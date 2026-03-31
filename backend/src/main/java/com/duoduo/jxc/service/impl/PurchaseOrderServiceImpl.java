@@ -24,6 +24,7 @@ import com.duoduo.jxc.mapper.StockInOutDetailMapper;
 import com.duoduo.jxc.mapper.StockInOutMapper;
 import com.duoduo.jxc.service.InventoryService;
 import com.duoduo.jxc.service.PurchaseOrderService;
+import com.duoduo.jxc.service.DocNoRuleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -51,6 +52,7 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
     private final StockInOutDetailMapper stockInOutDetailMapper;
     private final InventoryService inventoryService;
     private final ProductSkuMapper productSkuMapper;
+    private final DocNoRuleService docNoRuleService;
 
     @Override
     public PageResult<PurchaseOrderDTO> pageQuery(PurchaseOrderQuery query) {
@@ -114,8 +116,8 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
         BigDecimal totalAmount = prepareOrderDetails(dto.getDetails());
         PurchaseOrder order = converter.toEntity(dto);
         // 生成单号
-        String prefix = dto.getOrderType() == 1 ? "JH" : "JY";
-        order.setDocNo(prefix + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + System.currentTimeMillis());
+        String docType = dto.getOrderType() == 1 ? "CG" : "CGTH";
+        order.setDocNo(docNoRuleService.generateDocNo(docType));
         if (order.getStatus() == null) {
             order.setStatus(PurchaseOrderStatusEnum.DRAFT.getCode());
         }

@@ -1,7 +1,7 @@
 server:
   port: 8080
   servlet:
-    context-path: /api/v1
+    context-path: /api
   tomcat:
     uri-encoding: UTF-8
     max-header-size: 10485760
@@ -50,12 +50,6 @@ spring:
   sql:
     init:
       mode: never
-
-  flyway:
-    enabled: true
-    locations: classpath:sql,classpath:db/migration,classpath:db/chain
-    baseline-on-migrate: true
-    validate-on-migrate: true
 
 # MyBatis-Plus Config
 mybatis-plus:

@@ -11,7 +11,8 @@ public enum InventoryTransTypeEnum implements DictEnum {
     STOCK_OUT(2, "出库"),
     LOCK(3, "锁定"),
     UNLOCK(4, "解锁"),
-    ADJUST(5, "盘点调整");
+    ADJUST(5, "盘点调整"),
+    PRODUCTION_IN(6, "生产入库");
 
     private final int code;
     private final String label;

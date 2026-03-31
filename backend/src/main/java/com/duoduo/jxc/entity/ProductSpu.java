@@ -111,4 +111,9 @@ public class ProductSpu extends BaseEntity {
      * 状态 (0:下架, 1:上架)
      */
     private Integer status;
+
+    /**
+     * 关联款式ID（用于产销关联）
+     */
+    private Long styleId;
 }

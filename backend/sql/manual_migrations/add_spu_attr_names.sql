@@ -1,3 +1,0 @@
-ALTER TABLE jxc_product_spu 
-ADD COLUMN attr1_name VARCHAR(50) DEFAULT NULL COMMENT '属性1名称(如颜色)',
-ADD COLUMN attr2_name VARCHAR(50) DEFAULT NULL COMMENT '属性2名称(如尺码)';

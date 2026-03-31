@@ -116,7 +116,9 @@ const filteredReports = computed(() => {
 })
 
 const viewDetail = (item: any) => {
-  uni.showToast({ title: '图表详情开发中', icon: 'none' })
+  uni.navigateTo({
+    url: `/pages/boss/report-detail?data=${encodeURIComponent(JSON.stringify(item))}`
+  })
 }
 </script>
 

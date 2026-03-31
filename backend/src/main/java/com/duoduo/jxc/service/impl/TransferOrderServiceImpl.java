@@ -18,6 +18,7 @@ import com.duoduo.jxc.mapper.TransferOrderDetailMapper;
 import com.duoduo.jxc.mapper.TransferOrderMapper;
 import com.duoduo.jxc.service.TransferOrderService;
 import com.duoduo.jxc.service.InventoryService;
+import com.duoduo.jxc.service.DocNoRuleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -39,6 +40,7 @@ public class TransferOrderServiceImpl extends ServiceImpl<TransferOrderMapper, T
     private final TransferOrderDetailMapper detailMapper;
     private final InventoryConverter converter;
     private final InventoryService inventoryService;
+    private final DocNoRuleService docNoRuleService;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -209,8 +211,6 @@ public class TransferOrderServiceImpl extends ServiceImpl<TransferOrderMapper, T
     }
 
     private String generateOrderNo() {
-        String dateStr = LocalDateTime.now().format(DATE_FORMATTER);
-        String randomStr = UUID.randomUUID().toString().replace("-", "").substring(0, 6).toUpperCase();
-        return "DB" + dateStr + randomStr;
+        return docNoRuleService.generateDocNo("DB");
     }
 }

@@ -129,6 +129,8 @@ public enum BizCode {
     STYLE_NOT_FOUND(75004, "款式不存在"),
     STYLE_COLORWAY_NOT_FOUND(75005, "款式配色不存在"),
     FIRST_ARTICLE_NOT_FOUND(75006, "首件确认记录不存在"),
+    PRODUCTION_ORDER_NOT_FOUND(75007, "生产订单不存在"),
+    OPERATION_NOT_ALLOWED(75008, "当前状态不允许此操作"),
 
     // ---- 基础数据 76xxx ----
     COLOR_NOT_FOUND(76001, "颜色不存在"),

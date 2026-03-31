@@ -4,7 +4,7 @@ import pinia from '@/store'
 import { useUserStore } from '@/store/user'
 
 const service = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api/v1',
+  baseURL: import.meta.env.VITE_API_URL || '/api',
   timeout: 50000
 }) as any
 

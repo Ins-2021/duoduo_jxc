@@ -1,14 +1,19 @@
 package com.duoduo.jxc.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.duoduo.jxc.common.PageResult;
 import com.duoduo.jxc.dto.inventory.BarcodeDTO;
 import com.duoduo.jxc.dto.inventory.BarcodeGenerateRequest;
-import com.duoduo.jxc.dto.inventory.BarcodeRuleDTO;
 import com.duoduo.jxc.entity.Barcode;
 
 import java.util.List;
 
 public interface BarcodeService extends IService<Barcode> {
+
+    /**
+     * 分页查询条码列表
+     */
+    PageResult<BarcodeDTO> pageQuery(int pageNum, int pageSize, String keyword, String barcodeType);
 
     /**
      * 生成条码
@@ -29,4 +34,9 @@ public interface BarcodeService extends IService<Barcode> {
      * 批量标记已打印
      */
     void printBarcodeBatch(List<Long> barcodeIds);
+
+    /**
+     * 删除条码
+     */
+    void deleteBarcode(Long barcodeId);
 }

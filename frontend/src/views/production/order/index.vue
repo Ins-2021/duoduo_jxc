@@ -48,9 +48,9 @@
       <el-table-column label="操作" width="200" fixed="right">
         <template #default="{row}">
           <el-button link type="primary" @click="handleDetail(row)">详情</el-button>
-          <el-button link type="primary" v-perm="'production:order:edit'" @click="handleEdit(row)" v-if="row.status === 'draft'">编辑</el-button>
-          <el-button link type="primary" v-perm="'production:order:issue'" @click="handleIssue(row)" v-if="row.status === 'draft'">下发</el-button>
-          <el-button link type="primary" v-perm="'production:order:complete'" @click="handleComplete(row)" v-if="row.status === 'in_progress'">完工</el-button>
+          <el-button link type="primary" v-perm="'production:order:edit'" @click="handleEdit(row)" v-if="row.status === 'pending'">编辑</el-button>
+          <el-button link type="primary" v-perm="'production:order:issue'" @click="handleIssue(row)" v-if="row.status === 'pending'">下发</el-button>
+          <el-button link type="primary" v-perm="'production:order:complete'" @click="handleComplete(row)" v-if="row.status === 'producing'">完工</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -92,28 +92,28 @@ const queryParams = reactive({
 })
 
 const statusOptions = [
-  { label: '草稿', value: 'draft' },
   { label: '待开工', value: 'pending' },
-  { label: '生产中', value: 'in_progress' },
+  { label: '生产中', value: 'producing' },
   { label: '已完成', value: 'completed' },
+  { label: '已取消', value: 'cancelled' },
 ]
 
 const getStatusType = (status: string) => {
   const map: Record<string, string> = {
-    draft: 'info',
     pending: 'warning',
-    in_progress: 'primary',
-    completed: 'success'
+    producing: 'primary',
+    completed: 'success',
+    cancelled: 'danger'
   }
   return map[status] || 'info'
 }
 
 const getStatusName = (status: string) => {
   const map: Record<string, string> = {
-    draft: '草稿',
     pending: '待开工',
-    in_progress: '生产中',
-    completed: '已完成'
+    producing: '生产中',
+    completed: '已完成',
+    cancelled: '已取消'
   }
   return map[status] || status
 }
@@ -121,7 +121,7 @@ const getStatusName = (status: string) => {
 const getPriorityType = (priority: string) => {
   const map: Record<string, string> = {
     low: 'info',
-    medium: 'primary',
+    normal: 'primary',
     high: 'warning',
     urgent: 'danger'
   }
@@ -131,7 +131,7 @@ const getPriorityType = (priority: string) => {
 const getPriorityName = (priority: string) => {
   const map: Record<string, string> = {
     low: '低',
-    medium: '中',
+    normal: '普通',
     high: '高',
     urgent: '紧急'
   }
@@ -161,11 +161,11 @@ const handleImport = () => {
 }
 
 const handleDetail = (row: any) => {
-  router.push(`/production/order/detail/${row.id}`)
+  router.push(`/production/order/detail/${row.orderId}`)
 }
 
 const handleEdit = (row: any) => {
-  router.push(`/production/order/edit/${row.id}`)
+  router.push(`/production/order/edit/${row.orderId}`)
 }
 
 const handleIssue = (row: any) => {

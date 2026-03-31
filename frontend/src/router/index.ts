@@ -340,6 +340,12 @@ export const routes: Array<RouteRecordRaw> = [
             meta: { title: '仓库管理', perm: 'data:warehouse:view' }
           },
           {
+            path: 'store',
+            name: 'DataStore',
+            component: () => import('../views/data/store/index.vue'),
+            meta: { title: '门店管理', perm: 'data:store:view' }
+          },
+          {
             path: 'brand',
             name: 'DataBrand',
             component: () => import('../views/data/brand/index.vue'),
@@ -364,6 +370,18 @@ export const routes: Array<RouteRecordRaw> = [
             name: 'ProductionOrderAdd',
             component: () => import('../views/production/order/add.vue'),
             meta: { title: '新建生产单', hidden: true, perm: 'production:order:add' }
+          },
+          {
+            path: 'order/detail/:id',
+            name: 'ProductionOrderDetail',
+            component: () => import('../views/production/order/detail.vue'),
+            meta: { title: '生产订单详情', hidden: true, perm: 'production:order:view' }
+          },
+          {
+            path: 'order/edit/:id',
+            name: 'ProductionOrderEdit',
+            component: () => import('../views/production/order/add.vue'),
+            meta: { title: '编辑生产单', hidden: true, perm: 'production:order:edit' }
           },
           {
             path: 'plan',
@@ -418,6 +436,12 @@ export const routes: Array<RouteRecordRaw> = [
             name: 'ProductionRework',
             component: () => import('../views/production/rework/index.vue'),
             meta: { title: '返工记录', perm: 'production:rework:view' }
+          },
+          {
+            path: 'bundle-qr',
+            name: 'ProductionBundleQR',
+            component: () => import('../views/production/bundle-qr/index.vue'),
+            meta: { title: '扎包二维码', perm: 'production:bundle:qr:view' }
           }
         ]
       },
@@ -444,12 +468,6 @@ export const routes: Array<RouteRecordRaw> = [
             name: 'MesRecords',
             component: () => import('../views/mes/records/index.vue'),
             meta: { title: '计件记录', perm: 'mes:records:view' }
-          },
-          {
-            path: 'bundle',
-            name: 'MesBundle',
-            component: () => import('../views/mes/bundle/index.vue'),
-            meta: { title: '扎包流转', perm: 'mes:bundle:view' }
           },
           {
             path: 'patrol',
@@ -480,6 +498,12 @@ export const routes: Array<RouteRecordRaw> = [
             name: 'QualityCheck',
             component: () => import('../views/quality/check.vue'),
             meta: { title: '质检记录', perm: 'mes:quality:view' }
+          },
+          {
+            path: 'flow',
+            name: 'MesFlow',
+            component: () => import('../views/mes/flow/index.vue'),
+            meta: { title: '扎包流转', perm: 'mes:flow:view' }
           }
         ]
       },

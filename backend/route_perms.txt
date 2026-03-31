@@ -49,7 +49,6 @@ settings:doc-no-rule:view
 settings:field-settings:view
 settings:menu:view
 settings:op-log:view
-settings:permissions:view
 settings:print-template:view
 settings:staff:view
 settings:system-params:view

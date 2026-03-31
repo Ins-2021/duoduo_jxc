@@ -58,7 +58,7 @@
             <el-form-item label="优先级" prop="priority">
               <el-select v-model="form.priority" placeholder="选择优先级" style="width: 100%">
                 <el-option label="低" value="low"/>
-                <el-option label="中" value="medium"/>
+                <el-option label="普通" value="normal"/>
                 <el-option label="高" value="high"/>
                 <el-option label="紧急" value="urgent"/>
               </el-select>
@@ -197,7 +197,7 @@ const form = reactive({
   styleName: '',
   salesOrderId: '',
   factoryId: '',
-  priority: 'medium',
+  priority: 'normal',
   planStartDate: '',
   planEndDate: '',
   skus: [] as any[],

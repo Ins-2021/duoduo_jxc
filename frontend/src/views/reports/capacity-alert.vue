@@ -180,11 +180,16 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getActiveAlerts, getProcessCapacityStatus, getDelayRiskOrders, acknowledgeAlert, resolveAlert } from '@/api/capacity-alert'
+import { useUserStore } from '@/store/user'
 import type { CapacityAlert, CapacityStatus, DelayRisk } from '@/types/capacity-alert'
 
 defineOptions({ name: 'CapacityAlert' })
+
+const router = useRouter()
+const userStore = useUserStore()
 
 const loading = ref(false)
 const submitting = ref(false)
@@ -327,7 +332,8 @@ const acknowledge = async (row: CapacityAlert) => {
       cancelButtonText: '取消',
       type: 'info'
     })
-    await acknowledgeAlert(row.alertId, 1) // TODO: 使用当前用户ID
+    const userId = userStore.profile?.userId || 1
+    await acknowledgeAlert(row.alertId, userId)
     ElMessage.success('已确认')
     loadAlerts()
   } catch (error) {
@@ -350,7 +356,8 @@ const confirmResolve = async () => {
   }
   submitting.value = true
   try {
-    await resolveAlert(currentAlert.value!.alertId, 1, resolveForm.value.resolution) // TODO: 使用当前用户ID
+    const userId = userStore.profile?.userId || 1
+    await resolveAlert(currentAlert.value!.alertId, userId, resolveForm.value.resolution)
     ElMessage.success('已解决')
     resolveDialogVisible.value = false
     loadAlerts()
@@ -361,8 +368,11 @@ const confirmResolve = async () => {
 
 // 查看订单详情
 const viewOrderDetail = (row: DelayRisk) => {
-  console.log('查看订单详情:', row)
-  // TODO: 跳转到订单详情页
+  if (row.orderId) {
+    router.push({ name: 'ProductionOrderDetail', params: { id: row.orderId } })
+  } else {
+    ElMessage.warning('订单信息不完整')
+  }
 }
 
 onMounted(() => {

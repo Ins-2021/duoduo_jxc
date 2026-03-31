@@ -97,7 +97,6 @@ settings:field-settings:view
 settings:menu:view
 settings:op-log:edit
 settings:op-log:view
-settings:permissions:view
 settings:print-template:edit
 settings:print-template:view
 settings:staff:view

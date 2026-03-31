@@ -51,6 +51,7 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
     private final ReceivableSourceMapper receivableSourceMapper;
     private final CustomerService customerService;
     private final FinanceTransactionService financeTransactionService;
+    private final DocNoRuleService docNoRuleService;
 
     @Override
     public PageResult<SalesOrderDTO> pageQuery(SalesOrderQuery query) {
@@ -201,8 +202,8 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         order.setActualAmount(actualAmount);
 
         // 生成单号
-        String prefix = dto.getOrderType() == SalesOrderTypeEnum.BOOKING.getCode() ? "YD" : "XS";
-        order.setDocNo(prefix + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + System.currentTimeMillis());
+        String docType = dto.getOrderType() == SalesOrderTypeEnum.BOOKING.getCode() ? "YD" : "XS";
+        order.setDocNo(docNoRuleService.generateDocNo(docType));
         if (order.getStatus() == null) {
             order.setStatus(SalesOrderStatusEnum.DRAFT.getCode()); // 默认草稿
         }

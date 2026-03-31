@@ -18,6 +18,7 @@ import com.duoduo.jxc.mapper.StockInOutDetailMapper;
 import com.duoduo.jxc.mapper.StockInOutMapper;
 import com.duoduo.jxc.service.StockInOutService;
 import com.duoduo.jxc.service.InventoryService;
+import com.duoduo.jxc.service.DocNoRuleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -39,6 +40,7 @@ public class StockInOutServiceImpl extends ServiceImpl<StockInOutMapper, StockIn
     private final StockInOutDetailMapper detailMapper;
     private final InventoryConverter converter;
     private final InventoryService inventoryService;
+    private final DocNoRuleService docNoRuleService;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -95,7 +97,8 @@ public class StockInOutServiceImpl extends ServiceImpl<StockInOutMapper, StockIn
         StockInOut entity = new StockInOut();
         BeanUtils.copyProperties(dto, entity);
         
-        entity.setBillNo(generateOrderNo());
+        String docType = (dto.getType() != null && dto.getType() == 1) ? "RK" : "CK";
+        entity.setBillNo(docNoRuleService.generateDocNo(docType));
         entity.setStatus(StockInOutStatusEnum.DRAFT.getValue());
         entity.setCreateTime(LocalDateTime.now());
         entity.setUpdateTime(LocalDateTime.now());

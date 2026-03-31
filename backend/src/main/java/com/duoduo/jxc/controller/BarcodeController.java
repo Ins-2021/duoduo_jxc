@@ -24,6 +24,17 @@ public class BarcodeController {
 
     // ---- 条码记录 ----
 
+    @Log(title = "条码管理", action = "分页查询")
+    @GetMapping("/page")
+    @PreAuthorize("@perm.has('inventory:barcode:view')")
+    public Result<PageResult<BarcodeDTO>> page(
+            @RequestParam(defaultValue = "1") int pageNum,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String barcodeType) {
+        return Result.success(barcodeService.pageQuery(pageNum, pageSize, keyword, barcodeType));
+    }
+
     @Log(title = "条码管理", action = "生成条码")
     @PostMapping("/generate")
     @PreAuthorize("@perm.has('inventory:barcode:add')")
@@ -51,6 +62,14 @@ public class BarcodeController {
     @PreAuthorize("@perm.has('inventory:barcode:edit')")
     public Result<Void> printBatch(@RequestBody List<Long> ids) {
         barcodeService.printBarcodeBatch(ids);
+        return Result.success();
+    }
+
+    @Log(title = "条码管理", action = "删除条码")
+    @DeleteMapping("/{id}")
+    @PreAuthorize("@perm.has('inventory:barcode:delete')")
+    public Result<Void> delete(@PathVariable Long id) {
+        barcodeService.deleteBarcode(id);
         return Result.success();
     }
 

@@ -2,8 +2,10 @@ package com.duoduo.jxc.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.duoduo.jxc.common.BizCode;
+import com.duoduo.jxc.common.PageResult;
 import com.duoduo.jxc.dto.inventory.BarcodeDTO;
 import com.duoduo.jxc.dto.inventory.BarcodeGenerateRequest;
 import com.duoduo.jxc.entity.Barcode;
@@ -25,6 +27,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -32,6 +35,27 @@ import java.util.concurrent.ThreadLocalRandom;
 public class BarcodeServiceImpl extends ServiceImpl<BarcodeMapper, Barcode> implements BarcodeService {
 
     private final BarcodeRuleService barcodeRuleService;
+
+    @Override
+    public PageResult<BarcodeDTO> pageQuery(int pageNum, int pageSize, String keyword, String barcodeType) {
+        Page<Barcode> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<Barcode> wrapper = new LambdaQueryWrapper<>();
+        
+        if (StringUtils.hasText(keyword)) {
+            wrapper.like(Barcode::getBarcodeContent, keyword);
+        }
+        if (StringUtils.hasText(barcodeType)) {
+            wrapper.eq(Barcode::getBarcodeType, barcodeType);
+        }
+        wrapper.orderByDesc(Barcode::getCreateTime);
+        
+        page(page, wrapper);
+        
+        List<BarcodeDTO> dtoList = page.getRecords().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+        return new PageResult<>(page.getTotal(), dtoList);
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -118,6 +142,16 @@ public class BarcodeServiceImpl extends ServiceImpl<BarcodeMapper, Barcode> impl
                .set(Barcode::getPrintTime, LocalDateTime.now());
         update(wrapper);
         log.info("批量打印条码: count={}", barcodeIds.size());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteBarcode(Long barcodeId) {
+        if (barcodeId == null) {
+            return;
+        }
+        removeById(barcodeId);
+        log.info("删除条码: barcodeId={}", barcodeId);
     }
 
     private BarcodeRule getRule(String barcodeType, Long ruleId) {
