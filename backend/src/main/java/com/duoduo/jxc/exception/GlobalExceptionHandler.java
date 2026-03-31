@@ -12,6 +12,7 @@ import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.stream.Collectors;
 
@@ -80,6 +81,26 @@ public class GlobalExceptionHandler {
                 .map(ConstraintViolation::getMessage)
                 .collect(Collectors.joining("; "));
         return Result.error(400, msg);
+    }
+
+    /**
+     * 处理路径参数类型转换异常
+     * 例如：将"page"转换为Long类型时失败
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public Result<?> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e, HttpServletResponse response) {
+        String paramName = e.getName();
+        String paramValue = String.valueOf(e.getValue());
+        Class<?> requiredType = e.getRequiredType();
+        
+        log.warn("参数类型不匹配: 参数名={}, 参数值={}, 期望类型={}", paramName, paramValue, requiredType != null ? requiredType.getSimpleName() : "unknown");
+        
+        // 如果是ID参数且值为"page"、"list"等常见路径名，提示可能是URL路径错误
+        if ("id".equals(paramName) && ("page".equals(paramValue) || "list".equals(paramValue))) {
+            return Result.error(400, "请求路径错误，请检查URL是否正确");
+        }
+        
+        return Result.error(400, "参数类型错误: 参数 '" + paramName + "' 期望类型为 " + (requiredType != null ? requiredType.getSimpleName() : "unknown"));
     }
 
     /**
