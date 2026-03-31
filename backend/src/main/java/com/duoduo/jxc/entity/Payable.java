@@ -1,6 +1,7 @@
 package com.duoduo.jxc.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -26,9 +27,12 @@ public class Payable {
     private String sourceType;
     private Long sourceId;
     private String sourceDocNo;
-    private Long createdBy;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
+    @TableField("create_by")
+    private Long createBy;
+    @TableField("update_by")
+    private Long updateBy;
     @TableLogic
     private Integer deleted;
 }

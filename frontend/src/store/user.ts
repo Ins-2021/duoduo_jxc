@@ -130,7 +130,7 @@ export const useUserStore = defineStore('user', {
         return true
       }
       const perms = this.perms || []
-      return perms.includes(perm)
+      return perms.includes(perm) || perms.includes('*') || perms.includes('*:*:*')
     },
     async loadUserMenus() {
       if (this.menusLoaded) return

@@ -12,7 +12,7 @@ import java.util.List;
  * 利润分析控制器
  */
 @RestController
-@RequestMapping("/api/report/profit")
+@RequestMapping("/report/profit")
 @RequiredArgsConstructor
 public class ProfitAnalysisController {
 

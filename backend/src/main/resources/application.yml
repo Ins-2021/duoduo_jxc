@@ -50,9 +50,12 @@ spring:
   sql:
     init:
       mode: never
-      continue-on-error: true
-      schema-locations: classpath:sql/workflow_schema.sql,classpath:sql/rbac_schema.sql,classpath:sql/rbac_migration.sql,classpath:sql/oauth2_schema.sql,classpath:sql/sales_return_schema.sql,classpath:sql/inventory_finance_schema.sql,classpath:sql/doc_no_rule_schema.sql,classpath:sql/product_spu_alter.sql,classpath:sql/customer_level_migration.sql,classpath:sql/product_select_indexes.sql
-      data-locations: classpath:sql/rbac_seed.sql
+
+  flyway:
+    enabled: true
+    locations: classpath:sql,classpath:db/migration,classpath:db/chain
+    baseline-on-migrate: true
+    validate-on-migrate: true
 
 # MyBatis-Plus Config
 mybatis-plus:

@@ -12,8 +12,8 @@ public class QualityCheckSubmitDTO {
     private String result;
     private Integer checkQuantity;
     private Integer qualifiedQuantity;
-    private Integer unqualifiedQuantity;
-    private Long checkerId;
+    private Integer defectiveQuantity;
+    private Long inspectorId;
     private java.time.LocalDateTime checkTime;
     private String remark;
     private List<DefectRecordDTO> defects;

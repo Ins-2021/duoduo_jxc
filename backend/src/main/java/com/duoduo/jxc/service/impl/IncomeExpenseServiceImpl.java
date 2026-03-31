@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 public class IncomeExpenseServiceImpl extends ServiceImpl<IncomeExpenseMapper, IncomeExpense> implements IncomeExpenseService {
 
     private final FinanceConverter converter;
+    private final com.duoduo.jxc.mapper.FinanceAccountMapper financeAccountMapper;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -113,6 +114,23 @@ public class IncomeExpenseServiceImpl extends ServiceImpl<IncomeExpenseMapper, I
         }
         entity.setStatus(1);
         updateById(entity);
+
+        // 更新关联财务账户余额
+        if (entity.getAccountId() != null && entity.getAmount() != null) {
+            com.duoduo.jxc.entity.FinanceAccount account = financeAccountMapper.selectById(entity.getAccountId());
+            if (account != null) {
+                java.math.BigDecimal newBalance = account.getBalance() != null ? account.getBalance() : java.math.BigDecimal.ZERO;
+                if (entity.getType() == 1) {
+                    // 收入：余额增加
+                    newBalance = newBalance.add(entity.getAmount());
+                } else if (entity.getType() == 2) {
+                    // 支出：余额减少
+                    newBalance = newBalance.subtract(entity.getAmount());
+                }
+                account.setBalance(newBalance);
+                financeAccountMapper.updateById(account);
+            }
+        }
     }
 
     private IncomeExpenseDTO toDTO(IncomeExpense entity) {

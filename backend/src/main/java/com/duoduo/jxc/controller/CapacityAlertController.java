@@ -14,7 +14,7 @@ import java.util.List;
  * 产能预警控制器
  */
 @RestController
-@RequestMapping("/api/capacity-alert")
+@RequestMapping("/capacity-alert")
 @RequiredArgsConstructor
 public class CapacityAlertController {
 

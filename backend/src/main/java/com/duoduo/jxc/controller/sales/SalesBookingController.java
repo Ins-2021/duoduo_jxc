@@ -14,7 +14,7 @@ import java.util.List;
  * 销售预订单控制器
  */
 @RestController
-@RequestMapping("/api/sales/booking")
+@RequestMapping("/sales/booking")
 @RequiredArgsConstructor
 public class SalesBookingController {
 

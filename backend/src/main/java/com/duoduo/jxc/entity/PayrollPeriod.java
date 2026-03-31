@@ -1,6 +1,7 @@
 package com.duoduo.jxc.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -23,6 +24,7 @@ public class PayrollPeriod {
     /** 工资单号 */
     private String sheetNo;
     /** 年月 */
+    @TableField("`year_month`")
     private String yearMonth;
     /** 起始日期 */
     private LocalDate startDate;

@@ -172,3 +172,12 @@ export const inventoryAlertApi = {
   delete: (_id: number) => Promise.reject(new Error('库存预警不支持删除')),
   process: (id: number) => request({ url: `/inventory/alert/${id}/handle`, method: 'post' })
 }
+
+// 库存流水
+export const getInventoryTransactionList = (params: PageQuery & { warehouseId?: number; skuId?: number; transType?: number; startDate?: string; endDate?: string }) => {
+  return request({
+    url: '/inventory/transaction/page',
+    method: 'get',
+    params
+  })
+}

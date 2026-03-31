@@ -1,6 +1,7 @@
 package com.duoduo.jxc.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -23,8 +24,12 @@ public class Receipt {
     private Integer status;
     private LocalDateTime receiptDate;
     private String remark;
-    private Long createdBy;
     private LocalDateTime createTime;
+    private LocalDateTime updateTime;
+    @TableField("create_by")
+    private Long createBy;
+    @TableField("update_by")
+    private Long updateBy;
     @TableLogic
     private Integer deleted;
 }

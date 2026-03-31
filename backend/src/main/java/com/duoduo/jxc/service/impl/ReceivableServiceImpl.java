@@ -43,6 +43,7 @@ public class ReceivableServiceImpl extends ServiceImpl<ReceivableMapper, Receiva
 
     private final FinanceConverter converter;
     private final FinanceTransactionService financeTransactionService;
+    private final com.duoduo.jxc.mapper.WriteOffMapper writeOffMapper;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -131,6 +132,17 @@ public class ReceivableServiceImpl extends ServiceImpl<ReceivableMapper, Receiva
         }
         entity.setUpdateTime(LocalDateTime.now());
         updateById(entity);
+
+        // ========== 新增：生成核销记录到 jxc_write_off 表 ==========
+        com.duoduo.jxc.entity.WriteOff writeOff = new com.duoduo.jxc.entity.WriteOff();
+        writeOff.setWriteOffNo("HX" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+                + UUID.randomUUID().toString().replace("-", "").substring(0, 4).toUpperCase());
+        writeOff.setType("RECEIVABLE");
+        writeOff.setBillNo(entity.getBillNo());
+        writeOff.setBillId(entity.getReceivableId());
+        writeOff.setAmount(amount);
+        writeOff.setCreateTime(LocalDateTime.now());
+        writeOffMapper.insert(writeOff);
 
         // ========== 新增：生成资金流水 ==========
         createFinanceTransaction(entity, amount);

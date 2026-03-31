@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/import-export")
+@RequestMapping("/import-export")
 @RequiredArgsConstructor
 public class ImportExportController {
 

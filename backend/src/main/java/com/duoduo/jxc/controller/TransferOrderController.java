@@ -24,6 +24,12 @@ public class TransferOrderController {
         return Result.success(transferOrderService.pageList(query));
     }
 
+    @GetMapping("/page")
+    @PreAuthorize("@perm.has('inventory:transfer:view')")
+    public Result<PageResult<TransferOrderDTO>> pageGet(PageQuery query) {
+        return Result.success(transferOrderService.pageList(query));
+    }
+
     @Log(title = "调拨单管理", action = "查看详情")
     @GetMapping("/{id}")
     @PreAuthorize("@perm.has('inventory:transfer:view')")

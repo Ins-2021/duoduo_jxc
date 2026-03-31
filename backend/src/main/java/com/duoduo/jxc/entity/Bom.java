@@ -1,6 +1,7 @@
 package com.duoduo.jxc.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -16,10 +17,15 @@ public class Bom extends BaseEntity {
     private Long bomId;
     private String bomNo;
     private Long styleId;
+    @TableField(exist = false)
     private String styleCode;
+    @TableField(exist = false)
     private String styleName;
+    @TableField("version")
     private String versionNo;
     private Integer status;
+    @TableField(exist = false)
     private LocalDate effectiveDate;
+    @TableField(exist = false)
     private String remark;
 }

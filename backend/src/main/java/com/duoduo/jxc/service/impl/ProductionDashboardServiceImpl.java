@@ -211,7 +211,7 @@ public class ProductionDashboardServiceImpl implements ProductionDashboardServic
 
     private Integer sumQuantityByDate(Long factoryId, LocalDate date) {
         LambdaQueryWrapper<ProcessRecord> wrapper = new LambdaQueryWrapper<>();
-        wrapper.apply("DATE(record_time) = {0}", date);
+        wrapper.apply("DATE(scan_time) = {0}", date);
         if (factoryId != null) {
             // 通过bundle关联工厂
             // 这里简化处理，实际可能需要更复杂的查询

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/sizechart")
+@RequestMapping("/sizechart")
 @RequiredArgsConstructor
 public class SizeChartController {
 

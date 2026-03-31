@@ -22,6 +22,8 @@ public class WriteOff {
     private String remark;
     private Long createdBy;
     private LocalDateTime createTime;
+    private Long updateBy;
+    private LocalDateTime updateTime;
     @TableLogic
     private Integer deleted;
 }

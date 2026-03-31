@@ -28,7 +28,6 @@ public class JwtRedisAuthoritiesConverter implements Converter<Jwt, Collection<G
     @Override
     public Collection<GrantedAuthority> convert(Jwt jwt) {
         Object userIdObj = jwt.getClaim("userId");
-        log.info("Converting JWT to authorities, userId from JWT: {}", userIdObj);
         
         if (userIdObj == null) {
             log.warn("userId is null in JWT");
@@ -51,7 +50,7 @@ public class JwtRedisAuthoritiesConverter implements Converter<Jwt, Collection<G
 
         String key = "auth:perms:user:" + userId;
         String permsJson = stringRedisTemplate.opsForValue().get(key);
-        log.info("Redis key: {}, permsJson: {}", key, permsJson);
+        log.debug("Redis key: {}, permsJson: {}", key, permsJson);
 
         if (permsJson == null || permsJson.isBlank()) {
             log.warn("No permissions found in Redis for user {}", userId);
@@ -64,7 +63,7 @@ public class JwtRedisAuthoritiesConverter implements Converter<Jwt, Collection<G
                 log.warn("Empty permissions list for user {}", userId);
                 return Collections.emptyList();
             }
-            log.info("Loaded {} permissions for user {}", perms.size(), userId);
+
             return perms.stream()
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList());

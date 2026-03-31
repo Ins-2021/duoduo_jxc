@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/wage/price")
 @RequiredArgsConstructor
@@ -52,6 +54,23 @@ public class PiecePriceController {
     @PreAuthorize("@perm.has('wage:price:delete')")
     public Result<Void> delete(@PathVariable Long id) {
         piecePriceService.delete(id);
+        return Result.success();
+    }
+
+    /**
+     * 计件单价批量设置
+     */
+    @Log(title = "计件工价", action = "批量设置")
+    @PostMapping("/batch")
+    @PreAuthorize("@perm.has('wage:price:add')")
+    public Result<Void> batchSet(@RequestBody List<PiecePriceDTO> dtoList) {
+        for (PiecePriceDTO dto : dtoList) {
+            if (dto.getPriceId() != null) {
+                piecePriceService.update(dto);
+            } else {
+                piecePriceService.create(dto);
+            }
+        }
         return Result.success();
     }
 }

@@ -7,6 +7,7 @@ import com.duoduo.jxc.service.rbac.SysPermissionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -31,7 +32,9 @@ public class SysPermissionServiceImpl implements SysPermissionService {
                     .eq(SysMenu::getStatus, 1)
                     .isNotNull(SysMenu::getPerms)
                     .ne(SysMenu::getPerms, ""));
-            return allMenus.stream().map(SysMenu::getPerms).toList();
+            List<String> perms = new ArrayList<>(allMenus.stream().map(SysMenu::getPerms).toList());
+            perms.add("*:*:*");
+            return perms.stream().distinct().toList();
         }
         return sysMenuMapper.selectPermsByUserId(user.getUserId());
     }

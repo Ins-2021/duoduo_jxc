@@ -10,7 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/fabrics/inbounds")
+@RequestMapping("/fabrics/inbounds")
 @RequiredArgsConstructor
 public class FabricInboundController {
 

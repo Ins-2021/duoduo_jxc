@@ -58,7 +58,7 @@ export type {
   ReceivableDTO, PayableDTO,
   ReceiptDTO, PaymentDTO,
   FinanceTransactionDTO, WriteOffDTO, IncomeExpenseDTO,
-  FinanceAccountDTO,
+  FinanceAccountDTO, FinanceAccountDetailDTO,
   ReceivableView, PayableView,
   ReceiptView, PaymentView,
   TransactionView, WriteOffView, IncomeExpenseView,

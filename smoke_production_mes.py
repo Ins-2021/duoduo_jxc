@@ -26,13 +26,13 @@ def main():
 
     checks = [
         ('菜单路由', f'{BASE}/api/v1/system/menus/routers'),
-        ('生产看板统计', f'{BASE}/api/v1/api/production/dashboard/statistics'),
+        ('生产看板统计', f'{BASE}/api/v1/production/dashboard/statistics'),
         ('生产订单分页', f'{BASE}/api/v1/production/order/page'),
-        ('工序列表', f'{BASE}/api/v1/api/process/list'),
-        ('扎包列表', f'{BASE}/api/v1/api/bundle/list'),
-        ('AQL标准分页', f'{BASE}/api/v1/api/quality/aql'),
-        ('巡检记录分页', f'{BASE}/api/v1/api/quality/patrols'),
-        ('返工单分页', f'{BASE}/api/v1/api/quality/reworks'),
+        ('工序列表', f'{BASE}/api/v1/process/list'),
+        ('扎包列表', f'{BASE}/api/v1/bundle/list'),
+        ('AQL标准分页', f'{BASE}/api/v1/quality/aql'),
+        ('巡检记录分页', f'{BASE}/api/v1/quality/patrols'),
+        ('返工单分页', f'{BASE}/api/v1/quality/reworks'),
         ('裁床单分页', f'{BASE}/api/v1/production/cut-order/page'),
         ('裁床扎包分页', f'{BASE}/api/v1/production/cut-bundle/page'),
     ]

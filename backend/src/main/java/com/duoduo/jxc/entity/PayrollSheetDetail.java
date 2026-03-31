@@ -24,6 +24,7 @@ public class PayrollSheetDetail {
     /** 工资单号 */
     private String sheetNo;
     /** 年月 */
+    @com.baomidou.mybatisplus.annotation.TableField("`year_month`")
     private String yearMonth;
     /** 员工ID */
     private Long employeeId;

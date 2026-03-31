@@ -12,7 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/bundle")
+@RequestMapping("/bundle")
 @RequiredArgsConstructor
 public class BundleController {
 
@@ -20,14 +20,14 @@ public class BundleController {
 
     @Log(title = "扎包管理", action = "分页查询")
     @GetMapping("/list")
-    @PreAuthorize("@perm.has('mes:process:view')")
+    @PreAuthorize("@perm.has('mes:process:view') or @perm.has('mes:records:view') or @perm.has('mes:scan:view') or @perm.has('mes:bundle:view')")
     public Result<PageResult<BundleDTO>> pageQuery(@Valid BundleQuery query) {
         return Result.success(bundleService.pageQuery(query));
     }
 
     @Log(title = "扎包管理", action = "查看详情")
     @GetMapping("/{id}")
-    @PreAuthorize("@perm.has('mes:process:view')")
+    @PreAuthorize("@perm.has('mes:process:view') or @perm.has('mes:records:view') or @perm.has('mes:scan:view') or @perm.has('mes:bundle:view')")
     public Result<BundleDTO> getDetail(@PathVariable("id") Long id) {
         return Result.success(bundleService.getDetail(id));
     }

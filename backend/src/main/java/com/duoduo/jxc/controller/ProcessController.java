@@ -12,7 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/process")
+@RequestMapping("/process")
 @RequiredArgsConstructor
 public class ProcessController {
 
@@ -20,14 +20,14 @@ public class ProcessController {
 
     @Log(title = "工序管理", action = "分页查询")
     @GetMapping("/list")
-    @PreAuthorize("@perm.has('mes:process:view')")
+    @PreAuthorize("@perm.has('mes:process:view') or @perm.has('mes:records:view') or @perm.has('mes:scan:view') or @perm.has('mes:bundle:view')")
     public Result<PageResult<ProcessDTO>> pageQuery(@Valid ProcessQuery query) {
         return Result.success(processService.pageQuery(query));
     }
 
     @Log(title = "工序管理", action = "查看详情")
     @GetMapping("/{id}")
-    @PreAuthorize("@perm.has('mes:process:view')")
+    @PreAuthorize("@perm.has('mes:process:view') or @perm.has('mes:records:view') or @perm.has('mes:scan:view') or @perm.has('mes:bundle:view')")
     public Result<ProcessDTO> getDetail(@PathVariable("id") Long id) {
         return Result.success(processService.getDetail(id));
     }

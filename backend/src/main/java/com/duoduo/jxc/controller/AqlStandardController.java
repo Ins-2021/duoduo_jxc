@@ -13,7 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/quality/aql")
+@RequestMapping("/quality/aql")
 @RequiredArgsConstructor
 public class AqlStandardController {
 

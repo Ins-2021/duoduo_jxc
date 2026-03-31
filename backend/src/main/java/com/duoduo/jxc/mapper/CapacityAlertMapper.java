@@ -14,9 +14,9 @@ import java.util.List;
 @Mapper
 public interface CapacityAlertMapper extends BaseMapper<CapacityAlert> {
 
-    @Select("SELECT * FROM capacity_alert WHERE status = 'active' AND deleted = 0 ORDER BY create_time DESC")
+    @Select("SELECT * FROM jxc_capacity_alert WHERE status = 'active' AND deleted = 0 ORDER BY create_time DESC")
     List<CapacityAlert> selectActiveAlerts();
 
-    @Select("SELECT * FROM capacity_alert WHERE factory_id = #{factoryId} AND status = 'active' AND deleted = 0 ORDER BY create_time DESC")
+    @Select("SELECT * FROM jxc_capacity_alert WHERE factory_id = #{factoryId} AND status = 'active' AND deleted = 0 ORDER BY create_time DESC")
     List<CapacityAlert> selectActiveAlertsByFactory(@Param("factoryId") Long factoryId);
 }

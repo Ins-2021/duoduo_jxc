@@ -40,11 +40,12 @@ public class QualityCheckServiceImpl extends ServiceImpl<QualityCheckMapper, Qua
         Page<QualityCheck> page = new Page<>(query.getPageNum(), query.getPageSize());
         LambdaQueryWrapper<QualityCheck> wrapper = new LambdaQueryWrapper<>();
         
-        wrapper.like(StringUtils.hasText(query.getCheckNo()), QualityCheck::getCheckNo, query.getCheckNo());
-        wrapper.eq(query.getBundleId() != null, QualityCheck::getBundleId, query.getBundleId());
-        wrapper.eq(query.getProcessId() != null, QualityCheck::getProcessId, query.getProcessId());
-        wrapper.like(StringUtils.hasText(query.getResult()), QualityCheck::getResult, query.getResult());
-        wrapper.eq(query.getCheckerId() != null, QualityCheck::getCheckerId, query.getCheckerId());
+        wrapper.like(StringUtils.hasText(query.getCheckNo()), QualityCheck::getCheckNo, query.getCheckNo())
+               .eq(query.getBundleId() != null, QualityCheck::getBundleId, query.getBundleId())
+               .eq(query.getProcessId() != null, QualityCheck::getProcessId, query.getProcessId())
+               .eq(StringUtils.hasText(query.getResult()), QualityCheck::getResult, query.getResult())
+               .eq(query.getInspectorId() != null, QualityCheck::getInspectorId, query.getInspectorId())
+               .orderByDesc(QualityCheck::getCreateTime);
 
         page(page, wrapper);
 

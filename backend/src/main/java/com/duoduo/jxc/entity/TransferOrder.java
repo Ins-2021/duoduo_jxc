@@ -1,11 +1,11 @@
 package com.duoduo.jxc.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -67,6 +67,7 @@ public class TransferOrder {
     /**
      * 创建人ID
      */
+    @TableField("create_by")
     private Long createdBy;
 
     /**
@@ -77,12 +78,18 @@ public class TransferOrder {
     /**
      * 更新人ID
      */
+    @TableField("update_by")
     private Long updatedBy;
 
     /**
      * 更新时间
      */
     private LocalDateTime updateTime;
+
+    /**
+     * 乐观锁版本号
+     */
+    private Integer version;
 
     @TableLogic
     private Integer deleted;

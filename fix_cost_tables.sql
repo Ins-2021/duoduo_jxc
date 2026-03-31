@@ -1,0 +1,2 @@
+ALTER TABLE jxc_cost_period CHANGE COLUMN period_id id BIGINT AUTO_INCREMENT;
+ALTER TABLE jxc_cost_summary CHANGE COLUMN summary_id id BIGINT AUTO_INCREMENT;

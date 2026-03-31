@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
  * 产能预警记录实体
  */
 @Data
-@TableName("capacity_alert")
+@TableName("jxc_capacity_alert")
 public class CapacityAlert {
 
     @TableId(type = IdType.AUTO)

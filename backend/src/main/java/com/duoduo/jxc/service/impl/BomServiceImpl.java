@@ -12,10 +12,12 @@ import com.duoduo.jxc.dto.bom.BomQuery;
 import com.duoduo.jxc.entity.Bom;
 import com.duoduo.jxc.entity.BomItem;
 import com.duoduo.jxc.entity.BomProcess;
+import com.duoduo.jxc.entity.Style;
 import com.duoduo.jxc.exception.BusinessException;
 import com.duoduo.jxc.mapper.BomItemMapper;
 import com.duoduo.jxc.mapper.BomMapper;
 import com.duoduo.jxc.mapper.BomProcessMapper;
+import com.duoduo.jxc.mapper.StyleMapper;
 import com.duoduo.jxc.service.BomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -25,7 +27,10 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -37,26 +42,32 @@ public class BomServiceImpl extends ServiceImpl<BomMapper, Bom> implements BomSe
 
     private final BomItemMapper bomItemMapper;
     private final BomProcessMapper bomProcessMapper;
+    private final StyleMapper styleMapper;
 
     @Override
     public PageResult<BomDTO> pageQuery(BomQuery query) {
         Page<Bom> page = new Page<>(query.getPageNum(), query.getPageSize());
         LambdaQueryWrapper<Bom> wrapper = new LambdaQueryWrapper<>();
+        Set<Long> matchedStyleIds = resolveMatchedStyleIds(query);
         wrapper.like(StringUtils.hasText(query.getBomNo()), Bom::getBomNo, query.getBomNo())
                .eq(query.getStyleId() != null, Bom::getStyleId, query.getStyleId())
-               .like(StringUtils.hasText(query.getStyleCode()), Bom::getStyleCode, query.getStyleCode())
                .eq(query.getStatus() != null, Bom::getStatus, query.getStatus())
-               .ge(query.getEffectiveDateFrom() != null, Bom::getEffectiveDate, query.getEffectiveDateFrom())
-               .le(query.getEffectiveDateTo() != null, Bom::getEffectiveDate, query.getEffectiveDateTo())
                .and(StringUtils.hasText(query.getKeyword()), w ->
                    w.like(Bom::getBomNo, query.getKeyword())
-                    .or().like(Bom::getStyleCode, query.getKeyword())
-                    .or().like(Bom::getStyleName, query.getKeyword()))
+                    .or(matchedStyleIds != null && !matchedStyleIds.isEmpty())
+                    .in(matchedStyleIds != null && !matchedStyleIds.isEmpty(), Bom::getStyleId, matchedStyleIds))
                .orderByDesc(Bom::getCreateTime);
+        if (query.getStyleId() == null && matchedStyleIds != null) {
+            if (matchedStyleIds.isEmpty()) {
+                return new PageResult<>(0L, List.of());
+            }
+            wrapper.in(Bom::getStyleId, matchedStyleIds);
+        }
         page(page, wrapper);
         List<BomDTO> dtoList = page.getRecords().stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+        fillStyleInfo(dtoList);
         return new PageResult<>(page.getTotal(), dtoList);
     }
 
@@ -67,6 +78,7 @@ public class BomServiceImpl extends ServiceImpl<BomMapper, Bom> implements BomSe
             return null;
         }
         BomDTO dto = toDTO(entity);
+        fillStyleInfo(List.of(dto));
         dto.setItems(getItems(id));
         dto.setProcesses(getProcesses(id));
         return dto;
@@ -185,13 +197,57 @@ public class BomServiceImpl extends ServiceImpl<BomMapper, Bom> implements BomSe
         wrapper.eq(Bom::getStyleId, styleId)
                .orderByDesc(Bom::getCreateTime);
         List<Bom> list = list(wrapper);
-        return list.stream().map(this::toDTO).collect(Collectors.toList());
+        List<BomDTO> dtoList = list.stream().map(this::toDTO).collect(Collectors.toList());
+        fillStyleInfo(dtoList);
+        return dtoList;
     }
 
     private BomDTO toDTO(Bom entity) {
         BomDTO dto = new BomDTO();
         BeanUtils.copyProperties(entity, dto);
         return dto;
+    }
+
+    private Set<Long> resolveMatchedStyleIds(BomQuery query) {
+        if (query.getStyleId() != null) {
+            return null;
+        }
+        boolean hasStyleCode = StringUtils.hasText(query.getStyleCode());
+        boolean hasKeyword = StringUtils.hasText(query.getKeyword());
+        if (!hasStyleCode && !hasKeyword) {
+            return null;
+        }
+        LambdaQueryWrapper<Style> styleWrapper = new LambdaQueryWrapper<>();
+        if (hasStyleCode) {
+            styleWrapper.like(Style::getStyleNo, query.getStyleCode());
+        }
+        if (hasKeyword) {
+            styleWrapper.and(w -> w.like(Style::getStyleNo, query.getKeyword())
+                .or()
+                .like(Style::getStyleName, query.getKeyword()));
+        }
+        return styleMapper.selectList(styleWrapper).stream()
+            .map(Style::getStyleId)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private void fillStyleInfo(List<BomDTO> dtoList) {
+        Set<Long> styleIds = dtoList.stream()
+            .map(BomDTO::getStyleId)
+            .filter(id -> id != null)
+            .collect(Collectors.toSet());
+        if (styleIds.isEmpty()) {
+            return;
+        }
+        Map<Long, Style> styleMap = styleMapper.selectBatchIds(styleIds).stream()
+            .collect(Collectors.toMap(Style::getStyleId, style -> style));
+        dtoList.forEach(dto -> {
+            Style style = styleMap.get(dto.getStyleId());
+            if (style != null) {
+                dto.setStyleCode(style.getStyleNo());
+                dto.setStyleName(style.getStyleName());
+            }
+        });
     }
 
     private BomItemDTO toItemDTO(BomItem entity) {

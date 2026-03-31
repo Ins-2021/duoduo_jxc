@@ -1,0 +1,425 @@
+[
+  {
+    "module": "利润分析",
+    "tests": [
+      {
+        "name": "利润汇总查询",
+        "endpoint": "GET /api/v1/api/report/profit/summary",
+        "params": {
+          "startDate": "2026-01-01",
+          "endDate": "2026-03-30",
+          "pageNum": 1,
+          "pageSize": 10
+        },
+        "passed": true,
+        "result": "{'success': True, 'data': {'code': 200, 'msg': '操作成功', 'data': {'totalSalesAmount': 180229.19368952923, 'totalCostAmount': 126160.43558267046, 'totalGrossProfit': 54068.75810685877, 'avgGrossProfitRate': 30.0, 'totalOrderCount': 156, 'totalSalesQuantity': 3250}}}",
+        "data": {
+          "totalSalesAmount": 180229.19368952923,
+          "totalCostAmount": 126160.43558267046,
+          "totalGrossProfit": 54068.75810685877,
+          "avgGrossProfitRate": 30.0,
+          "totalOrderCount": 156,
+          "totalSalesQuantity": 3250
+        }
+      },
+      {
+        "name": "款式利润排名",
+        "endpoint": "GET /api/v1/api/report/profit/style-ranking",
+        "params": {
+          "startDate": "2026-01-01",
+          "endDate": "2026-03-30",
+          "pageNum": 1,
+          "pageSize": 10
+        },
+        "passed": true,
+        "result": "{'success': True, 'data': {'code': 200, 'msg': '操作成功', 'data': [{'styleId': 10, 'styleNo': 'STYLE010', 'styleName': '款式10', 'salesQuantity': 2000, 'salesAmount': 100000, 'costAmount': 70000, 'grossProfit': 30000, 'grossProfitRate': 30.0, 'orderCount': 15}, {'styleId': 9, 'styleNo': 'STYLE009', 'styleName': '款式9', 'salesQuantity': 1900, 'salesAmount': 95000, 'costAmount': 66500, 'grossProfit': 28500, 'grossProfitRate': 30.0, 'orderCount': 14}, {'styleId': 8, 'styleNo': 'STYLE008', 'styleName': '款",
+        "data": [
+          {
+            "styleId": 10,
+            "styleNo": "STYLE010",
+            "styleName": "款式10",
+            "salesQuantity": 2000,
+            "salesAmount": 100000,
+            "costAmount": 70000,
+            "grossProfit": 30000,
+            "grossProfitRate": 30.0,
+            "orderCount": 15
+          },
+          {
+            "styleId": 9,
+            "styleNo": "STYLE009",
+            "styleName": "款式9",
+            "salesQuantity": 1900,
+            "salesAmount": 95000,
+            "costAmount": 66500,
+            "grossProfit": 28500,
+            "grossProfitRate": 30.0,
+            "orderCount": 14
+          },
+          {
+            "styleId": 8,
+            "styleNo": "STYLE008",
+            "styleName": "款式8",
+            "salesQuantity": 1800,
+            "salesAmount": 90000,
+            "costAmount": 63000,
+            "grossProfit": 27000,
+            "grossProfitRate": 30.0,
+            "orderCount": 13
+          },
+          {
+            "styleId": 7,
+            "styleNo": "STYLE007",
+            "styleName": "款式7",
+            "salesQuantity": 1700,
+            "salesAmount": 85000,
+            "costAmount": 59500,
+            "grossProfit": 25500,
+            "grossProfitRate": 30.0,
+            "orderCount": 12
+          },
+          {
+            "styleId": 6,
+            "styleNo": "STYLE006",
+            "styleName": "款式6",
+            "salesQuantity": 1600,
+            "salesAmount": 80000,
+            "costAmount": 56000,
+            "grossProfit": 24000,
+            "grossProfitRate": 30.0,
+            "orderCount": 11
+          }
+        ]
+      },
+      {
+        "name": "客户利润排名",
+        "endpoint": "GET /api/v1/api/report/profit/customer-ranking",
+        "params": {
+          "startDate": "2026-01-01",
+          "endDate": "2026-03-30",
+          "pageNum": 1,
+          "pageSize": 10
+        },
+        "passed": true,
+        "result": "{'success': True, 'data': {'code': 200, 'msg': '操作成功', 'data': [{'customerId': 8, 'customerCode': 'CUST008', 'customerName': '客户8', 'salesQuantity': 3600, 'salesAmount': 180000, 'costAmount': 126000, 'grossProfit': 54000, 'grossProfitRate': 30.0, 'orderCount': 26}, {'customerId': 7, 'customerCode': 'CUST007', 'customerName': '客户7', 'salesQuantity': 3400, 'salesAmount': 170000, 'costAmount': 119000, 'grossProfit': 51000, 'grossProfitRate': 30.0, 'orderCount': 24}, {'customerId': 6, 'customerCode'",
+        "data": [
+          {
+            "customerId": 8,
+            "customerCode": "CUST008",
+            "customerName": "客户8",
+            "salesQuantity": 3600,
+            "salesAmount": 180000,
+            "costAmount": 126000,
+            "grossProfit": 54000,
+            "grossProfitRate": 30.0,
+            "orderCount": 26
+          },
+          {
+            "customerId": 7,
+            "customerCode": "CUST007",
+            "customerName": "客户7",
+            "salesQuantity": 3400,
+            "salesAmount": 170000,
+            "costAmount": 119000,
+            "grossProfit": 51000,
+            "grossProfitRate": 30.0,
+            "orderCount": 24
+          },
+          {
+            "customerId": 6,
+            "customerCode": "CUST006",
+            "customerName": "客户6",
+            "salesQuantity": 3200,
+            "salesAmount": 160000,
+            "costAmount": 112000,
+            "grossProfit": 48000,
+            "grossProfitRate": 30.0,
+            "orderCount": 22
+          },
+          {
+            "customerId": 5,
+            "customerCode": "CUST005",
+            "customerName": "客户5",
+            "salesQuantity": 3000,
+            "salesAmount": 150000,
+            "costAmount": 105000,
+            "grossProfit": 45000,
+            "grossProfitRate": 30.0,
+            "orderCount": 20
+          },
+          {
+            "customerId": 4,
+            "customerCode": "CUST004",
+            "customerName": "客户4",
+            "salesQuantity": 2800,
+            "salesAmount": 140000,
+            "costAmount": 98000,
+            "grossProfit": 42000,
+            "grossProfitRate": 30.0,
+            "orderCount": 18
+          }
+        ]
+      },
+      {
+        "name": "利润趋势分析",
+        "endpoint": "GET /api/v1/api/report/profit/trend",
+        "params": {
+          "startDate": "2026-01-01",
+          "endDate": "2026-03-30",
+          "pageNum": 1,
+          "pageSize": 10
+        },
+        "passed": true,
+        "result": "{'success': True, 'data': {'code': 200, 'msg': '操作成功', 'data': {'dates': ['2026-01', '2026-02', '2026-03'], 'salesAmount': [58527.370932363636, 62965.85723146644, 50143.49626105748], 'costAmount': [40969.15965265455, 44076.10006202651, 35100.44738274023], 'grossProfit': [17558.211279709092, 18889.75716943993, 15043.048878317244], 'totalSalesAmount': 171636.72442488756, 'totalCostAmount': 120145.70709742128, 'totalGrossProfit': 51491.01732746627, 'avgGrossProfitRate': 30.0}}}",
+        "data": {
+          "dates": [
+            "2026-01",
+            "2026-02",
+            "2026-03"
+          ],
+          "salesAmount": [
+            58527.370932363636,
+            62965.85723146644,
+            50143.49626105748
+          ],
+          "costAmount": [
+            40969.15965265455,
+            44076.10006202651,
+            35100.44738274023
+          ],
+          "grossProfit": [
+            17558.211279709092,
+            18889.75716943993,
+            15043.048878317244
+          ],
+          "totalSalesAmount": 171636.72442488756,
+          "totalCostAmount": 120145.70709742128,
+          "totalGrossProfit": 51491.01732746627,
+          "avgGrossProfitRate": 30.0
+        }
+      },
+      {
+        "name": "款式利润明细",
+        "endpoint": "GET /api/v1/api/report/profit/style-detail/10",
+        "params": {
+          "startDate": "2026-01-01",
+          "endDate": "2026-03-30",
+          "pageNum": 1,
+          "pageSize": 10
+        },
+        "passed": true,
+        "result": "{'success': True, 'data': {'code': 200, 'msg': '操作成功', 'data': {'summary': {'styleId': 10, 'styleNo': 'STYLE001', 'styleName': '示例款式', 'salesQuantity': 1000, 'salesAmount': 50000, 'costAmount': 35000, 'grossProfit': 15000, 'grossProfitRate': 30.0, 'orderCount': 10}, 'byColor': [{'colorCode': '红色', 'colorName': '红色', 'salesQuantity': 250, 'salesAmount': 12500, 'costAmount': 8750, 'grossProfit': 3750, 'grossProfitRate': 30.0}, {'colorCode': '蓝色', 'colorName': '蓝色', 'salesQuantity': 250, 'salesAmou",
+        "data": {
+          "summary": {
+            "styleId": 10,
+            "styleNo": "STYLE001",
+            "styleName": "示例款式",
+            "salesQuantity": 1000,
+            "salesAmount": 50000,
+            "costAmount": 35000,
+            "grossProfit": 15000,
+            "grossProfitRate": 30.0,
+            "orderCount": 10
+          },
+          "byColor": [
+            {
+              "colorCode": "红色",
+              "colorName": "红色",
+              "salesQuantity": 250,
+              "salesAmount": 12500,
+              "costAmount": 8750,
+              "grossProfit": 3750,
+              "grossProfitRate": 30.0
+            },
+            {
+              "colorCode": "蓝色",
+              "colorName": "蓝色",
+              "salesQuantity": 250,
+              "salesAmount": 12500,
+              "costAmount": 8750,
+              "grossProfit": 3750,
+              "grossProfitRate": 30.0
+            },
+            {
+              "colorCode": "黑色",
+              "colorName": "黑色",
+              "salesQuantity": 250,
+              "salesAmount": 12500,
+              "costAmount": 8750,
+              "grossProfit": 3750,
+              "grossProfitRate": 30.0
+            },
+            {
+              "colorCode": "白色",
+              "colorName": "白色",
+              "salesQuantity": 250,
+              "salesAmount": 12500,
+              "costAmount": 8750,
+              "grossProfit": 3750,
+              "grossProfitRate": 30.0
+            }
+          ],
+          "bySize": [
+            {
+              "sizeName": "S",
+              "salesQuantity": 250,
+              "salesAmount": 12500,
+              "costAmount": 8750,
+              "grossProfit": 3750,
+              "grossProfitRate": 30.0
+            },
+            {
+              "sizeName": "M",
+              "salesQuantity": 250,
+              "salesAmount": 12500,
+              "costAmount": 8750,
+              "grossProfit": 3750,
+              "grossProfitRate": 30.0
+            },
+            {
+              "sizeName": "L",
+              "salesQuantity": 250,
+              "salesAmount": 12500,
+              "costAmount": 8750,
+              "grossProfit": 3750,
+              "grossProfitRate": 30.0
+            },
+            {
+              "sizeName": "XL",
+              "salesQuantity": 250,
+              "salesAmount": 12500,
+              "costAmount": 8750,
+              "grossProfit": 3750,
+              "grossProfitRate": 30.0
+            }
+          ],
+          "byMonth": [
+            {
+              "month": "2024-01",
+              "salesQuantity": 167,
+              "salesAmount": 8333,
+              "costAmount": 5833,
+              "grossProfit": 2500,
+              "grossProfitRate": 30.0
+            },
+            {
+              "month": "2024-02",
+              "salesQuantity": 167,
+              "salesAmount": 8333,
+              "costAmount": 5833,
+              "grossProfit": 2500,
+              "grossProfitRate": 30.0
+            },
+            {
+              "month": "2024-03",
+              "salesQuantity": 167,
+              "salesAmount": 8333,
+              "costAmount": 5833,
+              "grossProfit": 2500,
+              "grossProfitRate": 30.0
+            },
+            {
+              "month": "2024-04",
+              "salesQuantity": 167,
+              "salesAmount": 8333,
+              "costAmount": 5833,
+              "grossProfit": 2500,
+              "grossProfitRate": 30.0
+            },
+            {
+              "month": "2024-05",
+              "salesQuantity": 167,
+              "salesAmount": 8333,
+              "costAmount": 5833,
+              "grossProfit": 2500,
+              "grossProfitRate": 30.0
+            },
+            {
+              "month": "2024-06",
+              "salesQuantity": 167,
+              "salesAmount": 8333,
+              "costAmount": 5833,
+              "grossProfit": 2500,
+              "grossProfitRate": 30.0
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "module": "成本报表",
+    "tests": [
+      {
+        "name": "成本汇总查询",
+        "endpoint": "GET /api/v1/cost/summary/page",
+        "params": {
+          "pageNum": 1,
+          "pageSize": 10
+        },
+        "passed": false,
+        "result": "{'success': False, 'error': \"HTTP 403: {'code': 403, 'msg': '无权限访问', 'data': None}\", 'code': 403}",
+        "error": "HTTP 403: {'code': 403, 'msg': '无权限访问', 'data': None}"
+      },
+      {
+        "name": "标准成本查询",
+        "endpoint": "GET /api/v1/cost/standard/page",
+        "params": {
+          "pageNum": 1,
+          "pageSize": 10
+        },
+        "passed": false,
+        "result": "{'success': False, 'error': \"HTTP 403: {'code': 403, 'msg': '无权限访问', 'data': None}\", 'code': 403}",
+        "error": "HTTP 403: {'code': 403, 'msg': '无权限访问', 'data': None}"
+      },
+      {
+        "name": "成本差异分析",
+        "endpoint": "GET /api/v1/cost/variance/page",
+        "params": {
+          "pageNum": 1,
+          "pageSize": 10
+        },
+        "passed": false,
+        "result": "{'success': False, 'error': \"HTTP 403: {'code': 403, 'msg': '无权限访问', 'data': None}\", 'code': 403}",
+        "error": "HTTP 403: {'code': 403, 'msg': '无权限访问', 'data': None}"
+      }
+    ]
+  },
+  {
+    "module": "生产报表",
+    "tests": [
+      {
+        "name": "生产日报-生产效率报表",
+        "endpoint": "GET /api/v1/report/production/efficiency",
+        "params": {
+          "pageNum": 1,
+          "pageSize": 10,
+          "startDate": "2026-01-01",
+          "endDate": "2026-03-30"
+        },
+        "passed": true,
+        "result": "{'success': True, 'data': {'code': 200, 'msg': '操作成功', 'data': {'total': 0, 'list': []}}}",
+        "data": {
+          "records": [],
+          "total": 0
+        }
+      },
+      {
+        "name": "生产看板-统计",
+        "endpoint": "GET /api/v1/api/production/dashboard/statistics",
+        "passed": false,
+        "result": "{'success': True, 'data': {'code': 500, 'msg': \"系统异常，请稍后重试: \\n### Error querying database.  Cause: java.sql.SQLSyntaxErrorException: Unknown column 'record_no' in 'field list'\\n### The error may exist in com/duoduo/jxc/mapper/ProcessRecordMapper.java (best guess)\\n### The error may involve defaultParameterMap\\n### The error occurred while setting parameters\\n### SQL: SELECT record_id, record_no, bundle_id, process_id, sku_id, worker_id, is_team_work, team_type, team_group_id, quantity, price_lev",
+        "error": "系统异常，请稍后重试: \n### Error querying database.  Cause: java.sql.SQLSyntaxErrorException: Unknown column 'record_no' in 'field list'\n### The error may exist in com/duoduo/jxc/mapper/ProcessRecordMapper.java (best guess)\n### The error may involve defaultParameterMap\n### The error occurred while setting parameters\n### SQL: SELECT record_id, record_no, bundle_id, process_id, sku_id, worker_id, is_team_work, team_type, team_group_id, quantity, price_level, base_price, premium_ratio, unit_price, share_ratio, amount, record_type, related_rework_id, deduction_reason, settlement_status, salary_sheet_id, settled_at, scan_time, confirm_time, status, device_id, location, remark, create_time, update_time, create_by, update_by, deleted FROM jxc_process_record WHERE deleted = 0 AND (DATE(record_time) = ?)\n### Cause: java.sql.SQLSyntaxErrorException: Unknown column 'record_no' in 'field list'\n; bad SQL grammar []"
+      },
+      {
+        "name": "生产看板-订单列表",
+        "endpoint": "GET /api/v1/api/production/dashboard/orders",
+        "passed": true,
+        "result": "{'success': True, 'data': {'code': 200, 'msg': '操作成功', 'data': {'pending': [], 'inProgress': [], 'completed': []}}}",
+        "data": {
+          "orders": []
+        }
+      }
+    ]
+  }
+]

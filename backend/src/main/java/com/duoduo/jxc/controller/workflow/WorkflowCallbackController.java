@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
  * 工作流回调控制器
  */
 @RestController
-@RequestMapping("/api/workflow/callback")
+@RequestMapping("/workflow/callback")
 @RequiredArgsConstructor
 public class WorkflowCallbackController {
 

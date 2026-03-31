@@ -24,6 +24,8 @@ public class InventoryCheckDetail {
     private Integer diffQty;
     private BigDecimal costPrice;
     private BigDecimal diffAmount;
+    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
     @TableLogic
     private Integer deleted;
 }

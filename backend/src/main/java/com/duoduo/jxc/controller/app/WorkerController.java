@@ -125,4 +125,77 @@ public class WorkerController {
         }
         return Result.success(pieceRecordService.pageQuery(query));
     }
+
+    /**
+     * 工人端仪表盘
+     */
+    @GetMapping("/dashboard")
+    public Result<Map<String, Object>> getDashboard(@RequestParam(required = false) Long workerId) {
+        Map<String, Object> dashboard = new HashMap<>();
+        // 今日计件统计
+        var todayQuery = new PieceRecordQuery();
+        todayQuery.setPageNum(1);
+        todayQuery.setPageSize(1);
+        todayQuery.setRecordDateFrom(LocalDate.now());
+        todayQuery.setRecordDateTo(LocalDate.now());
+        var todayPage = pieceRecordService.pageQuery(todayQuery);
+        dashboard.put("todayCount", todayPage.getTotal());
+
+        // 待处理任务数
+        var taskQuery = new PieceRecordQuery();
+        taskQuery.setPageNum(1);
+        taskQuery.setPageSize(1);
+        var taskPage = pieceRecordService.pageQuery(taskQuery);
+        dashboard.put("pendingTasks", taskPage.getTotal());
+
+        // 本月累计
+        LocalDate monthStart = LocalDate.now().withDayOfMonth(1);
+        var monthQuery = new PieceRecordQuery();
+        monthQuery.setRecordDateFrom(monthStart);
+        monthQuery.setRecordDateTo(LocalDate.now());
+        var monthPage = pieceRecordService.pageQuery(monthQuery);
+        dashboard.put("monthCount", monthPage.getTotal());
+
+        return Result.success(dashboard);
+    }
+
+    /**
+     * 工人端统计
+     */
+    @GetMapping("/stats")
+    public Result<Map<String, Object>> getStats(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        var query = new PieceRecordQuery();
+        if (startDate != null && !startDate.isEmpty()) {
+            query.setRecordDateFrom(LocalDate.parse(startDate));
+        }
+        if (endDate != null && !endDate.isEmpty()) {
+            query.setRecordDateTo(LocalDate.parse(endDate));
+        }
+        List<Map<String, Object>> summaryList = pieceRecordService.summary(query);
+        Map<String, Object> result = new HashMap<>();
+        result.put("period", Map.of("start", startDate != null ? startDate : "", "end", endDate != null ? endDate : ""));
+        result.put("records", summaryList);
+        return Result.success(result);
+    }
+
+    /**
+     * 计件记录列表
+     */
+    @GetMapping("/record")
+    public Result<PageResult<PieceRecordDTO>> getRecord(
+            @RequestParam(required = false) String recordDate,
+            @RequestParam(defaultValue = "1") int pageNum,
+            @RequestParam(defaultValue = "20") int pageSize) {
+        var query = new PieceRecordQuery();
+        query.setPageNum(pageNum);
+        query.setPageSize(pageSize);
+        if (recordDate != null && !recordDate.isEmpty()) {
+            LocalDate date = LocalDate.parse(recordDate);
+            query.setRecordDateFrom(date);
+            query.setRecordDateTo(date);
+        }
+        return Result.success(pieceRecordService.pageQuery(query));
+    }
 }

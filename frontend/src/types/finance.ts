@@ -126,6 +126,20 @@ export interface FinanceAccountDTO {
   status: number
 }
 
+/** 财务账户详情 */
+export interface FinanceAccountDetailDTO {
+  accountId: number
+  accountName: string
+  balance: number
+  status: number
+  transactionCount?: number
+  totalIncome?: number
+  totalExpense?: number
+  createTime: string
+  updateTime: string
+  recentTransactions?: FinanceTransactionDTO[]
+}
+
 // ========================
 // 前端 View Model 类型（经 normalize 后的形态）
 // ========================

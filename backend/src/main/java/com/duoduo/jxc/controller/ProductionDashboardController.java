@@ -10,15 +10,26 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 /**
  * 生产看板控制器
  */
 @RestController
-@RequestMapping("/api/production/dashboard")
+@org.springframework.security.access.prepost.PreAuthorize("@perm.has('production:dashboard:view')")
+@RequestMapping("/production/dashboard")
 public class ProductionDashboardController {
 
     @Autowired
     private ProductionDashboardService dashboardService;
+
+    @GetMapping
+    public Result<Map<String, Object>> getDashboard(@RequestParam(required = false) Long factoryId) {
+        return Result.success(Map.of(
+                "statistics", dashboardService.getStatistics(factoryId),
+                "orders", dashboardService.getOrders(factoryId)
+        ));
+    }
 
     /**
      * 获取统计数据

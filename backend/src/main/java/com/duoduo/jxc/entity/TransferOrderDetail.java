@@ -21,6 +21,8 @@ public class TransferOrderDetail {
     private String attr2;
     private Integer qty;
     private BigDecimal costPrice;
+    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
     @TableLogic
     private Integer deleted;
 }

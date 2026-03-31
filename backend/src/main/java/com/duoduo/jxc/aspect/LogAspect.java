@@ -98,13 +98,13 @@ public class LogAspect {
             }
             
             if (logAnnotation.isSaveRequestData()) {
-                log.info("Request Args : {}", getRequestParams(joinPoint.getArgs()));
+                log.debug("Request Args : {}", getRequestParams(joinPoint.getArgs()));
             }
             
             if (error != null) {
                 log.error("Exception    : {}", error.getMessage());
             } else if (logAnnotation.isSaveResponseData()) {
-                log.info("Response     : {}", JSON.toJSONString(result));
+                log.debug("Response     : {}", JSON.toJSONString(result));
             }
             
             log.info("Cost Time    : {} ms", executeTime);

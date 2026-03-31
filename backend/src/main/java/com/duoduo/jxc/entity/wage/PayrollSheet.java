@@ -1,6 +1,7 @@
 package com.duoduo.jxc.entity.wage;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.duoduo.jxc.entity.BaseEntity;
@@ -24,6 +25,7 @@ public class PayrollSheet extends BaseEntity {
     private Long sheetId;
     private String sheetNo;
     /** 核算月份 YYYY-MM */
+    @TableField("`year_month`")
     private String yearMonth;
     private LocalDate startDate;
     private LocalDate endDate;

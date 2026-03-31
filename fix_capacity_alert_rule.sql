@@ -1,0 +1,1 @@
+RENAME TABLE capacity_alert_rule TO jxc_capacity_alert_rule;

@@ -24,6 +24,12 @@ public class InventoryCheckController {
         return Result.success(inventoryCheckService.pageList(query));
     }
 
+    @GetMapping("/page")
+    @PreAuthorize("@perm.has('inventory:check:view')")
+    public Result<PageResult<InventoryCheckDTO>> pageGet(PageQuery query) {
+        return Result.success(inventoryCheckService.pageList(query));
+    }
+
     @Log(title = "盘点单管理", action = "查看详情")
     @GetMapping("/{id}")
     @PreAuthorize("@perm.has('inventory:check:view')")

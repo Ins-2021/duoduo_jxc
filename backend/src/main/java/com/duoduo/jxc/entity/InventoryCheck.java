@@ -1,11 +1,11 @@
 package com.duoduo.jxc.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -19,8 +19,10 @@ public class InventoryCheck {
     private Integer status;
     private LocalDateTime checkDate;
     private String remark;
+    @TableField("create_by")
     private Long createdBy;
     private LocalDateTime createTime;
+    @TableField("update_by")
     private Long updatedBy;
     private LocalDateTime updateTime;
     @TableLogic

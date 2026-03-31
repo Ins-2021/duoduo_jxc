@@ -188,7 +188,16 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long createOrder(SalesOrderDTO dto) {
+        BigDecimal totalAmount = prepareOrderDetails(dto.getDetails());
+        BigDecimal discountAmount = dto.getDiscountAmount() != null ? dto.getDiscountAmount() : BigDecimal.ZERO;
+        BigDecimal actualAmount = totalAmount.subtract(discountAmount);
+
         SalesOrder order = converter.toEntity(dto);
+        // MapStruct转换后覆盖了金额，必须重新设置
+        order.setTotalAmount(totalAmount);
+        order.setDiscountAmount(discountAmount);
+        order.setActualAmount(actualAmount);
+
         // 生成单号
         String prefix = dto.getOrderType() == 3 ? "YD" : "XS";
         order.setDocNo(prefix + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + System.currentTimeMillis());
@@ -219,7 +228,15 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateOrder(SalesOrderDTO dto) {
+        BigDecimal totalAmount = prepareOrderDetails(dto.getDetails());
+        BigDecimal discountAmount = dto.getDiscountAmount() != null ? dto.getDiscountAmount() : BigDecimal.ZERO;
+        BigDecimal actualAmount = totalAmount.subtract(discountAmount);
+
         SalesOrder order = converter.toEntity(dto);
+        // MapStruct转换后覆盖了金额，必须重新设置
+        order.setTotalAmount(totalAmount);
+        order.setDiscountAmount(discountAmount);
+        order.setActualAmount(actualAmount);
         updateById(order);
 
         LambdaQueryWrapper<SalesOrderDetail> deleteWrapper = new LambdaQueryWrapper<>();
@@ -438,6 +455,37 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
 
         log.info("零售单审核处理完成: orderId={}, amount={}, settleStatus=2", orderId, order.getActualAmount());
     }
+
+    private BigDecimal prepareOrderDetails(List<SalesOrderDetailDTO> details) {
+        if (details == null || details.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        Set<Long> skuIds = details.stream()
+                .map(SalesOrderDetailDTO::getSkuId)
+                .filter(id -> id != null)
+                .collect(Collectors.toSet());
+        Map<Long, ProductSku> skuMap = skuIds.isEmpty() ? Map.of() : productSkuMapper.selectBatchIds(skuIds).stream()
+                .collect(Collectors.toMap(ProductSku::getSkuId, sku -> sku));
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        for (SalesOrderDetailDTO detail : details) {
+            if (detail.getSkuId() == null) {
+                throw new BusinessException(BizCode.BAD_REQUEST, "销售订单明细缺少skuId");
+            }
+            ProductSku sku = skuMap.get(detail.getSkuId());
+            if (sku == null) {
+                throw new BusinessException(BizCode.NOT_FOUND, "SKU不存在: " + detail.getSkuId());
+            }
+            detail.setSpuId(sku.getSpuId());
+            BigDecimal lineAmount = BigDecimal.ZERO;
+            if (detail.getQty() != null && detail.getUnitPrice() != null) {
+                lineAmount = BigDecimal.valueOf(detail.getQty()).multiply(detail.getUnitPrice());
+            }
+            detail.setLineAmount(lineAmount);
+            totalAmount = totalAmount.add(lineAmount);
+        }
+        return totalAmount;
+    }
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)

@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/fabrics/inventory")
+@RequestMapping("/fabrics/inventory")
 @RequiredArgsConstructor
 public class FabricInventoryController {
 

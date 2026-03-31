@@ -18,9 +18,10 @@ import java.time.LocalDateTime;
 @TableName("jxc_cost_period")
 public class CostPeriod {
 
-    @TableId(type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.AUTO)
     private Long periodId;
     private String periodNo;
+    @com.baomidou.mybatisplus.annotation.TableField("`year_month`")
     private String yearMonth;
     private LocalDate startDate;
     private LocalDate endDate;

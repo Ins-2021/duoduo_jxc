@@ -15,7 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/quality/checks")
+@RequestMapping("/quality/checks")
 @RequiredArgsConstructor
 public class QualityCheckController {
 

@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @TableName("jxc_cost_summary")
 public class CostSummary {
 
-    @TableId(type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.AUTO)
     private Long summaryId;
     private String summaryNo;
     private String accountPeriod;

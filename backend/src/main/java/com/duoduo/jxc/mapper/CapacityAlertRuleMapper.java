@@ -13,6 +13,6 @@ import java.util.List;
 @Mapper
 public interface CapacityAlertRuleMapper extends BaseMapper<CapacityAlertRule> {
 
-    @Select("SELECT * FROM capacity_alert_rule WHERE status = 'active' AND deleted = 0")
+    @Select("SELECT * FROM jxc_capacity_alert_rule WHERE status = 'active' AND deleted = 0")
     List<CapacityAlertRule> selectActiveRules();
 }

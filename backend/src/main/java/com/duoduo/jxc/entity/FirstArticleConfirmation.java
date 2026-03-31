@@ -1,6 +1,7 @@
 package com.duoduo.jxc.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -23,4 +24,8 @@ public class FirstArticleConfirmation extends BaseEntity {
     private java.time.LocalDateTime approveTime;
     private java.time.LocalDateTime checkTime;
     private String remark;
+
+    /** 覆盖BaseEntity的deleted字段，数据库中不存在该列 */
+    @TableField(exist = false)
+    private Integer deleted;
 }

@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/processes/records")
+@RequestMapping("/processes/records")
 @RequiredArgsConstructor
 public class ProcessRecordController {
 
@@ -26,14 +26,14 @@ public class ProcessRecordController {
 
     @Log(title = "工序报工", action = "分页查询")
     @GetMapping("/list")
-    @PreAuthorize("@perm.has('mes:process:view')")
+    @PreAuthorize("@perm.has('mes:process:view') or @perm.has('mes:records:view') or @perm.has('mes:scan:view') or @perm.has('mes:bundle:view')")
     public Result<PageResult<ProcessRecordDTO>> pageQuery(@Valid ProcessRecordQuery query) {
         return Result.success(processRecordService.pageQuery(query));
     }
 
     @Log(title = "工序报工", action = "查看详情")
     @GetMapping("/{id}")
-    @PreAuthorize("@perm.has('mes:process:view')")
+    @PreAuthorize("@perm.has('mes:process:view') or @perm.has('mes:records:view') or @perm.has('mes:scan:view') or @perm.has('mes:bundle:view')")
     public Result<ProcessRecordDTO> getDetail(@PathVariable("id") Long id) {
         return Result.success(processRecordService.getDetail(id));
     }

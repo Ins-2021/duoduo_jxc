@@ -11,6 +11,7 @@ import com.duoduo.jxc.dto.purchase.PurchaseOrderQuery;
 import com.duoduo.jxc.enums.PurchaseOrderStatusEnum;
 import com.duoduo.jxc.entity.PurchaseOrder;
 import com.duoduo.jxc.entity.PurchaseOrderDetail;
+import com.duoduo.jxc.entity.ProductSku;
 import com.duoduo.jxc.common.BizCode;
 import com.duoduo.jxc.entity.StockInOut;
 import com.duoduo.jxc.entity.StockInOutDetail;
@@ -18,6 +19,7 @@ import com.duoduo.jxc.enums.StockInOutStatusEnum;
 import com.duoduo.jxc.exception.BusinessException;
 import com.duoduo.jxc.mapper.PurchaseOrderDetailMapper;
 import com.duoduo.jxc.mapper.PurchaseOrderMapper;
+import com.duoduo.jxc.mapper.ProductSkuMapper;
 import com.duoduo.jxc.mapper.StockInOutDetailMapper;
 import com.duoduo.jxc.mapper.StockInOutMapper;
 import com.duoduo.jxc.service.InventoryService;
@@ -31,8 +33,12 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -44,6 +50,7 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
     private final StockInOutMapper stockInOutMapper;
     private final StockInOutDetailMapper stockInOutDetailMapper;
     private final InventoryService inventoryService;
+    private final ProductSkuMapper productSkuMapper;
 
     @Override
     public PageResult<PurchaseOrderDTO> pageQuery(PurchaseOrderQuery query) {
@@ -104,6 +111,7 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long createOrder(PurchaseOrderDTO dto) {
+        BigDecimal totalAmount = prepareOrderDetails(dto.getDetails());
         PurchaseOrder order = converter.toEntity(dto);
         // 生成单号
         String prefix = dto.getOrderType() == 1 ? "JH" : "JY";
@@ -116,14 +124,10 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
         }
         
         // 新增金额兜底处理
-        if (order.getDiscountAmount() == null) order.setDiscountAmount(java.math.BigDecimal.ZERO);
-        if (order.getOtherFee() == null) order.setOtherFee(java.math.BigDecimal.ZERO);
-        if (order.getActualAmount() == null) {
-            java.math.BigDecimal actual = (order.getTotalAmount() != null ? order.getTotalAmount() : java.math.BigDecimal.ZERO)
-                    .subtract(order.getDiscountAmount())
-                    .add(order.getOtherFee());
-            order.setActualAmount(actual);
-        }
+        if (order.getDiscountAmount() == null) order.setDiscountAmount(BigDecimal.ZERO);
+        if (order.getOtherFee() == null) order.setOtherFee(BigDecimal.ZERO);
+        order.setTotalAmount(totalAmount);
+        order.setActualAmount(totalAmount.subtract(order.getDiscountAmount()).add(order.getOtherFee()));
         
         save(order);
 
@@ -142,17 +146,13 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
     @Transactional(rollbackFor = Exception.class)
     public void updateOrder(PurchaseOrderDTO dto) {
         assertDraftOrder(dto.getOrderId(), BizCode.PURCHASE_ORDER_CANNOT_MODIFY);
+        BigDecimal totalAmount = prepareOrderDetails(dto.getDetails());
         PurchaseOrder order = converter.toEntity(dto);
         
-        // 新增金额兜底处理
-        if (order.getDiscountAmount() == null) order.setDiscountAmount(java.math.BigDecimal.ZERO);
-        if (order.getOtherFee() == null) order.setOtherFee(java.math.BigDecimal.ZERO);
-        if (order.getActualAmount() == null) {
-            java.math.BigDecimal actual = (order.getTotalAmount() != null ? order.getTotalAmount() : java.math.BigDecimal.ZERO)
-                    .subtract(order.getDiscountAmount())
-                    .add(order.getOtherFee());
-            order.setActualAmount(actual);
-        }
+        if (order.getDiscountAmount() == null) order.setDiscountAmount(BigDecimal.ZERO);
+        if (order.getOtherFee() == null) order.setOtherFee(BigDecimal.ZERO);
+        order.setTotalAmount(totalAmount);
+        order.setActualAmount(totalAmount.subtract(order.getDiscountAmount()).add(order.getOtherFee()));
         
         updateById(order);
 
@@ -270,5 +270,35 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
 
         log.info("采购单[{}]审核自动生成出入库单[{}], type={}, 明细数={}",
                 purchaseOrder.getDocNo(), stockInOut.getBillNo(), stockType, details.size());
+    }
+
+    private BigDecimal prepareOrderDetails(List<PurchaseOrderDetailDTO> details) {
+        if (details == null || details.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        Set<Long> skuIds = details.stream()
+                .map(PurchaseOrderDetailDTO::getSkuId)
+                .filter(id -> id != null)
+                .collect(Collectors.toSet());
+        Map<Long, ProductSku> skuMap = skuIds.isEmpty() ? Map.of() : productSkuMapper.selectBatchIds(skuIds).stream()
+                .collect(Collectors.toMap(ProductSku::getSkuId, sku -> sku));
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        for (PurchaseOrderDetailDTO detail : details) {
+            if (detail.getSkuId() == null) {
+                throw new BusinessException(BizCode.BAD_REQUEST, "采购订单明细缺少skuId");
+            }
+            ProductSku sku = skuMap.get(detail.getSkuId());
+            if (sku == null) {
+                throw new BusinessException(BizCode.NOT_FOUND, "SKU不存在: " + detail.getSkuId());
+            }
+            detail.setSpuId(sku.getSpuId());
+            BigDecimal lineAmount = BigDecimal.ZERO;
+            if (detail.getQty() != null && detail.getUnitPrice() != null) {
+                lineAmount = BigDecimal.valueOf(detail.getQty()).multiply(detail.getUnitPrice());
+            }
+            detail.setLineAmount(lineAmount);
+            totalAmount = totalAmount.add(lineAmount);
+        }
+        return totalAmount;
     }
 }

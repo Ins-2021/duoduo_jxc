@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 public class PayableServiceImpl extends ServiceImpl<PayableMapper, Payable> implements PayableService {
 
     private final FinanceConverter converter;
+    private final com.duoduo.jxc.mapper.WriteOffMapper writeOffMapper;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -123,6 +124,17 @@ public class PayableServiceImpl extends ServiceImpl<PayableMapper, Payable> impl
         }
         entity.setUpdateTime(LocalDateTime.now());
         updateById(entity);
+
+        // 生成核销记录到 jxc_write_off 表
+        com.duoduo.jxc.entity.WriteOff writeOff = new com.duoduo.jxc.entity.WriteOff();
+        writeOff.setWriteOffNo("HX" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+                + UUID.randomUUID().toString().replace("-", "").substring(0, 4).toUpperCase());
+        writeOff.setType("PAYABLE");
+        writeOff.setBillNo(entity.getBillNo());
+        writeOff.setBillId(entity.getPayableId());
+        writeOff.setAmount(amount);
+        writeOff.setCreateTime(LocalDateTime.now());
+        writeOffMapper.insert(writeOff);
     }
 
     private PayableDTO toDTO(Payable entity) {

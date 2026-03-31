@@ -1,6 +1,7 @@
 package com.duoduo.jxc.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -29,14 +30,17 @@ public class Bundle extends BaseEntity {
     /** 负责班组ID */
     private Long workGroupId;
     /** 工作流实例ID */
+    @TableField(exist = false)
     private Long wfInstanceId;
     /** 工作流状态 */
+    @TableField(exist = false)
     private String wfStatus;
     /** 状态(pending/allocated/producing/completed/abnormal/returned) */
     private String status;
     /** 二维码图片URL */
     private String qrCode;
     /** 二维码内容(JSON) */
+    @TableField(exist = false)
     private String qrData;
     /** 当前位置 */
     private String location;

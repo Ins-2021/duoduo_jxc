@@ -11,5 +11,5 @@ public class QualityCheckQuery extends PageQuery {
     private Long bundleId;
     private Long processId;
     private String result;
-    private Long checkerId;
+    private Long inspectorId;
 }

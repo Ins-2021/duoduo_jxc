@@ -423,3 +423,59 @@ export function addAccount(data: Omit<FinanceAccountDTO, 'accountId' | 'balance'
     data
   })
 }
+
+export const accountApi = {
+  pageList: (data: PageParam & { accountName?: string }) => {
+    return mapPagedResult(request({
+      url: '/finance/account/page',
+      method: 'post',
+      data: buildPageQuery(data, data?.accountName)
+    }), (item: FinanceAccountDTO) => item)
+  },
+  getSummary: () => {
+    return request({
+      url: '/finance/account/summary',
+      method: 'get'
+    })
+  },
+  getDetail: (id: number) => {
+    return request({
+      url: `/finance/account/${id}`,
+      method: 'get'
+    })
+  },
+  getTransactions: (id: number, params: PageParam & { type?: number; startDate?: string; endDate?: string }) => {
+    return request({
+      url: `/finance/account/${id}/transactions`,
+      method: 'get',
+      params
+    })
+  },
+  create: (data: FinanceAccountDTO) => {
+    return request({
+      url: '/finance/account',
+      method: 'post',
+      data
+    })
+  },
+  update: (data: FinanceAccountDTO) => {
+    return request({
+      url: `/finance/account/${data.accountId}`,
+      method: 'put',
+      data
+    })
+  },
+  delete: (id: number) => {
+    return request({
+      url: `/finance/account/${id}`,
+      method: 'delete'
+    })
+  },
+  adjustBalance: (id: number, data: { amount: number; remark: string }) => {
+    return request({
+      url: `/finance/account/${id}/adjust-balance`,
+      method: 'post',
+      data
+    })
+  }
+}
